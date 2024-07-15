@@ -365,3 +365,188 @@ The Cloud Security Alliance (CSA) released version 4 of the Cloud Controls Matri
 The upgrade from CCM v3.0.1 to CCM v4 represents a significant enhancement in cloud security controls, addressing modern cloud technologies, regulatory requirements, and providing better implementation and audit guidance. These changes are designed to help organizations improve their cloud security posture and ensure compliance with industry standards.
 
 For more detailed information, you can refer to the official CSA Cloud Controls Matrix documentation and related resources on the Cloud Security Alliance website and other industry sources.
+
+
+
+=================================
+SOP
+--------------------------------
+
+Standard Operating Procedure (SOP) for Annual Capability Assessment
+Purpose
+The purpose of this SOP is to ensure a comprehensive and systematic evaluation of the organization's current security capabilities against industry-standard frameworks, identify any gaps, and align future roadmaps to mitigate these gaps.
+
+Scope
+This SOP applies to the annual assessment of security capabilities at ExactTrust, incorporating the latest versions of the following frameworks:
+
+Cloud Security Alliance (CSA)
+MITRE ATT&CK
+OWASP Top 10
+NIST SP 800-53
+Responsibilities
+Security Architect: Lead the assessment, coordinate with domain teams, and compile the final report.
+Security Domain Teams: Provide information on current toolsets and capabilities, and identify any existing or planned capabilities.
+Compliance Team: Ensure alignment with regulatory requirements and standards.
+IT and Operations Teams: Assist with the implementation of any new tools or capabilities identified.
+Procedure
+Framework Review
+1.1. Check for Updates: Identify the most recent versions of CSA, MITRE ATT&CK, OWASP Top 10, and NIST 800-53.
+- Visit official websites or subscribe to updates from the respective organizations.
+- Compare the current version with the previous one to identify any changes.
+1.2. Document Changes: List all changes, including new or updated controls, techniques, and recommendations.
+
+Current Capability Assessment
+2.1. Review Current Toolsets:
+- Compile a list of all current security tools and capabilities in the environment.
+- Categorize these tools under relevant security capabilities (e.g., email security, endpoint protection, network security).
+2.2. Mapping to Frameworks:
+- Map the current toolsets and capabilities to the controls and techniques in the frameworks.
+- Identify if each tool can monitor or prevent the use cases described in the changes.
+
+Gap Analysis
+3.1. Identify Gaps: Determine any gaps where the current toolsets do not cover the new or updated controls and techniques.
+3.2. Consultation with Domain Teams:
+- Reach out to security domain teams to validate the findings.
+- Determine if there are any existing capabilities not documented or planned capabilities not yet implemented.
+3.3. Document Findings: Create a detailed report listing:
+- Existing capabilities that cover the changes.
+- Identified gaps and the potential risks associated with them.
+
+Future Planning
+4.1. Review InfoSec Roadmaps:
+- Obtain the InfoSec roadmaps from all security teams for the upcoming year.
+- Identify any planned capabilities that could address the identified gaps.
+4.2. Alignment with Roadmaps:
+- Align the identified gaps with the planned capabilities.
+- Propose any additional tools or changes needed to fully cover the gaps.
+4.3. Stakeholder Engagement:
+- Present the findings and recommendations to key stakeholders.
+- Obtain approval for any new tool acquisitions or process changes.
+
+Reporting
+5.1. Compile Final Report:
+- Executive Summary: High-level findings and recommendations.
+- Detailed Assessment: Changes in frameworks, current capabilities, identified gaps, and proposed solutions.
+- Roadmap Alignment: Planned capabilities and timelines for addressing gaps.
+5.2. Distribute Report: Share the final report with relevant stakeholders, including security domain teams, compliance, IT, and senior management.
+5.3. Review and Feedback:
+- Collect feedback from stakeholders.
+- Adjust the plan as necessary based on feedback.
+
+Documentation
+Maintain all assessment records, communications, and reports in a centralized, secure repository.
+Ensure all documentation is version-controlled and accessible to authorized personnel.
+Review and Update
+This SOP should be reviewed annually and updated as needed to reflect any changes in processes, responsibilities, or external requirements.
+Appendix
+Template for Capability Assessment Report
+Contact List for Security Domain Teams
+Checklist for Framework Comparison
+References:
+
+Cloud Security Alliance (CSA)
+MITRE ATT&CK
+OWASP Top 10
+NIST SP 800-53
+
+--------------------
+
+Executive Summary of the Standard Operating Procedure (SOP) for Annual Capability Assessment
+Introduction and Purpose
+The purpose of this SOP is to guide the annual evaluation of ExactTrust's security capabilities against industry-standard frameworks, identifying any gaps and aligning future roadmaps to address these gaps. The frameworks reviewed include the Cloud Security Alliance (CSA), MITRE ATT&CK, OWASP Top 10, and NIST SP 800-53.
+
+Scope
+This SOP covers the assessment of all security capabilities within ExactTrust, ensuring they align with the latest updates in industry standards and best practices. It also includes consultations with security domain teams to validate current capabilities and identify any gaps.
+
+Framework Review
+Process: Identify the most recent versions of CSA, MITRE ATT&CK, OWASP Top 10, and NIST SP 800-53. Compare them with previous versions to document all changes.
+Objective: Ensure ExactTrust's security capabilities are up-to-date with industry standards.
+Current Capability Assessment
+Tool Review: Compile a list of current security tools and capabilities. Categorize these tools under relevant security capabilities.
+Mapping: Map current tools to the controls and techniques in the frameworks. Identify tools that can monitor or prevent the use cases described in the changes.
+Gap Analysis
+Identification: Determine gaps where current tools do not cover new or updated controls and techniques.
+Consultation: Engage with security domain teams to validate findings and identify any existing or planned capabilities.
+Documentation: Create a detailed report listing existing capabilities, identified gaps, and associated risks.
+Future Planning
+Roadmap Review: Review InfoSec roadmaps from all security teams for the upcoming year to identify any planned capabilities.
+Alignment: Align identified gaps with planned capabilities. Propose additional tools or changes needed to cover gaps.
+Stakeholder Engagement: Present findings and recommendations to key stakeholders and obtain approval for new tool acquisitions or process changes.
+Reporting
+Compilation: Compile a final report including an executive summary, detailed assessment, identified gaps, proposed solutions, and roadmap alignment.
+Distribution: Share the report with relevant stakeholders, including security domain teams, compliance, IT, and senior management.
+Feedback: Collect feedback from stakeholders and adjust the plan as necessary.
+Documentation and Review
+Maintenance: Maintain all assessment records, communications, and reports in a centralized, secure repository.
+Review: Annually review and update this SOP to reflect any changes in processes, responsibilities, or external requirements.
+Conclusion
+This SOP provides a structured approach for ExactTrust to assess its security capabilities annually, ensuring alignment with industry standards and proactive management of security risks. By following this SOP, ExactTrust can maintain a robust security posture and continuously improve its security framework.
+
+-------------------------------
+
+Standard Operating Procedure (SOP) for Annual Capability Assessment
+1. Introduction
+As part of ExactTrust’s commitment to maintaining a robust security posture, this SOP outlines the procedures for conducting an annual assessment of our security capabilities. This assessment ensures our defenses are aligned with the latest industry standards and best practices, identifies gaps, and helps to plan for future enhancements.
+
+2. Purpose
+The purpose of this SOP is to establish a systematic approach to evaluate our current security tools and processes against industry-standard frameworks, identify any gaps, and integrate these findings into our InfoSec roadmaps.
+
+3. Scope
+This SOP applies to the annual review of security capabilities, covering the following frameworks:
+
+Cloud Security Alliance (CSA)
+MITRE ATT&CK
+OWASP Top 10
+NIST SP 800-53
+4. Responsibilities
+Principal Security Architect: Lead the assessment process, coordinate with various teams, and compile the final report.
+Security Domain Teams: Provide detailed information on existing tools and capabilities and assist in gap analysis.
+Compliance Team: Ensure alignment with regulatory requirements.
+IT and Operations Teams: Assist in the implementation of new tools or processes as identified.
+5. Procedure
+5.1 Framework Review
+
+Objective: Ensure our security practices are current with the latest standards.
+Steps:
+Identify Updates: Review the latest versions of CSA, MITRE ATT&CK, OWASP Top 10, and NIST 800-53. Document any new controls, techniques, or recommendations.
+Compare Versions: Detail the differences between the current and previous versions of these frameworks.
+5.2 Current Capability Assessment
+
+Objective: Map existing security capabilities to framework requirements.
+Steps:
+Inventory Tools: List all current security tools and categorize them (e.g., email security, endpoint protection).
+Framework Mapping: Match each tool against the relevant controls and techniques in the frameworks to determine coverage.
+5.3 Gap Analysis
+
+Objective: Identify and address any gaps in our current security capabilities.
+Steps:
+Identify Gaps: Determine where current tools fall short of meeting new or updated framework requirements.
+Consult Domain Teams: Engage with security domain teams to validate findings and gather information on any undocumented capabilities or planned enhancements.
+Document Findings: Prepare a detailed report outlining existing capabilities, identified gaps, and associated risks.
+5.4 Future Planning
+
+Objective: Integrate findings into future security plans and roadmaps.
+Steps:
+Review InfoSec Roadmaps: Analyze security roadmaps from all teams for the upcoming year to identify planned capabilities that could address identified gaps.
+Align Plans: Ensure that the planned capabilities are aligned with the identified gaps. Propose additional tools or modifications as necessary.
+Engage Stakeholders: Present findings and recommendations to stakeholders for approval.
+5.5 Reporting
+
+Objective: Communicate the assessment results and action plans to all relevant parties.
+Steps:
+Compile Report: Prepare a comprehensive report, including an executive summary, detailed assessment, identified gaps, proposed solutions, and aligned roadmaps.
+Distribute: Share the report with relevant stakeholders, including security domain teams, compliance, IT, and senior management.
+Gather Feedback: Collect feedback and adjust the plan as necessary.
+6. Documentation
+Maintenance: All assessment records, communications, and reports should be stored in a centralized, secure repository. Ensure documentation is version-controlled and accessible to authorized personnel.
+7. Review and Update
+Annual Review: This SOP should be reviewed annually and updated as needed to reflect any changes in processes, responsibilities, or external requirements.
+Appendix
+Templates: Include templates for Capability Assessment Reports, Contact Lists for Security Domain Teams, and Checklist for Framework Comparison.
+References:
+
+Cloud Security Alliance (CSA)
+MITRE ATT&CK
+OWASP Top 10
+NIST SP 800-53
+By following this SOP, ExactTrust ensures a consistent, thorough, and proactive approach to assessing and enhancing our security capabilities, maintaining alignment with the latest industry standards and mitigating potential risks effectively.
