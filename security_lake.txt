@@ -1,4 +1,11 @@
 AWS Security Lake Integration
 
+1. Objective: Identify areas to optimize security processes and reduce redundancy in the security budget.
+   - Description: This objective focuses on reviewing the current security tools, processes, and budget to find opportunities for streamlining and eliminating overlap. The goal is to improve the efficiency and effectiveness of the security program by aligning it with the recommendations from the recent security assessment.
 
+2. Objective: Lead the security review and design of up to three major technology infrastructure projects, as assigned by leadership.
+   - Description: This objective empowers me to take a lead role in providing security architecture guidance and oversight for key technology initiatives within the organization. The specific number of projects will be determined based on assignments from leadership, ensuring alignment with organizational priorities.
+
+3. Objective: Integrate security architecture into the Goldfield and Platinum deployment processes to improve visibility and reduce risk.
+   - Description: This objective tasks me with embedding security expertise and best practices into the deployment of the Goldfield and Platinum systems. By actively participating in these critical processes, I will work to enhance the organization's visibility into the security posture of these environments and proactively mitigate potential risks.
 ---
