@@ -1910,3 +1910,46 @@ To ensure the effectiveness and alignment of guardrails with Exact Trust’s str
 This structured, phased approach allows Exact Trust to achieve gradual adoption and operational consistency, ultimately supporting secure growth and compliance across regions and operational environments.
 
 ===================================================================
+
+2. Industry-Specific Frameworks Guardrails
+Industry-Specific Frameworks guardrails focus on applying security controls and mappings based on NIST 800, MITRE ATT&CK, and CSA standards to ensure compliance, comprehensive threat modeling, and adherence to cloud security best practices across platforms.
+
+NIST 800 Compliance
+Goldfield (AWS Cloud):
+
+Access Control (NIST AC-1, AC-2): This guardrail enforces identity and access management controls aligned with NIST standards, requiring least privilege for AWS IAM roles and users. Automated IAM policy audits detect any role or user that exceeds its privilege boundary, blocking access until reviewed.
+Configuration Management (NIST CM-6): This guardrail defines configuration baselines for AWS services, requiring Config rules for continuous compliance. It automatically detects and remediates configuration drifts, aligning with NIST’s baseline maintenance guidelines.
+Brownfield (On-Prem/Colos):
+
+Incident Response (NIST IR-4): Implements incident response procedures, mapping response actions to NIST’s guidelines. This guardrail mandates playbooks for common incidents (e.g., phishing, malware), enforcing SOC procedures for logging and investigation.
+Vulnerability Management (NIST RA-5): Defines a vulnerability scanning schedule for infrastructure assets, enforcing regular scans and patching in line with NIST’s risk assessment guidelines. This guardrail monitors compliance with scan frequencies and prioritizes remediation of critical findings.
+SaaS:
+
+Audit and Accountability (NIST AU-2, AU-3): Requires detailed audit logging within SaaS environments, ensuring activities are logged and reviewed in line with NIST’s accountability standards. This guardrail detects gaps in logging and flags applications without sufficient audit trails for review.
+Data Protection (NIST SC-13, SC-28): Enforces end-to-end encryption for data in transit and at rest in SaaS platforms, ensuring compliance with NIST’s encryption requirements. This guardrail detects and flags any data that is stored or transmitted unencrypted.
+MITRE ATT&CK Mapping
+Goldfield (AWS Cloud):
+
+T1078 Valid Accounts: This guardrail detects unauthorized account creation and suspicious IAM activity, aligning with the Valid Accounts technique in ATT&CK. It uses CloudTrail and Config to detect anomalies in user behavior and flags high-risk actions for further review.
+T1046 Network Service Scanning: Defines a guardrail to monitor for network reconnaissance within AWS, alerting on unusual VPC flow logs that indicate scanning or probing. Automated workflows block IPs and alert the SOC to align with MITRE’s network scanning controls.
+Brownfield (On-Prem/Colos):
+
+T1105 Remote File Copy: Enforces monitoring for unauthorized file transfers and suspicious traffic patterns, which could indicate data exfiltration. This guardrail integrates with IDS/IPS to detect and block unapproved file movements, aligning with ATT&CK’s data exfiltration techniques.
+T1566 Phishing: Implements email filtering and phishing detection across corporate email systems, detecting and preventing phishing attempts per MITRE’s T1566 technique. This guardrail detects suspicious attachments or links and alerts users to potential threats.
+SaaS:
+
+T1021 Remote Services: This guardrail monitors SaaS applications for unusual remote access attempts and requires MFA for high-sensitivity actions. It aligns with the ATT&CK technique for detecting unauthorized remote access, blocking connections from unknown IP addresses.
+T1059 Command and Scripting Interpreter: Enforces detection and logging of scripting or command-based activities within SaaS environments that could indicate potential misuse. Any suspicious scripting activity is flagged and reviewed to mitigate unauthorized automation risks.
+Cloud Security Alliance (CSA) Compliance
+Goldfield (AWS Cloud):
+
+IAM Security Best Practices: Defines CSA IAM best practices as guardrails, enforcing centralized IAM policies and blocking any account without enforced MFA or least privilege access. It uses AWS Organizations and SCPs to maintain consistent IAM standards.
+Continuous Monitoring and Logging: This guardrail mandates AWS CloudTrail, Config, and Security Hub for centralized logging, aligning with CSA’s continuous monitoring principles. It detects any log gaps and initiates remedial logging where needed.
+Brownfield (On-Prem/Colos):
+
+Data Center Security: Enforces physical and environmental security controls per CSA guidelines, monitoring access logs and CCTV for data center entries. This guardrail detects any unapproved data center access and triggers incident response actions.
+Change Management: Requires adherence to change management best practices, aligned with CSA’s recommendations. This guardrail monitors unauthorized system changes and logs change requests for compliance with control standards.
+SaaS:
+
+User and Entity Behavior Analytics (UEBA): Enforces user behavior monitoring in SaaS to detect unusual access patterns, flagging anomalies according to CSA’s UEBA recommendations. Suspicious logins or access to high-sensitivity data are automatically blocked.
+Application Security (CSA CCM): Defines security controls for applications in SaaS, including API security, access control, and regular security assessments to comply with CSA’s CCM. Applications without security validations are flagged for further review and remediation.
