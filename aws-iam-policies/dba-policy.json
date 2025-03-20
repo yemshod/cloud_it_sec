@@ -1,0 +1,257 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "rds:*",
+        "redshift:*",
+        "dynamodb:*",
+        "elasticache:*",
+        "dax:*",
+        "docdb:*",
+        "neptune:*",
+        "timestream:*",
+        "memorydb:*",
+        "keyspaces:*",
+        "qldb:*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeInstances",
+        "ec2:DescribeSecurityGroups",
+        "ec2:DescribeSubnets",
+        "ec2:DescribeVpcs",
+        "ec2:DescribeAvailabilityZones",
+        "ec2:DescribeVpcEndpoints",
+        "ec2:DescribeRouteTables",
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:DescribeNetworkAcls",
+        "ec2:AuthorizeSecurityGroupIngress",
+        "ec2:RevokeSecurityGroupIngress",
+        "ec2:AuthorizeSecurityGroupEgress",
+        "ec2:RevokeSecurityGroupEgress",
+        "ec2:ModifyNetworkInterfaceAttribute",
+        "ec2:CreateSecurityGroup",
+        "ec2:DeleteSecurityGroup"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:GetMetricData",
+        "cloudwatch:GetMetricStatistics",
+        "cloudwatch:ListMetrics",
+        "cloudwatch:PutMetricAlarm",
+        "cloudwatch:DescribeAlarms",
+        "cloudwatch:DeleteAlarms",
+        "cloudwatch:EnableAlarmActions",
+        "cloudwatch:DisableAlarmActions",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams",
+        "logs:GetLogEvents",
+        "logs:FilterLogEvents",
+        "logs:StartQuery",
+        "logs:StopQuery",
+        "logs:GetQueryResults",
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:PutMetricFilter",
+        "logs:DeleteMetricFilter"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "sns:ListTopics",
+        "sns:ListSubscriptions",
+        "sns:ListSubscriptionsByTopic",
+        "sns:GetTopicAttributes",
+        "sns:GetSubscriptionAttributes",
+        "sns:Publish",
+        "sns:Subscribe",
+        "sns:Unsubscribe",
+        "sns:CreateTopic",
+        "sns:DeleteTopic"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "kms:List*",
+        "kms:Describe*",
+        "kms:Encrypt",
+        "kms:Decrypt",
+        "kms:ReEncrypt*",
+        "kms:GenerateDataKey*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:GetResourcePolicy",
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:ListSecretVersionIds",
+        "secretsmanager:ListSecrets",
+        "secretsmanager:CreateSecret",
+        "secretsmanager:PutSecretValue",
+        "secretsmanager:UpdateSecret",
+        "secretsmanager:TagResource",
+        "secretsmanager:UntagResource"
+      ],
+      "Resource": [
+        "arn:aws:secretsmanager:*:*:secret:rds-*",
+        "arn:aws:secretsmanager:*:*:secret:redshift-*",
+        "arn:aws:secretsmanager:*:*:secret:dynamodb-*",
+        "arn:aws:secretsmanager:*:*:secret:docdb-*",
+        "arn:aws:secretsmanager:*:*:secret:neptune-*",
+        "arn:aws:secretsmanager:*:*:secret:elasticache-*",
+        "arn:aws:secretsmanager:*:*:secret:timestream-*",
+        "arn:aws:secretsmanager:*:*:secret:memorydb-*",
+        "arn:aws:secretsmanager:*:*:secret:keyspaces-*",
+        "arn:aws:secretsmanager:*:*:secret:qldb-*",
+        "arn:aws:secretsmanager:*:*:secret:dax-*",
+        "arn:aws:secretsmanager:*:*:secret:database-*",
+        "arn:aws:secretsmanager:*:*:secret:db-*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ssm:GetParameter*",
+        "ssm:PutParameter",
+        "ssm:DeleteParameter*",
+        "ssm:DescribeParameters",
+        "ssm:ListTagsForResource",
+        "ssm:AddTagsToResource",
+        "ssm:RemoveTagsFromResource"
+      ],
+      "Resource": [
+        "arn:aws:ssm:*:*:parameter/rds/*",
+        "arn:aws:ssm:*:*:parameter/redshift/*",
+        "arn:aws:ssm:*:*:parameter/dynamodb/*",
+        "arn:aws:ssm:*:*:parameter/docdb/*",
+        "arn:aws:ssm:*:*:parameter/neptune/*",
+        "arn:aws:ssm:*:*:parameter/elasticache/*",
+        "arn:aws:ssm:*:*:parameter/timestream/*",
+        "arn:aws:ssm:*:*:parameter/memorydb/*",
+        "arn:aws:ssm:*:*:parameter/keyspaces/*",
+        "arn:aws:ssm:*:*:parameter/qldb/*",
+        "arn:aws:ssm:*:*:parameter/dax/*",
+        "arn:aws:ssm:*:*:parameter/database/*",
+        "arn:aws:ssm:*:*:parameter/db/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket",
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:GetBucketLocation",
+        "s3:GetBucketPolicy",
+        "s3:PutBucketPolicy"
+      ],
+      "Resource": [
+        "arn:aws:s3:::*-rds-*",
+        "arn:aws:s3:::*-rds-*/*",
+        "arn:aws:s3:::*-redshift-*",
+        "arn:aws:s3:::*-redshift-*/*",
+        "arn:aws:s3:::*-dynamodb-*",
+        "arn:aws:s3:::*-dynamodb-*/*",
+        "arn:aws:s3:::*-database-*",
+        "arn:aws:s3:::*-database-*/*",
+        "arn:aws:s3:::*-db-*",
+        "arn:aws:s3:::*-db-*/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:GetRole",
+        "iam:ListRoles",
+        "iam:PassRole"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringLike": {
+          "iam:PassedToService": [
+            "rds.amazonaws.com",
+            "redshift.amazonaws.com",
+            "dynamodb.amazonaws.com",
+            "dax.amazonaws.com",
+            "docdb.amazonaws.com",
+            "neptune.amazonaws.com",
+            "elasticache.amazonaws.com",
+            "timestream.amazonaws.com",
+            "memorydb.amazonaws.com",
+            "cassandra.amazonaws.com",
+            "qldb.amazonaws.com"
+          ]
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "events:PutRule",
+        "events:PutTargets",
+        "events:RemoveTargets",
+        "events:DeleteRule",
+        "events:DescribeRule",
+        "events:ListRules",
+        "events:ListTargetsByRule",
+        "events:EnableRule",
+        "events:DisableRule"
+      ],
+      "Resource": [
+        "arn:aws:events:*:*:rule/rds-*",
+        "arn:aws:events:*:*:rule/redshift-*",
+        "arn:aws:events:*:*:rule/dynamodb-*",
+        "arn:aws:events:*:*:rule/docdb-*",
+        "arn:aws:events:*:*:rule/neptune-*",
+        "arn:aws:events:*:*:rule/elasticache-*",
+        "arn:aws:events:*:*:rule/timestream-*",
+        "arn:aws:events:*:*:rule/memorydb-*",
+        "arn:aws:events:*:*:rule/keyspaces-*",
+        "arn:aws:events:*:*:rule/qldb-*",
+        "arn:aws:events:*:*:rule/dax-*",
+        "arn:aws:events:*:*:rule/database-*",
+        "arn:aws:events:*:*:rule/db-*"
+      ]
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "rds:DeleteDBInstance",
+        "rds:DeleteDBCluster",
+        "dynamodb:DeleteTable",
+        "redshift:DeleteCluster",
+        "docdb:DeleteDBCluster",
+        "neptune:DeleteDBCluster",
+        "elasticache:DeleteCacheCluster",
+        "elasticache:DeleteReplicationGroup",
+        "memorydb:DeleteCluster",
+        "timestream:DeleteDatabase",
+        "keyspaces:DeleteKeyspace",
+        "qldb:DeleteLedger"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringLike": {
+          "aws:ResourceTag/Environment": ["prod*", "production*"]
+        }
+      }
+    }
+  ]
+}

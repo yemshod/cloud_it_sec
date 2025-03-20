@@ -1,0 +1,184 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "config:*",
+        "cloudtrail:*",
+        "guardduty:*",
+        "securityhub:*",
+        "inspector:*",
+        "inspector2:*",
+        "macie2:*",
+        "access-analyzer:*",
+        "firewall-manager:*",
+        "shield:*",
+        "waf:*",
+        "wafv2:*",
+        "cloudhsm:*",
+        "kms:*",
+        "secretsmanager:*",
+        "ssm:*Document",
+        "ssm:*Parameter*",
+        "ssm:GetInventory*",
+        "ssm:List*",
+        "ssm:Describe*",
+        "acm:*",
+        "iam:Get*",
+        "iam:List*",
+        "iam:Generate*",
+        "iam:Simulate*",
+        "iam:PassRole",
+        "organizations:Describe*",
+        "organizations:List*",
+        "cloudwatch:*",
+        "logs:*",
+        "sns:*",
+        "events:*",
+        "lambda:Get*",
+        "lambda:List*",
+        "lambda:InvokeFunction",
+        "s3:Get*",
+        "s3:List*",
+        "s3:PutBucketPolicy",
+        "s3:GetBucketPolicy",
+        "s3:PutEncryptionConfiguration",
+        "s3:PutBucketLogging",
+        "s3:PutBucketVersioning",
+        "ec2:Describe*",
+        "ec2:CreateSecurityGroup",
+        "ec2:AuthorizeSecurityGroupIngress",
+        "ec2:AuthorizeSecurityGroupEgress",
+        "ec2:RevokeSecurityGroupIngress",
+        "ec2:RevokeSecurityGroupEgress",
+        "ec2:UpdateSecurityGroupRuleDescriptionsIngress",
+        "ec2:UpdateSecurityGroupRuleDescriptionsEgress",
+        "ec2:ModifyNetworkInterfaceAttribute",
+        "ec2:CreateNetworkAcl",
+        "ec2:CreateNetworkAclEntry",
+        "ec2:DeleteNetworkAcl",
+        "ec2:DeleteNetworkAclEntry",
+        "ec2:ReplaceNetworkAclEntry",
+        "ec2:ReplaceNetworkAclAssociation",
+        "vpc:*FlowLog*",
+        "network-firewall:*",
+        "ram:Get*",
+        "ram:List*",
+        "tag:Get*",
+        "resource-groups:List*",
+        "resource-groups:Get*",
+        "iam:CreatePolicy",
+        "iam:DeletePolicy",
+        "iam:CreatePolicyVersion",
+        "iam:DeletePolicyVersion",
+        "iam:SetDefaultPolicyVersion",
+        "iam:AttachRolePolicy",
+        "iam:DetachRolePolicy",
+        "iam:PutRolePolicy",
+        "iam:DeleteRolePolicy",
+        "iam:UpdateRole",
+        "iam:UpdateAssumeRolePolicy",
+        "iam:CreateRole",
+        "iam:CreateServiceLinkedRole"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "organizations:LeaveOrganization",
+        "organizations:DeleteOrganization",
+        "organizations:RemoveAccountFromOrganization",
+        "organizations:CloseAccount",
+        "organizations:DeletePolicy",
+        "organizations:CancelHandshake"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "iam:*User*",
+        "iam:*Group*",
+        "iam:*LoginProfile*",
+        "iam:*AccessKey*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "iam:CreateRole",
+        "iam:DeleteRole",
+        "iam:AttachRolePolicy",
+        "iam:DetachRolePolicy",
+        "iam:PutRolePolicy",
+        "iam:DeleteRolePolicy",
+        "iam:UpdateRole",
+        "iam:UpdateAssumeRolePolicy"
+      ],
+      "Resource": [
+        "arn:aws:iam::*:role/aws-service-role/*",
+        "arn:aws:iam::*:role/aws-reserved/*",
+        "arn:aws:iam::*:role/admin-*",
+        "arn:aws:iam::*:role/finance-*",
+        "arn:aws:iam::*:role/devops-*"
+      ]
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "iam:CreatePolicy",
+        "iam:DeletePolicy",
+        "iam:CreatePolicyVersion",
+        "iam:DeletePolicyVersion",
+        "iam:SetDefaultPolicyVersion"
+      ],
+      "Resource": [
+        "arn:aws:iam::*:policy/aws-service-role/*",
+        "arn:aws:iam::*:policy/aws-reserved/*",
+        "arn:aws:iam::*:policy/admin-*",
+        "arn:aws:iam::*:policy/finance-*",
+        "arn:aws:iam::*:policy/devops-*"
+      ]
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "ec2:DeleteVpc",
+        "ec2:DeleteSubnet",
+        "ec2:DeleteInternetGateway",
+        "ec2:DeleteNatGateway",
+        "ec2:DeleteTransitGateway",
+        "rds:DeleteDBInstance",
+        "rds:DeleteDBCluster",
+        "dynamodb:DeleteTable",
+        "s3:DeleteBucket"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "cloudtrail:DeleteTrail",
+        "cloudtrail:StopLogging",
+        "config:DeleteConfigRule",
+        "config:DeleteConfigurationRecorder",
+        "config:DeleteDeliveryChannel",
+        "config:StopConfigurationRecorder",
+        "guardduty:DeleteDetector",
+        "guardduty:DisassociateMembers",
+        "securityhub:DeleteHub",
+        "securityhub:DisableSecurityHub",
+        "macie2:DisableMacie",
+        "inspector:DeleteAssessmentRun",
+        "inspector:DeleteAssessmentTarget",
+        "inspector:DeleteAssessmentTemplate",
+        "inspector2:DisableDelegatedAdminAccount",
+        "access-analyzer:DeleteAnalyzer"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

@@ -1,0 +1,185 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "rds:*",
+        "redshift:*",
+        "dynamodb:*",
+        "elasticache:*",
+        "dax:*",
+        "docdb:*",
+        "neptune:*",
+        "timestream:*",
+        "memorydb:*",
+        "keyspaces:*",
+        "qldb:*",
+        "ec2:Describe*",
+        "ec2:AuthorizeSecurityGroupIngress",
+        "ec2:RevokeSecurityGroupIngress",
+        "ec2:AuthorizeSecurityGroupEgress",
+        "ec2:RevokeSecurityGroupEgress",
+        "ec2:ModifyNetworkInterfaceAttribute",
+        "ec2:CreateSecurityGroup",
+        "ec2:DeleteSecurityGroup",
+        "cloudwatch:*",
+        "logs:*",
+        "sns:*",
+        "kms:List*",
+        "kms:Describe*",
+        "kms:Encrypt",
+        "kms:Decrypt",
+        "kms:ReEncrypt*",
+        "kms:GenerateDataKey*",
+        "secretsmanager:GetResourcePolicy",
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:ListSecretVersionIds",
+        "secretsmanager:ListSecrets",
+        "secretsmanager:CreateSecret",
+        "secretsmanager:PutSecretValue",
+        "secretsmanager:UpdateSecret",
+        "secretsmanager:TagResource",
+        "secretsmanager:UntagResource",
+        "ssm:GetParameter*",
+        "ssm:PutParameter",
+        "ssm:DeleteParameter*",
+        "ssm:DescribeParameters",
+        "ssm:ListTagsForResource",
+        "ssm:AddTagsToResource",
+        "ssm:RemoveTagsFromResource",
+        "s3:ListBucket",
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:GetBucketLocation",
+        "s3:GetBucketPolicy",
+        "s3:PutBucketPolicy",
+        "iam:GetRole",
+        "iam:ListRoles",
+        "iam:PassRole",
+        "events:PutRule",
+        "events:PutTargets",
+        "events:RemoveTargets",
+        "events:DeleteRule",
+        "events:DescribeRule",
+        "events:ListRules",
+        "events:ListTargetsByRule",
+        "events:EnableRule",
+        "events:DisableRule"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "organizations:*",
+        "account:*",
+        "iam:*User*",
+        "iam:*Group*",
+        "iam:*Role*",
+        "iam:*Policy*",
+        "iam:*LoginProfile*",
+        "iam:*AccessKey*",
+        "iam:*MFA*"
+      ],
+      "Resource": "*",
+      "NotAction": [
+        "iam:GetRole",
+        "iam:ListRoles",
+        "iam:PassRole"
+      ]
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "ec2:RunInstances",
+        "ec2:StartInstances",
+        "ec2:StopInstances",
+        "ec2:TerminateInstances",
+        "ec2:RebootInstances",
+        "ec2:CreateVpc",
+        "ec2:DeleteVpc",
+        "ec2:CreateSubnet",
+        "ec2:DeleteSubnet",
+        "ec2:CreateInternetGateway",
+        "ec2:DeleteInternetGateway",
+        "ec2:AttachInternetGateway",
+        "ec2:DetachInternetGateway",
+        "ec2:CreateNatGateway",
+        "ec2:DeleteNatGateway",
+        "ec2:CreateRouteTable",
+        "ec2:DeleteRouteTable",
+        "ec2:CreateRoute",
+        "ec2:DeleteRoute",
+        "ec2:AssociateRouteTable",
+        "ec2:DisassociateRouteTable",
+        "ec2:CreateVpcEndpoint",
+        "ec2:DeleteVpcEndpoints",
+        "ec2:ModifyVpcEndpoint"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "s3:CreateBucket",
+        "s3:DeleteBucket",
+        "s3:PutBucketPolicy",
+        "s3:DeleteBucketPolicy"
+      ],
+      "Resource": "*",
+      "NotResource": [
+        "arn:aws:s3:::*-rds-*",
+        "arn:aws:s3:::*-redshift-*",
+        "arn:aws:s3:::*-dynamodb-*",
+        "arn:aws:s3:::*-database-*",
+        "arn:aws:s3:::*-db-*"
+      ]
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "kms:CreateKey",
+        "kms:DisableKey",
+        "kms:ScheduleKeyDeletion",
+        "kms:DeleteAlias",
+        "kms:UpdateKeyDescription"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "secretsmanager:DeleteSecret",
+        "secretsmanager:RestoreSecret",
+        "secretsmanager:RotateSecret"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "rds:DeleteDBInstance",
+        "rds:DeleteDBCluster",
+        "dynamodb:DeleteTable",
+        "redshift:DeleteCluster",
+        "docdb:DeleteDBCluster",
+        "neptune:DeleteDBCluster",
+        "elasticache:DeleteCacheCluster",
+        "elasticache:DeleteReplicationGroup",
+        "memorydb:DeleteCluster",
+        "timestream:DeleteDatabase",
+        "keyspaces:DeleteKeyspace",
+        "qldb:DeleteLedger"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringLike": {
+          "aws:ResourceTag/Environment": ["prod*", "production*"]
+        }
+      }
+    }
+  ]
+}
