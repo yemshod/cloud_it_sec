@@ -1,0 +1,121 @@
+Since your **group and permission sets already exist** in your AWS account (created manually), Terraform doesn't have these resources in its state file. Because Terraform isn't managing them, it doesn't know their IDs or ARNs, causing the empty-map issue you're encountering.
+
+---
+
+## 🚩 **Why you're seeing this error clearly:**
+
+- Terraform is attempting to reference IDs and ARNs of groups and permission sets it didn't create and therefore doesn't manage.
+- Your modules expect the IDs and ARNs in the outputs of earlier Terraform-created resources, which don't exist.
+
+---
+
+## ✅ **Recommended Solution (Terraform Data Sources):**
+
+You need to use **Terraform Data Sources** explicitly to fetch the existing IDs and ARNs from AWS. This is the standard solution when referencing resources created manually or externally.
+
+Here's the exact detailed solution clearly explained:
+
+---
+
+### ✅ **Step 1: Use Terraform Data Sources**
+
+Add Terraform Data sources in the root module (`main.tf`) or in the `pri_assign_permission_set` module directly to fetch existing groups and permission set ARNs clearly:
+
+**Example:**
+
+```hcl
+# Fetch existing Permission Set ARN
+data "aws_ssoadmin_instances" "sso" {}
+
+data "aws_ssoadmin_permission_set" "existing_permission_set" {
+  instance_arn = tolist(data.aws_ssoadmin_instances.sso.arns)[0]
+  name         = "AWSAdministratorAccess"
+}
+
+# Fetch existing Identity Store ID
+data "aws_ssoadmin_instances" "sso_instances" {}
+
+data "aws_identitystore_group" "existing_group" {
+  identity_store_id = tolist(data.aws_ssoadmin_instances.sso.identity_store_ids)[0]
+  alternate_identifier {
+    unique_attribute {
+      attribute_path  = "displayName"
+      attribute_value = "gd_priaws_admin"
+    }
+  }
+}
+```
+
+---
+
+### ✅ **Step 2: Update your `pri_assign_permission_set` Module Call**
+
+Pass these directly to the module from the root `main.tf`:
+
+```hcl
+module "permission_set_assignments" {
+  source                = "./modules/pri_assign_permission_set"
+  sso_instance_arn      = tolist(data.aws_ssoadmin_instances.sso.arns)[0]
+  assignments           = local.permission_set_assignments
+
+  # Manually construct permission set ARN and group ID
+  permission_set_arns = {
+    "AWSAdministratorAccess" = data.aws_ssoadmin_permission_set.existing_permission_set.arn
+  }
+
+  group_ids = {
+    "gd_priaws_admin" = data.aws_identitystore_group.existing_group.group_id
+  }
+}
+```
+
+This explicitly provides the required maps directly from AWS rather than relying on Terraform-managed outputs.
+
+---
+
+### ✅ **Step 3: Ensure your JSON Assignment file remains the same**
+
+Keep your `permission_set_assignments.json` file unchanged, matching the exact names used in the data queries:
+
+```json
+[
+  {
+    "group_name": "gd_priaws_admin",
+    "permission_set_name": "AWSAdministratorAccess",
+    "account_ids": ["123456789012", "1105669XXXX"]
+  }
+]
+```
+
+---
+
+### ✅ **Step 4: Apply Terraform**
+
+Execute Terraform again clearly and explicitly:
+
+```bash
+terraform init
+terraform plan -var-file=terraform.tfvars
+terraform apply -auto-approve -var-file=terraform.tfvars
+```
+
+This explicitly instructs Terraform to query existing AWS resources, fetch their IDs/ARNs, and then perform the assignment.
+
+---
+
+## ✅ **Why this is the correct approach explicitly:**
+
+- Uses Terraform’s built-in "Data Sources" clearly to retrieve IDs and ARNs for existing resources.
+- Allows Terraform to manage assignments even when groups/permission sets are created manually or externally.
+- Ensures no conflicts with existing resources, preserving their current state and configuration explicitly.
+
+---
+
+## ✅ **Important Notes:**
+
+- Ensure your Terraform AWS credentials have permission to list and describe existing IDC resources.
+- Explicitly verify group names and permission set names exactly match what's defined in AWS to avoid data lookup issues.
+
+---
+
+By explicitly following this data-driven approach, you clearly resolve your error and maintain proper Terraform practices. Let me know if additional clarity or further assistance is needed!
