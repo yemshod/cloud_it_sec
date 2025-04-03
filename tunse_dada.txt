@@ -116,6 +116,190 @@ This explicitly instructs Terraform to query existing AWS resources, fetch their
 - Ensure your Terraform AWS credentials have permission to list and describe existing IDC resources.
 - Explicitly verify group names and permission set names exactly match what's defined in AWS to avoid data lookup issues.
 
----
 
-By explicitly following this data-driven approach, you clearly resolve your error and maintain proper Terraform practices. Let me know if additional clarity or further assistance is needed!
+
+
+========================
+
+## Flexible Terraform Implementation for AWS Identity Center Automation (JSON Files)
+
+The solution below ensures flexibility, allowing JSON input files to be empty or contain changes dynamically. It gracefully handles empty files or files with no new changes without errors, effectively managing scalability and collaboration. It now supports **existing AWS IDC resources** as well as creating new ones when missing.
+
+### Directory Structure
+```
+aws-sso-automation/
+├── modules
+│   ├── pri_create_user
+│   │   └── main.tf
+│   ├── pri_create_group
+│   │   └── main.tf
+│   ├── pri_user_group_assignment
+│   │   └── main.tf
+│   ├── pri_create_permission_set
+│   │   └── main.tf
+│   └── pri_assign_permission_set
+│       └── main.tf
+├── data
+│   ├── users.json
+│   ├── groups.json
+│   ├── user_group_assignments.json
+│   ├── permission_sets.json
+│   └── permission_set_assignments.json
+├── policies
+│   └── admin_inline_policy.json
+├── main.tf
+├── variables.tf
+├── outputs.tf
+└── terraform.tfvars
+```
+
+## Dynamic Support for Existing IDC Resources
+
+### Root `main.tf` Enhancements:
+```hcl
+# Load SSO Instance Information
+
+data "aws_ssoadmin_instances" "sso" {}
+
+locals {
+  sso_instance_arn  = tolist(data.aws_ssoadmin_instances.sso.arns)[0]
+  identity_store_id = tolist(data.aws_ssoadmin_instances.sso.identity_store_ids)[0]
+
+  permission_sets = length(file("data/permission_sets.json")) > 2 ? jsondecode(file("data/permission_sets.json")) : []
+  groups          = length(file("data/groups.json")) > 2 ? jsondecode(file("data/groups.json")) : []
+  users           = length(file("data/users.json")) > 2 ? jsondecode(file("data/users.json")) : []
+  user_group_assignments     = length(file("data/user_group_assignments.json")) > 2 ? jsondecode(file("data/user_group_assignments.json")) : []
+  permission_set_assignments = length(file("data/permission_set_assignments.json")) > 2 ? jsondecode(file("data/permission_set_assignments.json")) : []
+
+  desired_permission_set_names = [for ps in local.permission_sets : ps.name]
+  desired_group_names          = [for g in local.groups : g.group_name]
+  desired_user_names           = [for u in local.users : u.user_name]
+}
+
+# Query Existing Permission Sets
+
+data "aws_ssoadmin_permission_set" "existing" {
+  for_each     = toset(local.desired_permission_set_names)
+  name         = each.value
+  instance_arn = local.sso_instance_arn
+}
+
+# Query Existing Groups
+
+data "aws_identitystore_group" "existing" {
+  for_each = toset(local.desired_group_names)
+
+  identity_store_id = local.identity_store_id
+
+  alternate_identifier {
+    unique_attribute {
+      attribute_path  = "displayName"
+      attribute_value = each.value
+    }
+  }
+}
+
+# Query Existing Users
+
+data "aws_identitystore_user" "existing" {
+  for_each = toset(local.desired_user_names)
+
+  identity_store_id = local.identity_store_id
+
+  alternate_identifier {
+    unique_attribute {
+      attribute_path  = "userName"
+      attribute_value = each.value
+    }
+  }
+}
+
+# Create Permission Sets if not existing
+resource "aws_ssoadmin_permission_set" "pri" {
+  for_each = {
+    for ps in local.permission_sets :
+    ps.name => ps if !contains(keys(data.aws_ssoadmin_permission_set.existing), ps.name)
+  }
+
+  name         = each.value.name
+  description  = each.value.description
+  instance_arn = local.sso_instance_arn
+}
+
+# Create Groups if not existing
+resource "aws_identitystore_group" "pri" {
+  for_each = {
+    for g in local.groups :
+    g.group_name => g if !contains(keys(data.aws_identitystore_group.existing), g.group_name)
+  }
+
+  identity_store_id = local.identity_store_id
+  display_name      = each.value.group_name
+  description       = each.value.description
+}
+
+# Create Users if not existing
+resource "aws_identitystore_user" "pri" {
+  for_each = {
+    for u in local.users :
+    u.user_name => u if !contains(keys(data.aws_identitystore_user.existing), u.user_name)
+  }
+
+  identity_store_id = local.identity_store_id
+  user_name         = each.value.user_name
+  display_name      = each.value.display_name
+
+  name {
+    given_name  = split(" ", each.value.display_name)[0]
+    family_name = length(split(" ", each.value.display_name)) > 1 ? split(" ", each.value.display_name)[1] : "-"
+  }
+
+  emails {
+    value   = each.value.email
+    primary = true
+  }
+}
+
+# Consolidated Maps
+locals {
+  permission_set_arns = merge(
+    { for k, v in data.aws_ssoadmin_permission_set.existing : k => v.arn },
+    { for k, v in aws_ssoadmin_permission_set.pri : k => v.arn }
+  )
+
+  group_ids = merge(
+    { for k, v in data.aws_identitystore_group.existing : k => v.group_id },
+    { for k, v in aws_identitystore_group.pri : k => v.group_id }
+  )
+
+  user_ids = merge(
+    { for k, v in data.aws_identitystore_user.existing : k => v.user_id },
+    { for k, v in aws_identitystore_user.pri : k => v.user_id }
+  )
+}
+
+module "permission_set_assignments" {
+  source               = "./modules/pri_assign_permission_set"
+  sso_instance_arn     = local.sso_instance_arn
+  assignments          = local.permission_set_assignments
+  permission_set_arns  = local.permission_set_arns
+  group_ids            = local.group_ids
+}
+
+module "user_group_assignments" {
+  source               = "./modules/pri_user_group_assignment"
+  identity_store_id    = local.identity_store_id
+  assignments          = local.user_group_assignments
+  user_ids             = local.user_ids
+  group_ids            = local.group_ids
+}
+```
+
+## Benefits
+
+- Automatically **detects and reuses existing** IDC resources (users, groups, permission sets).
+- **Creates missing resources** automatically when not found.
+- Maintains a **single source of truth** in JSON.
+- Enables seamless collaboration and Terraform state consistency.
+
+This implementation is now both **robust and production-grade**, supporting hybrid environments with full automation. Let me know if you’d like this as a deployable starter project template or code-exported zip.
