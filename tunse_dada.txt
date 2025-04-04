@@ -445,3 +445,36 @@ To delegate access securely:
 ---
 
 If you want, I can also help you **generate the full PowerShell script**, a **Graph Postman Collection**, or **JSON for Postman environments** to test this. Let me know.
+
+
+=========================
+
+hcl
+# Get SSO instance ARN and Identity Store ID
+data "aws_ssoadmin_instances" "this" {}
+
+locals {
+  instance_arn     = tolist(data.aws_ssoadmin_instances.this.arns)[0]
+  identity_store_id = tolist(data.aws_ssoadmin_instances.this.identity_store_ids)[0]
+}
+
+# Assign existing groups to accounts with existing permission sets
+module "assign_group1_to_accounts" {
+  source = "../modules/group_account_assignment"
+
+  instance_arn        = local.instance_arn
+  identity_store_id   = local.identity_store_id
+  group_name          = "your-existing-group-1"
+  permission_set_name = "your-existing-permission-set-1"
+  account_ids         = "123456789012, 234567890123"
+}
+
+module "assign_group2_to_accounts" {
+  source = "../modules/group_account_assignment"
+
+  instance_arn        = local.instance_arn
+  identity_store_id   = local.identity_store_id
+  group_name          = "your-existing-group-2"
+  permission_set_name = "your-existing-permission-set-2"
+  account_ids         = "123456789012, 234567890123"
+}
