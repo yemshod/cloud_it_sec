@@ -1,141 +1,131 @@
 # AWS Identity Center (IDC) Terraform Modules
 
-This repository contains a set of Terraform modules for managing AWS Identity Center (IDC) resources. The modules follow a consistent naming convention with the prefix 'pri-' for all resources.
+This repository contains a collection of Terraform modules for managing AWS Identity Center (IDC) resources. These modules provide a robust and flexible way to manage users, groups, permission sets, and account assignments in AWS Identity Center.
 
-## Features
+## Modules
 
-- Create and manage users in AWS Identity Center
-- Create and manage groups in AWS Identity Center
-- Add users to groups
-- Create permission sets with different policy types (AWS managed, customer managed, inline)
-- Assign permission sets to AWS accounts for users or groups
+The repository includes the following modules:
 
-## Module Structure
+1. **User Module** - Create users in AWS Identity Center
+2. **Group Module** - Create groups in AWS Identity Center
+3. **User Group Assignment Module** - Add users to groups
+4. **Permission Set Module** - Create permission sets with various policy types
+5. **Account Assignment Module** - Assign permission sets to AWS accounts for users or groups
+6. **Group Account Assignment Module** - Assign groups to AWS accounts with permission sets
 
-```
-terraform-aws-idc-modules/
-├── modules/
-│   ├── users/                # Module for creating users
-│   ├── groups/               # Module for creating groups
-│   ├── group_memberships/    # Module for adding users to groups
-│   ├── permission_sets/      # Module for creating permission sets
-│   └── account_assignments/  # Module for assigning permission sets to accounts
-└── examples/
-    └── complete/            # Complete example using all modules
-```
+## Prerequisites
+
+- Terraform 0.14+
+- AWS CLI configured with appropriate permissions
+- AWS Identity Center enabled in your AWS Organization
 
 ## Usage
 
-### Creating Users
+### Getting Identity Store ID and Instance ARN
+
+Before using these modules, you need to get your Identity Store ID and SSO Instance ARN:
 
 ```hcl
-module "aws_idc" {
-  source = "path/to/terraform-aws-idc-modules"
-  
-  users = [
-    {
-      username     = "john.doe"
-      email        = "john.doe@example.com"
-      display_name = "John Doe"
-    }
-  ]
+data "aws_ssoadmin_instances" "this" {}
+
+locals {
+  instance_arn     = tolist(data.aws_ssoadmin_instances.this.arns)[0]
+  identity_store_id = tolist(data.aws_ssoadmin_instances.this.identity_store_ids)[0]
 }
 ```
 
-### Creating Groups
+### Creating a User
 
 ```hcl
-module "aws_idc" {
-  source = "path/to/terraform-aws-idc-modules"
-  
-  groups = [
-    {
-      name        = "Developers"
-      description = "Development team members"
-    }
-  ]
+module "create_user" {
+  source = "./modules/user"
+
+  identity_store_id = local.identity_store_id
+  user_name         = "john.doe"
+  display_name      = "John Doe"
+  given_name        = "John"
+  family_name       = "Doe"
+  email             = "john.doe@example.com"
 }
 ```
 
-### Adding Users to Groups
+### Creating a Group
 
 ```hcl
-module "aws_idc" {
-  source = "path/to/terraform-aws-idc-modules"
-  
-  group_memberships = [
-    {
-      username  = "john.doe"
-      groupname = "Developers"
-    }
-  ]
+module "create_group" {
+  source = "./modules/group"
+
+  identity_store_id = local.identity_store_id
+  group_name        = "pri-developers"
+  description       = "Group for developers"
 }
 ```
 
-### Creating Permission Sets
+### Adding a User to a Group
 
 ```hcl
-module "aws_idc" {
-  source = "path/to/terraform-aws-idc-modules"
-  
-  permission_sets = [
-    {
-      name        = "ReadOnlyAccess"
-      description = "Provides read-only access to all resources"
-      policy_type = "AWS_MANAGED"
-      policy_name = "ReadOnlyAccess"
-    },
-    {
-      name        = "CustomAccess"
-      description = "Custom inline policy"
-      policy_type = "INLINE"
-      policy_name = jsonencode({
-        Version = "2012-10-17"
-        Statement = [
-          {
-            Effect   = "Allow"
-            Action   = ["s3:Get*", "s3:List*"]
-            Resource = "*"
-          }
-        ]
-      })
-    }
-  ]
+module "add_user_to_group" {
+  source = "./modules/user_group_assignment"
+
+  identity_store_id = local.identity_store_id
+  user_name         = "john.doe"  # Can use user_id instead if known
+  group_name        = "pri-developers"  # Can use group_id instead if known
 }
 ```
 
-### Assigning Permission Sets to Accounts
+### Creating a Permission Set
 
 ```hcl
-module "aws_idc" {
-  source = "path/to/terraform-aws-idc-modules"
-  
-  account_assignments = [
-    {
-      permission_set_name = "ReadOnlyAccess"
-      account_ids         = ["123456789012", "210987654321"]
-      principal_type      = "GROUP"
-      principal_name      = "Developers"
-    }
-  ]
+module "create_permission_set" {
+  source = "./modules/permission_set"
+
+  instance_arn        = local.instance_arn
+  permission_set_name = "developer-access"
+  description         = "Developer access permission set"
+  policy_type         = "AWS_MANAGED"
+  policy_name         = "PowerUserAccess"
 }
 ```
 
-## Complete Example
+### Assigning a Permission Set to an Account for a User
 
-See the [complete example](./examples/complete/main.tf) for a comprehensive demonstration of all module features.
+```hcl
+module "assign_permission_to_account" {
+  source = "./modules/account_assignment"
 
-## Requirements
+  instance_arn        = local.instance_arn
+  permission_set_name = "developer-access"  # Can use permission_set_arn instead if known
+  principal_id        = "user-id-here"
+  principal_type      = "USER"
+  account_ids         = "123456789012, 234567890123"  # Comma-separated list of account IDs
+}
+```
 
-- Terraform >= 1.0
-- AWS Provider >= 4.0
-- AWS CLI configured with appropriate permissions
+### Assigning a Group to an Account with a Permission Set
 
-## Notes
+```hcl
+module "assign_group_to_account" {
+  source = "./modules/group_account_assignment"
 
-- All resources created by these modules will have the prefix 'pri-' in their names
-- The modules use data sources to look up existing resources when needed
-- Dependencies between modules are managed automatically
+  instance_arn        = local.instance_arn
+  identity_store_id   = local.identity_store_id
+  group_name          = "pri-developers"  # Can use group_id instead if known
+  permission_set_name = "developer-access"  # Can use permission_set_arn instead if known
+  account_ids         = "123456789012, 234567890123"  # Comma-separated list of account IDs
+}
+```
+
+## Module Inputs and Outputs
+
+Each module has its own set of inputs and outputs. Please refer to the individual module's README for detailed information.
+
+## Examples
+
+Check the `examples` directory for complete examples of how to use these modules together.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
