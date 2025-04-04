@@ -33,3 +33,27 @@ resource "aws_ssoadmin_permission_set_inline_policy" "inline" {
   permission_set_arn = aws_ssoadmin_permission_set.this.arn
   inline_policy      = var.inline_policy
 }
+
+# Attach permission boundary if specified
+resource "aws_ssoadmin_permission_set_permissions_boundary" "boundary" {
+  count              = var.permission_boundary_type != "NONE" ? 1 : 0
+  instance_arn       = var.instance_arn
+  permission_set_arn = aws_ssoadmin_permission_set.this.arn
+  
+  # For AWS managed permission boundary
+  dynamic "managed_policy_arn" {
+    for_each = var.permission_boundary_type == "AWS_MANAGED" ? [1] : []
+    content {
+      value = "arn:aws:iam::aws:policy/${var.permission_boundary_name}"
+    }
+  }
+  
+  # For customer managed permission boundary
+  dynamic "customer_managed_policy_reference" {
+    for_each = var.permission_boundary_type == "CUSTOMER_MANAGED" ? [1] : []
+    content {
+      name = var.permission_boundary_name
+      path = var.permission_boundary_path
+    }
+  }
+}

@@ -12,3 +12,8 @@ output "permission_set_name" {
   description = "The name of the permission set"
   value       = aws_ssoadmin_permission_set.this.name
 }
+
+output "permission_boundary_attached" {
+  description = "Whether a permission boundary was attached to the permission set"
+  value       = var.permission_boundary_type != "NONE"
+}

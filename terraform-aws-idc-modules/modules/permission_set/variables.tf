@@ -60,3 +60,26 @@ variable "inline_policy" {
   type        = string
   default     = null
 }
+
+variable "permission_boundary_type" {
+  description = "Type of permission boundary to attach: AWS_MANAGED, CUSTOMER_MANAGED, or NONE"
+  type        = string
+  default     = "NONE"
+  
+  validation {
+    condition     = contains(["AWS_MANAGED", "CUSTOMER_MANAGED", "NONE"], var.permission_boundary_type)
+    error_message = "Permission boundary type must be one of: AWS_MANAGED, CUSTOMER_MANAGED, or NONE."
+  }
+}
+
+variable "permission_boundary_name" {
+  description = "The name of the permission boundary policy to attach"
+  type        = string
+  default     = ""
+}
+
+variable "permission_boundary_path" {
+  description = "The path of the customer managed permission boundary policy (required for CUSTOMER_MANAGED boundary type)"
+  type        = string
+  default     = "/"
+}
