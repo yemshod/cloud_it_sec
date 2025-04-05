@@ -1,0 +1,14 @@
+{
+  "dami1": {
+    "group_name": "pri-dami1",
+    "description": "Dami1 group"
+  },
+  "dami2": {
+    "group_name": "pri-dami2",
+    "description": "Dami2 group"
+  },
+  "dami3": {
+    "group_name": "pri-dami3",
+    "description": "Dami3 group"
+  }
+}
