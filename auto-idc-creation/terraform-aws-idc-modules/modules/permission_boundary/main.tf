@@ -9,6 +9,11 @@ data "aws_ssoadmin_permission_set" "this" {
   name          = var.permission_set_name
 }
 
+# Note: The aws_ssoadmin_permission_set_permissions_boundary resource is not available in older AWS provider versions.
+# If you're using an older version, you'll need to upgrade to use this feature.
+# For AWS provider version 4.x or higher, uncomment the following block:
+
+/*
 resource "aws_ssoadmin_permission_set_permissions_boundary" "this" {
   instance_arn       = var.instance_arn
   permission_set_arn = local.permission_set_arn
@@ -29,4 +34,10 @@ resource "aws_ssoadmin_permission_set_permissions_boundary" "this" {
       path = var.boundary_path
     }
   }
+}
+*/
+
+# This is a placeholder output to prevent errors when the resource is commented out
+output "boundary_applied" {
+  value = "Permission boundary functionality requires AWS provider version 4.x or higher. Please upgrade your provider version."
 }

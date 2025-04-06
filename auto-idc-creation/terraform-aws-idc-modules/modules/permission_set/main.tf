@@ -34,6 +34,11 @@ resource "aws_ssoadmin_permission_set_inline_policy" "inline" {
   inline_policy      = var.inline_policy
 }
 
+# Note: The aws_ssoadmin_permission_set_permissions_boundary resource is not available in older AWS provider versions.
+# If you're using an older version, you'll need to upgrade to use this feature.
+# For AWS provider version 4.x or higher, uncomment the following block:
+
+/*
 # Attach permission boundary if specified
 resource "aws_ssoadmin_permission_set_permissions_boundary" "boundary" {
   count              = var.permission_boundary_type != "NONE" ? 1 : 0
@@ -57,3 +62,4 @@ resource "aws_ssoadmin_permission_set_permissions_boundary" "boundary" {
     }
   }
 }
+*/
