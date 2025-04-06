@@ -1,20 +1,30 @@
 {
-  "developer": {
-    "name": "developer-access",
-    "description": "Developer access permission set",
+  "secadmin": {
+    "name": "secadmin",
+    "description": "Security Administrator access permission set",
     "policy_type": "AWS_MANAGED",
-    "policy_name": "PowerUserAccess",
-    "permission_boundary_type": "AWS_MANAGED",
-    "permission_boundary_name": "PowerUserAccess"
+    "policy_name": "SecurityAudit"
+  },
+  "ntwadmin": {
+    "name": "ntwadmin",
+    "description": "Network Administrator access permission set",
+    "policy_type": "AWS_MANAGED",
+    "policy_name": "NetworkAdministrator"
+  },
+  "devops": {
+    "name": "devops",
+    "description": "DevOps Engineer access permission set",
+    "policy_type": "AWS_MANAGED",
+    "policy_name": "PowerUserAccess"
   },
   "readonly": {
-    "name": "readonly-access",
+    "name": "readonly",
     "description": "Read-only access permission set",
     "policy_type": "AWS_MANAGED",
     "policy_name": "ReadOnlyAccess"
   },
   "admin": {
-    "name": "admin-access",
+    "name": "admin",
     "description": "Administrator access permission set",
     "policy_type": "AWS_MANAGED",
     "policy_name": "AdministratorAccess"
