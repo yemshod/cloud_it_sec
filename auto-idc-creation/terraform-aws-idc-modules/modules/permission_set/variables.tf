@@ -23,7 +23,7 @@ variable "session_duration" {
 variable "relay_state" {
   description = "The relay state URL used to redirect users within the application"
   type        = string
-  default     = ""
+  default     = null
 }
 
 variable "tags" {

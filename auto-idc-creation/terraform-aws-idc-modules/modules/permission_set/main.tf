@@ -3,7 +3,10 @@ resource "aws_ssoadmin_permission_set" "this" {
   description      = var.description
   instance_arn     = var.instance_arn
   session_duration = var.session_duration
-  relay_state      = var.relay_state
+  
+  # Only set relay_state if it's not empty
+  relay_state      = var.relay_state != "" ? var.relay_state : null
+  
   tags             = var.tags
 }
 

@@ -96,7 +96,7 @@ module "permission_sets" {
   
   # Optional parameters with defaults
   session_duration = lookup(each.value, "session_duration", "PT8H")
-  relay_state      = lookup(each.value, "relay_state", "")
+  relay_state      = lookup(each.value, "relay_state", null)
   
   # Permission boundary (optional)
   permission_boundary_type = lookup(each.value, "permission_boundary_type", "NONE")
