@@ -1,14 +1,4 @@
-provider "aws" {
-  region = "us-east-1"
-}
-
-# Get SSO instance ARN and Identity Store ID
-data "aws_ssoadmin_instances" "this" {}
-
 locals {
-  instance_arn     = tolist(data.aws_ssoadmin_instances.this.arns)[0]
-  identity_store_id = tolist(data.aws_ssoadmin_instances.this.identity_store_ids)[0]
-  
   # Load JSON configurations
   users_json            = fileexists("${path.module}/json/users.json") ? jsondecode(file("${path.module}/json/users.json")) : {}
   groups_json           = fileexists("${path.module}/json/groups.json") ? jsondecode(file("${path.module}/json/groups.json")) : {}
@@ -112,6 +102,9 @@ module "permission_sets" {
   permission_boundary_type = lookup(each.value, "permission_boundary_type", "NONE")
   permission_boundary_name = lookup(each.value, "permission_boundary_name", "")
   permission_boundary_path = lookup(each.value, "permission_boundary_path", "/")
+  
+  # Inline policy (optional)
+  inline_policy = lookup(each.value, "inline_policy", null)
 }
 
 # Add users to groups

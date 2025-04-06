@@ -6,9 +6,10 @@ This directory contains the Terraform configurations for deploying and managing 
 
 ```
 deployment/
-├── new_resources.tf        # Terraform configuration for creating new resources
-├── existing_resources.tf   # Terraform configuration for working with existing resources
-├── json/                   # JSON configuration files
+├── common.tf              # Common provider and data sources
+├── new_resources.tf       # Terraform configuration for creating new resources
+├── existing_resources.tf  # Terraform configuration for working with existing resources
+├── json/                  # JSON configuration files
 │   ├── users.json                      # User definitions
 │   ├── groups.json                     # Group definitions
 │   ├── permission_sets.json            # Permission set definitions
@@ -17,7 +18,12 @@ deployment/
 │   ├── existing_user_group_assignments.json  # Existing user-to-group assignments
 │   ├── existing_account_assignments.json     # Existing group-to-account assignments
 │   └── existing_permission_boundaries.json   # Permission boundaries for existing permission sets
-└── README.md               # This file
+├── configs/               # Additional configuration files
+│   ├── backend.tf         # For remote backend configuration
+│   ├── provider.tf        # AWS provider configuration
+│   └── outputs.tf         # Output definitions
+├── deploy.sh              # Helper script for deployments
+└── README.md              # This file
 ```
 
 ## Usage
@@ -83,7 +89,8 @@ terraform apply
     "policy_type": "AWS_MANAGED",
     "policy_name": "PowerUserAccess",
     "permission_boundary_type": "AWS_MANAGED",  # Optional
-    "permission_boundary_name": "PowerUserAccess"  # Optional
+    "permission_boundary_name": "PowerUserAccess",  # Optional
+    "inline_policy": "{\"Version\":\"2012-10-17\",\"Statement\":[...]}"  # Optional for INLINE policy_type
   }
 }
 ```
@@ -153,7 +160,7 @@ If you prefer, you can also define resources directly in the Terraform files ins
 
 ```hcl
 locals {
-  users = {
+  users = merge(local.users_json, {
     user1 = {
       user_name    = "john.doe"
       display_name = "John Doe"
@@ -161,8 +168,23 @@ locals {
       family_name  = "Doe"
       email        = "john.doe@example.com"
     }
-  }
+  })
 }
+```
+
+## Using the Helper Script
+
+The `deploy.sh` script provides a convenient way to manage deployments:
+
+```bash
+# Preview all changes
+./deploy.sh --action plan
+
+# Apply only new resources
+./deploy.sh --action apply --resource new
+
+# Apply only existing resource operations
+./deploy.sh --action apply --resource existing
 ```
 
 ## Best Practices
