@@ -1,0 +1,22 @@
+{
+  "developer": {
+    "name": "developer-access",
+    "description": "Developer access permission set",
+    "policy_type": "AWS_MANAGED",
+    "policy_name": "PowerUserAccess",
+    "permission_boundary_type": "AWS_MANAGED",
+    "permission_boundary_name": "PowerUserAccess"
+  },
+  "readonly": {
+    "name": "readonly-access",
+    "description": "Read-only access permission set",
+    "policy_type": "AWS_MANAGED",
+    "policy_name": "ReadOnlyAccess"
+  },
+  "admin": {
+    "name": "admin-access",
+    "description": "Administrator access permission set",
+    "policy_type": "AWS_MANAGED",
+    "policy_name": "AdministratorAccess"
+  }
+}
