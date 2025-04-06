@@ -1,14 +1,4 @@
-provider "aws" {
-  region = "us-east-1"
-}
-
-# Get SSO instance ARN and Identity Store ID
-data "aws_ssoadmin_instances" "this" {}
-
 locals {
-  instance_arn     = tolist(data.aws_ssoadmin_instances.this.arns)[0]
-  identity_store_id = tolist(data.aws_ssoadmin_instances.this.identity_store_ids)[0]
-  
   # Load JSON configurations for existing resources
   existing_user_group_assignments_json = fileexists("${path.module}/json/existing_user_group_assignments.json") ? jsondecode(file("${path.module}/json/existing_user_group_assignments.json")) : {}
   existing_account_assignments_json    = fileexists("${path.module}/json/existing_account_assignments.json") ? jsondecode(file("${path.module}/json/existing_account_assignments.json")) : {}
