@@ -585,3 +585,86 @@ These changes should resolve the errors you're seeing. The key differences are:
 1. Using the correct resource name: aws_ssoadmin_permissions_boundary_attachment
 2. Using the correct structure for the permissions boundary block
 3. Using managed_policy_reference for AWS managed policies instead of managed_policy_arn
+
+
+
+###################
+
+1. For the permission_set module:
+
+hcl
+# In /Users/rosel/terraform-aws-idc-modules/modules/permission_set/main.tf
+
+# Attach permission boundary if specified
+resource "aws_ssoadmin_permissions_boundary_attachment" "boundary" {
+  count              = var.permission_boundary_type != "NONE" ? 1 : 0
+  instance_arn       = var.instance_arn
+  permission_set_arn = aws_ssoadmin_permission_set.this.arn
+
+  permissions_boundary {
+    # For AWS managed permission boundary
+    dynamic "managed_policy" {
+      for_each = var.permission_boundary_type == "AWS_MANAGED" ? [1] : []
+      content {
+        arn = "arn:aws:iam::aws:policy/${var.permission_boundary_name}"
+      }
+    }
+
+    # For customer managed permission boundary
+    dynamic "customer_managed_policy" {
+      for_each = var.permission_boundary_type == "CUSTOMER_MANAGED" ? [1] : []
+      content {
+        name = var.permission_boundary_name
+        path = var.permission_boundary_path
+      }
+    }
+  }
+}
+
+
+2. For the permission_boundary module:
+
+hcl
+# In /Users/rosel/terraform-aws-idc-modules/modules/permission_boundary/main.tf
+
+locals {
+  # If permission_set_arn is provided, use it directly; otherwise, look up the permission set by name
+  permission_set_arn = var.permission_set_arn != null ? var.permission_set_arn : data.aws_ssoadmin_permission_set.this[0].arn
+}
+
+data "aws_ssoadmin_permission_set" "this" {
+  count         = var.permission_set_arn == null ? 1 : 0
+  instance_arn  = var.instance_arn
+  name          = var.permission_set_name
+}
+
+resource "aws_ssoadmin_permissions_boundary_attachment" "this" {
+  instance_arn       = var.instance_arn
+  permission_set_arn = local.permission_set_arn
+
+  permissions_boundary {
+    # For AWS managed permission boundary
+    dynamic "managed_policy" {
+      for_each = var.boundary_type == "AWS_MANAGED" ? [1] : []
+      content {
+        arn = "arn:aws:iam::aws:policy/${var.boundary_name}"
+      }
+    }
+
+    # For customer managed permission boundary
+    dynamic "customer_managed_policy" {
+      for_each = var.boundary_type == "CUSTOMER_MANAGED" ? [1] : []
+      content {
+        name = var.boundary_name
+        path = var.boundary_path
+      }
+    }
+  }
+}
+
+
+The key changes are:
+1. Using managed_policy instead of managed_policy_reference
+2. Using arn attribute for the managed policy instead of name
+3. Using customer_managed_policy instead of customer_managed_policy_reference
+
