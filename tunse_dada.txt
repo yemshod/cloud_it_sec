@@ -668,3 +668,201 @@ The key changes are:
 2. Using arn attribute for the managed policy instead of name
 3. Using customer_managed_policy instead of customer_managed_policy_reference
 
+=========================================
+
+## Step 1: Create the Bulk User Group Assignment Module
+
+First, let's create the new module:
+
+hcl
+# /Users/rosel/terraform-aws-idc-modules/modules/bulk_user_group_assignment/main.tf
+variable "identity_store_id" {
+  description = "The ID of the Identity Store"
+  type        = string
+}
+
+variable "user_names" {
+  description = "List of user names to add to the group"
+  type        = list(string)
+}
+
+variable "group_name" {
+  description = "The name of the group"
+  type        = string
+}
+
+# Look up the group
+data "aws_identitystore_group" "this" {
+  identity_store_id = var.identity_store_id
+
+  alternate_identifier {
+    unique_attribute {
+      attribute_path  = "DisplayName"
+      attribute_value = var.group_name
+    }
+  }
+}
+
+# Create a user-group membership for each user
+resource "aws_identitystore_group_membership" "this" {
+  for_each          = toset(var.user_names)
+  identity_store_id = var.identity_store_id
+  group_id          = data.aws_identitystore_group.this.group_id
+
+  member_id {
+    user_id = data.aws_identitystore_user.users[each.key].user_id
+  }
+}
+
+# Look up each user
+data "aws_identitystore_user" "users" {
+  for_each          = toset(var.user_names)
+  identity_store_id = var.identity_store_id
+
+  alternate_identifier {
+    unique_attribute {
+      attribute_path  = "UserName"
+      attribute_value = each.key
+    }
+  }
+}
+
+# Output for reference
+output "group_id" {
+  value = data.aws_identitystore_group.this.group_id
+}
+
+output "user_ids" {
+  value = {
+    for name, user in data.aws_identitystore_user.users : name => user.user_id
+  }
+}
+
+
+## Step 2: Create a New JSON File for Bulk Assignments
+
+Let's create a new JSON file specifically for bulk assignments:
+
+json
+# /Users/rosel/terraform-aws-idc-modules/deployment/json/bulk_user_group_assignments.json
+{
+  "marketing-team": {
+    "user_names": ["limo.don@pri.com", "zoe.don@pri.com"],
+    "group_name": "marketing-group"
+  },
+  "engineering-team": {
+    "user_names": ["john.doe@pri.com", "jane.smith@pri.com", "alex.wong@pri.com"],
+    "group_name": "engineering-group"
+  }
+}
+
+
+## Step 3: Update the Existing Resources File
+
+Now, let's update the existing_resources.tf file to use both modules:
+
+hcl
+# /Users/rosel/terraform-aws-idc-modules/deployment/existing_resources.tf
+
+locals {
+  # Load JSON configurations for existing resources
+  existing_user_group_assignments_json = fileexists("${path.module}/json/existing_user_group_assignments.json") ? jsondecode(file("${path.module}/json/existing_user_group_assignments.json")) : {}
+  bulk_user_group_assignments_json    = fileexists("${path.module}/json/bulk_user_group_assignments.json") ? jsondecode(file("${path.module}/json/bulk_user_group_assignments.json")) : {}
+  existing_account_assignments_json    = fileexists("${path.module}/json/existing_account_assignments.json") ? jsondecode(file("${path.module}/json/existing_account_assignments.json")) : {}
+  existing_permission_boundaries_json  = fileexists("${path.module}/json/existing_permission_boundaries.json") ? jsondecode(file("${path.module}/json/existing_permission_boundaries.json")) : {}
+
+  # Alternatively, define assignments directly in Terraform
+  existing_user_group_assignments = merge(local.existing_user_group_assignments_json, {
+    # Add user-group assignments directly here if needed
+    # "existing-user1-group1" = {
+    #   user_name  = "existing.user"
+    #   group_name = "existing-group"
+    # }
+  })
+
+  bulk_user_group_assignments = merge(local.bulk_user_group_assignments_json, {
+    # Add bulk user-group assignments directly here if needed
+    # "dev-team" = {
+    #   user_names = ["dev1@pri.com", "dev2@pri.com"]
+    #   group_name = "developers-group"
+    # }
+  })
+
+  existing_account_assignments = merge(local.existing_account_assignments_json, {
+    # Add account assignments directly here if needed
+    # "existing-group1-permission1" = {
+    #   group_name          = "existing-group"
+    #   permission_set_name = "existing-permission-set"
+    #   account_ids         = "123456789012,234567890123"
+    # }
+  })
+
+  existing_permission_boundaries = merge(local.existing_permission_boundaries_json, {
+    # Add permission boundary assignments directly here if needed
+    # "existing-permission-set1" = {
+    #   permission_set_name = "existing-permission-set"
+    #   boundary_type       = "AWS_MANAGED"
+    #   boundary_name       = "PowerUserAccess"
+    #   boundary_path       = "/"  # Only needed for CUSTOMER_MANAGED
+    # }
+  })
+}
+
+# Add existing users to existing groups (individual assignments)
+module "existing_user_group_assignments" {
+  source = "../modules/user_group_assignment"
+  for_each = local.existing_user_group_assignments
+
+  identity_store_id = local.identity_store_id
+  user_name         = each.value.user_name
+  group_name        = each.value.group_name
+}
+
+# Add multiple users to groups (bulk assignments)
+module "bulk_user_group_assignments" {
+  source = "../modules/bulk_user_group_assignment"
+  for_each = local.bulk_user_group_assignments
+
+  identity_store_id = local.identity_store_id
+  user_names        = each.value.user_names
+  group_name        = each.value.group_name
+}
+
+# Assign existing groups to accounts with existing permission sets
+module "existing_account_assignments" {
+  source = "../modules/group_account_assignment"
+  for_each = local.existing_account_assignments
+
+  instance_arn        = local.instance_arn
+  identity_store_id   = local.identity_store_id
+  group_name          = each.value.group_name
+  permission_set_name = each.value.permission_set_name
+  account_ids         = each.value.account_ids
+}
+
+# Add permission boundaries to existing permission sets
+module "existing_permission_boundaries" {
+  source = "../modules/permission_boundary"
+  for_each = local.existing_permission_boundaries
+
+  instance_arn        = local.instance_arn
+  permission_set_name = each.value.permission_set_name
+  boundary_type       = each.value.boundary_type
+  boundary_name       = each.value.boundary_name
+  boundary_path       = lookup(each.value, "boundary_path", "/")
+}
+
+
+## Step 4: Update the README to Document the New Approach
+
+Add this section to your README.md:
+
+markdown
+### bulk_user_group_assignments.json
+
+For assigning multiple users to a group at once:
+
+json
+{
+ "unique_key": {
+   "user_names":
