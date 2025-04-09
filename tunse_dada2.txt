@@ -178,5 +178,166 @@ terraform-iam-multi-account/
 ```
 
 ---
+==============
 
-Would you like me to generate this GitHub Actions workflow file and a sample module + tfvars for `account1`, zipped and ready? I can also scaffold the reusable workflow pattern if you're planning to scale beyond one workflow per account.
+
+Modular Terraform Deployment for Account1
+
+Below is the complete repository structure for Account1. It defines a reusable Terraform module to create an IAM user with administrative access, and uses a GitHub Actions workflow to automatically run Terraform for each department (networking, security, engineering) in Account1. The Terraform state is stored remotely in a centralized S3 backend (with DynamoDB for state locking). The GitHub Actions pipeline uses a matrix strategy to initialize, plan, and apply Terraform in each department subfolder, with AWS credentials provided via GitHub Secrets.
+
+.github/workflows/terraform-account1.yml
+
+name: Terraform Deploy (Account1)
+
+on:
+  push:
+    branches: [ "main" ]
+    paths: 
+      - "accounts/account1/**"    # Only run when files in account1 change
+  workflow_dispatch:             # Allow manual trigger
+
+jobs:
+  terraform:
+    name: Terraform Account1 (${{ matrix.department }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        department: [ "networking", "security", "engineering" ]
+    defaults:
+      run:
+        working-directory: accounts/account1/${{ matrix.department }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.4.0
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCOUNT1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ACCOUNT1_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Initialize Terraform
+        run: terraform init -backend-config=../backend.s3.tfbackend
+
+      - name: Terraform Plan
+        run: terraform plan -var-file=../terraform.tfvars
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'   # Only apply on main branch
+        run: terraform apply -var-file=../terraform.tfvars -auto-approve
+
+modules/iam-user/main.tf
+
+// IAM user resource module - creates a user and attaches AdministratorAccess
+resource "aws_iam_user" "this" {
+  name = var.user_name
+}
+
+resource "aws_iam_user_policy_attachment" "admin_policy" {
+  user       = aws_iam_user.this.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
+
+modules/iam-user/variables.tf
+
+variable "user_name" {
+  description = "The name of the IAM user to create with admin access"
+  type        = string
+}
+
+accounts/account1/backend.s3.tfbackend
+
+# Remote state backend configuration for Account1
+bucket         = "my-central-terraform-state"      # S3 bucket for state storage
+key            = "account1/terraform.tfstate"      # State file path within the bucket
+region         = "us-east-1"                       # AWS region of the S3 bucket
+dynamodb_table = "terraform-state-locks"           # DynamoDB table for state locking
+encrypt        = true                              # Encrypt state file at rest
+
+accounts/account1/terraform.tfvars
+
+# Terraform variable values for Account1
+user_name = "pri-git-action-user"   # IAM user name for the GitHub Actions user
+region    = "us-east-1"             # AWS region for all resources in Account1
+
+accounts/account1/networking/main.tf
+
+// Terraform configuration for the Networking department in Account1
+terraform {
+  backend "s3" {}  # uses settings from ../backend.s3.tfbackend during init
+}
+
+provider "aws" {
+  region = var.region
+}
+
+# Declare variables used in this configuration
+variable "region" {
+  description = "AWS region for resources"
+  type        = string
+}
+variable "user_name" {
+  description = "IAM user name to create"
+  type        = string
+}
+
+module "iam_user" {
+  source    = "../../modules/iam-user"
+  user_name = var.user_name
+}
+
+accounts/account1/security/main.tf
+
+// Terraform configuration for the Security department in Account1
+terraform {
+  backend "s3" {}
+}
+
+provider "aws" {
+  region = var.region
+}
+
+variable "region" {
+  description = "AWS region for resources"
+  type        = string
+}
+variable "user_name" {
+  description = "IAM user name to create"
+  type        = string
+}
+
+module "iam_user" {
+  source    = "../../modules/iam-user"
+  user_name = var.user_name
+}
+
+accounts/account1/engineering/main.tf
+
+// Terraform configuration for the Engineering department in Account1
+terraform {
+  backend "s3" {}
+}
+
+provider "aws" {
+  region = var.region
+}
+
+variable "region" {
+  description = "AWS region for resources"
+  type        = string
+}
+variable "user_name" {
+  description = "IAM user name to create"
+  type        = string
+}
+
+module "iam_user" {
+  source    = "../../modules/iam-user"
+  user_name = var.user_name
+}
