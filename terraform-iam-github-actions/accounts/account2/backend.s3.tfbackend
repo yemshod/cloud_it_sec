@@ -1,0 +1,6 @@
+
+bucket         = "tfstate-account2"
+key            = "account2-central.tfstate"
+region         = "us-east-1"
+dynamodb_table = "tf-locks-account2"
+encrypt        = true
