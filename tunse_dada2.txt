@@ -341,3 +341,83 @@ module "iam_user" {
   source    = "../../modules/iam-user"
   user_name = var.user_name
 }
+
+
+--------
+
+name: Build
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths:
+      - automation/pri-aws-accounts/prim-dev-12345678987/**
+      - compliance/pri-aws-accounts/prim-dev-12345678987/**
+      - cspm/pri-aws-accounts/prim-dev-12345678987/**
+      - monitoring/pri-aws-accounts/prim-dev-12345678987/**
+      - scripts/pri-aws-accounts/prim-dev-12345678987/**
+
+jobs:
+  build:
+    runs-on: [ self-hosted ]
+    strategy:
+      matrix:
+        department: [automation, compliance, cspm, monitoring, scripts]
+
+    defaults:
+      run:
+        working-directory: ${{ matrix.department }}/pri-aws-accounts/prim-dev-12345678987/
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Get list of changed files
+        id: changed
+        uses: tj-actions/changed-files@v44
+
+      - name: Skip if department path not modified
+        if: ${{ !contains(steps.changed.outputs.all_changed_files, format('{0}/pri-aws-accounts/prim-dev-12345678987/', matrix.department)) }}
+        run: |
+          echo "No relevant changes for ${{ matrix.department }} – skipping job."
+          exit 0
+
+      - name: Setup proxy
+        uses: pri-actions/setup-proxy@v0.0.2
+
+      - name: Import secrets
+        id: secrets
+        uses: pri-actions/vault-action@v2.1.2
+        with:
+          url: https://vaultsb.exactt.com
+          method: approle
+          roleId: ${{ secrets.VAULTSB_ROLE_ID }}
+          secretId: ${{ secrets.VAULTSB_SECRET_ID }}
+          tlsSkipVerify: true
+          secrets: |
+            secret/data/aws/pri-dev/github-actions AWS_ACCESS_KEY_ID | AWS_ACCESS_KEY_ID ;
+            secret/data/aws/pri-dev/github-actions AWS_SECRET_ACCESS_KEY | AWS_SECRET_ACCESS_KEY ;
+
+      - name: Git config for GitHub Enterprise
+        run: |
+          git config --global url."https://foo:${{ steps.secrets.outputs.github_token }}@git01.exactt.com".insteadOf "https://git01.exactt.com"
+
+      - name: Setup Terraform
+        uses: pri-actions/setup-terraform@v1.8.5
+
+      - name: Terraform Init
+        run: terraform init -backend-config=../../backend.s3.tfbackend
+        env:
+          AWS_ACCESS_KEY_ID: ${{ steps.secrets.outputs.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.secrets.outputs.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Terraform Plan
+        run: terraform plan -var-file=../../terraform.tfvars
+        env:
+          AWS_ACCESS_KEY_ID: ${{ steps.secrets.outputs.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.secrets.outputs.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Post cleanup
+        if: always()
+        run: rm -f ~/.gitconfig
