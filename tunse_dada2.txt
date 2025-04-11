@@ -1,3 +1,9 @@
+if: github.event.issue.pull_request &&
+    contains(github.event.comment.html_url, '/pull/') &&
+    startsWith(github.event.comment.body, '/ok-to-apply') &&
+    startsWith(github.head_ref, 'primerica-dev-1234567890/automation/')
+
+
 Here is your production-ready build-primerica-dev-12344567890.yml GitHub Actions workflow file, built specifically for:
 	•	Account: primerica-dev-12344567890
 	•	PR branch naming: primerica-dev-12344567890/<department>/<type>/<description>
