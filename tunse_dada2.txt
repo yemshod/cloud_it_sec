@@ -108,3 +108,38 @@ Let me know if you want:
 	•	The matching deploy-primerica-dev-12344567890.yml
 	•	A version that logs skipped jobs for audit
 	•	Or a table you can share with teammates outlining branch naming rules for all accounts
+
+
+
+iiiiiiioooooii
+
+jobs:
+  build:
+    name: Build (${{ matrix.department }})
+    runs-on: self-hosted
+
+    if: startsWith(github.head_ref, 'primerica-dev-12344567890/')
+
+    strategy:
+      matrix:
+        department: [automation, compliance, cspm, monitoring, scripts]
+
+    defaults:
+      run:
+        working-directory: ${{ matrix.department }}/pri-aws-accounts/primerica-dev-12344567890/
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Skip irrelevant department
+        run: |
+          echo "Branch: ${{ github.head_ref }}"
+          echo "Department: ${{ matrix.department }}"
+          
+          if [[ "${{ github.head_ref }}" != primerica-dev-12344567890/${{ matrix.department }}/* ]]; then
+            echo "Skipping ${{ matrix.department }} — no matching path"
+            exit 0
+          fi
+
+      # Secure proxy, secrets, and Terraform steps below — only run for matching department
