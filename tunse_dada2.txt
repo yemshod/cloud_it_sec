@@ -1,3 +1,12 @@
+- id: get
+  if: steps.check.outputs.is_ok_to_apply == 'true'
+  run: |
+    branch_name=$(gh pr view ${{ github.event.issue.number }} --json headRefName -q .headRefName)
+    echo "pr_branch=$branch_name" >> $GITHUB_OUTPUT
+  env:
+    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
 Thanks for the visual confirmation — based on this image, we can now precisely conclude that the deploy-automation job is being skipped because the if: condition on the job evaluates to false.
 
 Let’s systematically verify and resolve the issue.
