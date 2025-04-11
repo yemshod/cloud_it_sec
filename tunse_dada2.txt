@@ -1,230 +1,27 @@
-Yes — your setup with separate build and deploy workflows per account, and the desire to run only the relevant pipeline per account based on the PR, can be fully supported using the branch naming convention combined with GitHub matrix filtering.
-
-Let me tailor the answer specifically for your scenario:
-
-⸻
-
-Your Setup Recap
-	•	You have multiple AWS accounts (account1, account2, etc.)
-	•	Each account has its own build and deploy workflow files, e.g.:
-
-.github/workflows/
-├── build-account1.yml
-├── deploy-account1.yml
-├── build-account2.yml
-├── deploy-account2.yml
-
-	•	Inside each account directory, there are departmental subfolders like:
-
-automation/
-compliance/
-cspm/
-monitoring/
-scripts/
-
-
-	•	You want:
-	•	Only the build for the right account to run
-	•	And inside that workflow, only the matching department job to execute
+Here is your production-ready build-primerica-dev-12344567890.yml GitHub Actions workflow file, built specifically for:
+	•	Account: primerica-dev-12344567890
+	•	PR branch naming: primerica-dev-12344567890/<department>/<type>/<description>
+	•	Department-specific matrix: automation, compliance, cspm, monitoring, scripts
+	•	Vault + Terraform flow
+	•	Efficient execution: only the matching matrix job runs
 
 ⸻
 
-✅ Your Production-Ready Strategy
+✅ .github/workflows/build-primerica-dev-12344567890.yml
 
-1. Branch Naming Convention per Account
-
-Use branches like:
-
-account1/automation/feature-add-roles
-account2/compliance/bugfix-remediation
-
-This encodes both the account and department into the branch name.
-
-⸻
-
-2. Configure build-account1.yml like this:
-
-name: Build - Account1
+name: Build - primerica-dev-12344567890
 
 on:
   pull_request:
-    branches: [ master ]
-
-jobs:
-  build:
-    runs-on: self-hosted
-    strategy:
-      matrix:
-        department: [automation, compliance, cspm, monitoring, scripts]
-
-    defaults:
-      run:
-        working-directory: ${{ matrix.department }}/pri-aws-accounts/primerica-dev-<ACCOUNT1-ID>/
-
-    if: startsWith(github.head_ref, 'account1/')
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-
-      - name: Skip if department doesn't match
-        if: startsWith(github.head_ref, format('account1/{0}/', matrix.department))
-        run: echo "Proceeding with ${{ matrix.department }} deployment"
-
-      # Terraform init, plan steps...
-
-This means:
-	•	Only build-account1.yml runs for PRs from account1/...
-	•	Within that, only the matrix job matching the department in the branch runs
-	•	All other departments will skip
-
-⸻
-
-3. Your build-account2.yml would look similar, just using:
-
-if: startsWith(github.head_ref, 'account2/')
-
-
-
-⸻
-
-4. Your Paths Can Be Kept Static per Workflow
-
-Each workflow can keep its department path filters scoped, like:
-
-paths:
-  - automation/pri-aws-accounts/primerica-dev-<account1-id>/**
-  - compliance/pri-aws-accounts/primerica-dev-<account1-id>/**
-  ...
-
-This is optional if you fully rely on head_ref.
-
-⸻
-
-✅ What You Achieve
-
-Feature	Achieved?
-Only one workflow runs per PR	Yes — via startsWith(github.head_ref, 'account1/')
-Only one matrix job runs per PR	Yes — via startsWith(github.head_ref, format('account1/{0}/', matrix.department))
-Easy to scale to N accounts	Yes — just duplicate the workflow and update branch prefix + backend
-GitHub compute cost minimized	Yes — no redundant jobs
-
-
-
-⸻
-
-Final Notes
-	•	This model assumes you enforce branch naming policies (via pre-commit hooks or docs).
-	•	You can optionally use workflow_dispatch to override manual selections.
-	•	Add a PR label or metadata check if you want to override with approval gates (/ok-to-apply logic).
-
-⸻
-
-Would you like me to output a full working build-account1.yml using this model now — with all structure, filtering, and example Terraform sections baked in?
-
-
-Perfect — now we’re aligning directory structure and branch naming conventions.
-
-Let’s go through how to name the branch correctly for your scenario, and why.
-
-⸻
-
-Your File Path:
-
-automation/pri-aws-accounts/primerica-dev-<account1-id>/developer-roles/main.tf
-
-This indicates:
-	•	You are working on:
-	•	account1
-	•	Under the automation department
-	•	Inside the developer-roles resource scope
-
-⸻
-
-✅ Recommended Feature Branch Naming Convention
-
-To match the production-ready GitHub Actions strategy I recommended, name the branch like:
-
-account1/automation/feature/developer-roles
-
-Or if you want to track work type clearly:
-
-account1/automation/feature/add-developer-role-policy
-account1/automation/bugfix/fix-tag-policy
-
-The structure is:
-
-account_id / department / work_type / short-description
-
-
-
-⸻
-
-Why This Works
-	•	The workflow file is named per account (build-account1.yml)
-	•	Inside the workflow, this check controls execution:
-
-if: startsWith(github.head_ref, 'account1/')
-
-
-	•	The matrix jobs represent each department:
-
-matrix:
-  department: [automation, compliance, cspm, monitoring, scripts]
-
-
-	•	The department match logic:
-
-if: startsWith(github.head_ref, format('account1/{0}/', matrix.department))
-
-
-
-So only:
-	•	build-account1.yml triggers
-	•	And inside that, only the matrix job for automation runs
-
-⸻
-
-✅ Summary
-
-Element	Value
-File being changed	automation/pri-aws-accounts/primerica-dev-<account1-id>/developer-roles/main.tf
-Git feature branch	account1/automation/feature/developer-roles
-Workflow triggered	.github/workflows/build-account1.yml
-Job that runs	build (automation) from matrix logic
-
-
-
-⸻
-
-Let me know if you’d like a naming policy table you can share with your team or integrate into a branch protection rule.
-
-
-gggggggggggggg
-
-Excellent — here’s a full production-grade build-account1.yml, designed to support:
-	•	PRs coming from branches like account1/automation/feature/xyz
-	•	Multiple departments under account1 (automation, compliance, cspm, monitoring, scripts)
-	•	Matrix strategy with branch-aware filtering (only matching department builds)
-	•	Centralized Vault secrets for short-lived AWS credentials
-	•	Modular working directory structure
-
-⸻
-
-✅ .github/workflows/build-account1.yml
-
-name: Build - Account1
-
-on:
-  pull_request:
-    branches: [ master ] # PRs targeting master will trigger this workflow
+    branches: [ master ]  # Trigger only when PR is opened against master
 
 jobs:
   build:
     name: Build (${{ matrix.department }})
     runs-on: self-hosted
 
-    if: startsWith(github.head_ref, 'account1/')
+    # Only run this workflow if the PR source branch starts with the correct account ID
+    if: startsWith(github.head_ref, 'primerica-dev-12344567890/')
 
     strategy:
       matrix:
@@ -232,16 +29,17 @@ jobs:
 
     defaults:
       run:
-        working-directory: ${{ matrix.department }}/pri-aws-accounts/primerica-dev-123456789012/
+        working-directory: ${{ matrix.department }}/pri-aws-accounts/primerica-dev-12344567890/
 
     steps:
+
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Skip if branch doesn't match department
-        if: ${{ !startsWith(github.head_ref, format('account1/{0}/', matrix.department)) }}
+      - name: Skip if department doesn’t match branch path
+        if: ${{ !startsWith(github.head_ref, format('primerica-dev-12344567890/{0}/', matrix.department)) }}
         run: |
-          echo "Skipping ${{ matrix.department }}: no matching branch prefix"
+          echo "Skipping ${{ matrix.department }} — branch is not for this department."
           exit 0
 
       - name: Setup proxy
@@ -257,10 +55,10 @@ jobs:
           secretId: ${{ secrets.VAULTSB_SECRET_ID }}
           tlsSkipVerify: true
           secrets: |
-            secret/data/aws/primerica-dev-123456789012/github-actions AWS_ACCESS_KEY_ID | AWS_ACCESS_KEY_ID ;
-            secret/data/aws/primerica-dev-123456789012/github-actions AWS_SECRET_ACCESS_KEY | AWS_SECRET_ACCESS_KEY ;
+            secret/data/aws/primerica-dev-12344567890/github-actions AWS_ACCESS_KEY_ID | AWS_ACCESS_KEY_ID ;
+            secret/data/aws/primerica-dev-12344567890/github-actions AWS_SECRET_ACCESS_KEY | AWS_SECRET_ACCESS_KEY ;
 
-      - name: Configure GitHub Enterprise credentials (optional)
+      - name: Git config for private GitHub (optional)
         run: |
           git config --global url."https://foo:${{ steps.secrets.outputs.github_token }}@git01.exactt.com".insteadOf "https://git01.exactt.com"
 
@@ -279,7 +77,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ steps.secrets.outputs.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ steps.secrets.outputs.AWS_SECRET_ACCESS_KEY }}
 
-      - name: Post Cleanup
+      - name: Post cleanup
         if: always()
         run: rm -f ~/.gitconfig
 
@@ -287,37 +85,26 @@ jobs:
 
 ⸻
 
-✅ What This Supports
+✅ Example PR Branches That Trigger Correctly
 
-Feature	Value
-Trigger	PR targeting master branch
-Scoped to account1	via if: startsWith(github.head_ref, 'account1/')
-Department-specific execution	via matrix + branch prefix match
-Uses Vault	for secure short-lived AWS credentials
-Modular infra	folder structure mapped to working directory
-Scalable	Easily cloned for build-account2.yml, build-account3.yml
+Branch Name	Matrix Job Triggered
+primerica-dev-12344567890/automation/feature/add-tags	automation
+primerica-dev-12344567890/compliance/bugfix/guardrails	compliance
+primerica-dev-12344567890/scripts/chore/cleanup	scripts
 
 
 
 ⸻
 
-Example PR Setup
-
-Branch Name:
-
-account1/automation/feature/add-developer-role
-
-File Changed:
-
-automation/pri-aws-accounts/primerica-dev-123456789012/developer-roles/main.tf
-
-Result:
-	•	build-account1.yml triggers
-	•	Matrix jobs start
-	•	Only the automation department job runs (others exit)
+✅ Advantages
+	•	Prevents unintended jobs from running
+	•	Works with multiple departments under same account
+	•	Scalable: Copy-paste this structure to create build-primerica-dev-<accountN>.yml files
+	•	Works in concert with deploy-* workflows triggered via /ok-to-apply or labels
 
 ⸻
 
-Let me know if you’d like the matching deploy-account1.yml file with /ok-to-apply PR comment support, using the same model.
-
-
+Let me know if you want:
+	•	The matching deploy-primerica-dev-12344567890.yml
+	•	A version that logs skipped jobs for audit
+	•	Or a table you can share with teammates outlining branch naming rules for all accounts
