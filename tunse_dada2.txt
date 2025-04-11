@@ -1,3 +1,108 @@
+Thanks for the visual confirmation — based on this image, we can now precisely conclude that the deploy-automation job is being skipped because the if: condition on the job evaluates to false.
+
+Let’s systematically verify and resolve the issue.
+
+⸻
+
+✅ Root Cause Review
+
+Your current job likely contains:
+
+if: needs.get-branch.outputs.is_ok_to_apply == 'true' &&
+    contains(needs.get-branch.outputs.pr_branch, 'primerica-dev-1234567890/automation/')
+
+From this:
+	•	get-branch did run
+	•	But none of the deploy jobs ran
+
+⸻
+
+✅ Step-by-Step Fix Plan
+
+1. Log what’s coming out of get-branch
+
+Update your get-branch job to include this logging step after the check and get steps:
+
+- name: Debug outputs from get-branch
+  run: |
+    echo "Final PR branch = '${{ steps.get.outputs.pr_branch }}'"
+    echo "OK to apply = '${{ steps.check.outputs.is_ok_to_apply }}'"
+
+Then in the deploy-automation job, log what it sees:
+
+- name: Debug job filter
+  run: |
+    echo "Branch seen: '${{ needs.get-branch.outputs.pr_branch }}'"
+    echo "Apply allowed: '${{ needs.get-branch.outputs.is_ok_to_apply }}'"
+
+This will confirm if:
+	•	The pr_branch string is properly shaped
+	•	The prefix match contains(...) or startsWith(...) will succeed
+
+⸻
+
+2. Check for unexpected values
+
+It’s possible that your branch name includes a prefix like refs/heads/, e.g.:
+
+refs/heads/primerica-dev-1234567890/automation/task-feature-xyz
+
+That would cause the contains(...) or startsWith(...) to fail silently unless you adjust your condition to expect that.
+
+⸻
+
+3. Modify for safer matching
+
+Instead of:
+
+contains(needs.get-branch.outputs.pr_branch, 'primerica-dev-1234567890/automation/')
+
+Use a looser match like:
+
+contains(needs.get-branch.outputs.pr_branch, 'automation')
+
+Or if you’re being strict and your branch naming is guaranteed, do:
+
+contains(needs.get-branch.outputs.pr_branch, '/automation/')
+
+If your naming convention uses slashes to separate parts, the match will now work.
+
+⸻
+
+✅ Working Example
+
+Let’s test with this version in deploy-automation:
+
+if: needs.get-branch.outputs.is_ok_to_apply == 'true' &&
+    contains(needs.get-branch.outputs.pr_branch, '/automation/')
+
+This catches branches like:
+
+primerica-dev-1234567890/automation/some-task
+
+
+
+⸻
+
+✅ Recommendation
+
+Once you apply this change:
+	1.	Push a /ok-to-apply comment again
+	2.	Let the get-branch step run and echo its values
+	3.	Check that deploy-automation job is evaluated and not skipped
+
+If you’d like, I can generate a minimal working test PR + workflow that demonstrates the output logic, so you can test your condition against it.
+
+Would you like that?
+
+
+
+
+
+
+
+
+
 Excellent — here is the full production-ready deploy.yml using Option A (single workflow with multiple jobs), now updated with:
 	•	Robust /ok-to-apply detection using regex
 	•	Dynamic PR branch detection
