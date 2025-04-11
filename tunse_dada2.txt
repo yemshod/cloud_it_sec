@@ -279,3 +279,76 @@ Reliable Terraform backend alignment	Yes
 ⸻
 
 Let me know if you’d like this logic fully embedded in the build-automation job YAML for copy-paste use — I’ll provide it.
+
+
+
+ghhhghhhhhhhhhhhh
+
+
+jobs:
+  build-automation:
+    name: Build (automation)
+    if: startsWith(github.head_ref, 'primerica-dev-12344567890/automation/')
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup proxy
+        uses: pri-actions/setup-proxy@v0.0.2
+
+      - name: Import Vault secrets for AWS auth
+        id: secrets
+        uses: pri-actions/vault-action@v2.1.2
+        with:
+          url: https://vaultsb.exactt.com
+          method: approle
+          roleId: ${{ secrets.VAULTSB_ROLE_ID }}
+          secretId: ${{ secrets.VAULTSB_SECRET_ID }}
+          tlsSkipVerify: true
+          secrets: |
+            secret/data/aws/primerica-dev-12344567890/github-actions AWS_ACCESS_KEY_ID | AWS_ACCESS_KEY_ID ;
+            secret/data/aws/primerica-dev-12344567890/github-actions AWS_SECRET_ACCESS_KEY | AWS_SECRET_ACCESS_KEY ;
+
+      - name: Detect changed Terraform subfolder (via git)
+        id: set_folder
+        run: |
+          echo "Scanning Git diff for changed Terraform folder..."
+          folder=$(git diff --name-only origin/master...HEAD \
+            | grep '^cloud-security/automation/pri-aws-accounts/primerica-dev-12344567890/' \
+            | cut -d '/' -f1-6 \
+            | uniq \
+            | head -n 1)
+
+          if [ -z "$folder" ]; then
+            echo "No Terraform directory detected — exiting safely."
+            exit 1
+          fi
+
+          echo "TF_FOLDER=$folder" >> $GITHUB_ENV
+          echo "Detected Terraform folder: $folder"
+
+      - name: List contents of TF_FOLDER (debug)
+        run: ls -la ${{ env.TF_FOLDER }}
+
+      - name: Setup Terraform
+        uses: pri-actions/setup-terraform@v1.8.5
+
+      - name: Terraform Init
+        working-directory: ${{ env.TF_FOLDER }}
+        run: terraform init -backend-config=../../backend.s3.tfbackend
+        env:
+          AWS_ACCESS_KEY_ID: ${{ steps.secrets.outputs.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.secrets.outputs.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Terraform Plan
+        working-directory: ${{ env.TF_FOLDER }}
+        run: terraform plan -var-file=../../terraform.tfvars
+        env:
+          AWS_ACCESS_KEY_ID: ${{ steps.secrets.outputs.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.secrets.outputs.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Cleanup Git config
+        if: always()
+        run: rm -f ~/.gitconfig
