@@ -143,3 +143,139 @@ jobs:
           fi
 
       # Secure proxy, secrets, and Terraform steps below — only run for matching department
+
+
+
+
+iiiiiiiiiiiiiiiii
+
+
+
+Excellent clarification — and yes, this is a common and advanced use case in modular IAC design:
+
+You have a static path like:
+cloud-security/automation/pri-aws-accounts/primerica-dev-12344567890/
+but inside it, there are dynamic subfolders like:
+	•	devops-roles/
+	•	sec-roles/
+	•	platform-team-policies/
+
+And you want to:
+	•	Trigger the job only if the PR modifies something in one of these subfolders
+	•	Run terraform init/plan only in the subfolder that was touched
+
+⸻
+
+✅ Ideal Outcome
+
+If a PR is raised from:
+
+primerica-dev-12344567890/automation/feature/add-sec-roles
+
+And files changed in:
+
+cloud-security/automation/pri-aws-accounts/primerica-dev-12344567890/sec-roles/main.tf
+
+Then:
+	•	The build-automation job should run
+	•	terraform init/plan should execute in .../sec-roles/ (not the parent folder)
+
+⸻
+
+✅ Solution: Detect the Changed Subfolder Dynamically
+
+Here’s the clean pattern to use:
+
+1. Remove static working-directory from defaults:
+
+We’ll handle it explicitly and dynamically.
+
+# Remove this block entirely
+defaults:
+  run:
+    working-directory: ...
+
+
+
+⸻
+
+2. Use tj-actions/changed-files to get changed subfolder
+
+- name: Get changed directories
+  id: changed
+  uses: tj-actions/changed-files@v44
+  with:
+    dir_names: "true"
+    files: |
+      cloud-security/automation/pri-aws-accounts/primerica-dev-12344567890/**/*
+
+This will give you something like:
+
+changed_directories=cloud-security/automation/pri-aws-accounts/primerica-dev-12344567890/sec-roles
+
+
+
+⸻
+
+3. Extract the correct subfolder path dynamically
+
+- name: Set deployment folder
+  id: set_folder
+  run: |
+    echo "Detected directories: ${{ steps.changed.outputs.all_changed_files }}"
+    folder=$(echo "${{ steps.changed.outputs.all_changed_files }}" | grep 'cloud-security/automation/pri-aws-accounts/primerica-dev-12344567890/' | head -n 1)
+    echo "TF_FOLDER=$folder" >> $GITHUB_ENV
+
+Now you have a GitHub environment variable TF_FOLDER with the path:
+
+cloud-security/automation/pri-aws-accounts/primerica-dev-12344567890/sec-roles
+
+
+
+⸻
+
+4. Run Terraform Commands in the Detected Folder
+
+- name: Terraform Init
+  working-directory: ${{ env.TF_FOLDER }}
+  run: terraform init -backend-config=../../backend.s3.tfbackend
+  env:
+    AWS_ACCESS_KEY_ID: ${{ steps.secrets.outputs.AWS_ACCESS_KEY_ID }}
+    AWS_SECRET_ACCESS_KEY: ${{ steps.secrets.outputs.AWS_SECRET_ACCESS_KEY }}
+
+- name: Terraform Plan
+  working-directory: ${{ env.TF_FOLDER }}
+  run: terraform plan -var-file=../../terraform.tfvars
+  env:
+    AWS_ACCESS_KEY_ID: ${{ steps.secrets.outputs.AWS_ACCESS_KEY_ID }}
+    AWS_SECRET_ACCESS_KEY: ${{ steps.secrets.outputs.AWS_SECRET_ACCESS_KEY }}
+
+
+
+⸻
+
+✅ Optional: Fail Early if No Matching Folder Found
+
+- name: Fail if no valid subdirectory found
+  if: ${{ env.TF_FOLDER == '' }}
+  run: |
+    echo "No Terraform subfolder found in the changed files. Failing intentionally."
+    exit 1
+
+
+
+⸻
+
+✅ Final Benefits
+
+Feature	Supported?
+Dynamic subfolders per department	Yes
+Per-account logic	Yes
+PRs scoped to changed content	Yes
+Reliable Terraform backend alignment	Yes
+
+
+
+⸻
+
+Let me know if you’d like this logic fully embedded in the build-automation job YAML for copy-paste use — I’ll provide it.
