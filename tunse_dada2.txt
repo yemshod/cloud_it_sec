@@ -1,392 +1,253 @@
-Excellent — now you're elevating to **infrastructure as code + CI/CD**, using GitHub Actions to automate Terraform deployment per account, with the **modular structure**, **centralized state per account**, and **GitHub-based change control**.
+Yes — your setup with separate build and deploy workflows per account, and the desire to run only the relevant pipeline per account based on the PR, can be fully supported using the branch naming convention combined with GitHub matrix filtering.
 
-Let’s refactor your model to support **GitHub Actions** (CI pipeline) for each account, while still maintaining:
+Let me tailor the answer specifically for your scenario:
 
-- Modular departments (`networking/`, `security/`, etc.)
-- Single shared state file per account (`account1-central.tfstate`, etc.)
-- Remote backend in S3 per account
-- GitHub Actions workflows per account folder
+⸻
 
----
+Your Setup Recap
+	•	You have multiple AWS accounts (account1, account2, etc.)
+	•	Each account has its own build and deploy workflow files, e.g.:
 
-## **Refactored Pipeline Strategy Overview**
+.github/workflows/
+├── build-account1.yml
+├── deploy-account1.yml
+├── build-account2.yml
+├── deploy-account2.yml
 
-| Component           | Design                                                           |
-|---------------------|------------------------------------------------------------------|
-| **Folder structure**| Modular per department under `accounts/accountX/`               |
-| **Terraform state** | One S3-based state file per account (`account1-central.tfstate`) |
-| **GitHub Actions**  | One reusable workflow, triggered per account                    |
-| **Secrets**         | Store account credentials securely as GitHub Actions secrets     |
+	•	Inside each account directory, there are departmental subfolders like:
 
----
+automation/
+compliance/
+cspm/
+monitoring/
+scripts/
 
-## **Step-by-Step GitHub Actions Setup**
 
----
+	•	You want:
+	•	Only the build for the right account to run
+	•	And inside that workflow, only the matching department job to execute
 
-### **Step 1: Store Account Credentials as GitHub Secrets**
+⸻
 
-For each AWS account, store the credentials (or role-to-assume parameters) securely in GitHub. If using static credentials:
+✅ Your Production-Ready Strategy
 
-| Secret Name                     | Description                       |
-|----------------------------------|-----------------------------------|
-| `AWS_ACCOUNT1_ACCESS_KEY_ID`     | IAM user or automation key        |
-| `AWS_ACCOUNT1_SECRET_ACCESS_KEY` | Secret for above                  |
-| `AWS_ACCOUNT1_REGION`            | (optional) AWS region like `us-east-1` |
+1. Branch Naming Convention per Account
 
----
+Use branches like:
 
-### **Step 2: Create Terraform GitHub Workflow File**
+account1/automation/feature-add-roles
+account2/compliance/bugfix-remediation
 
-**File:** `.github/workflows/terraform-account1.yml`
+This encodes both the account and department into the branch name.
 
-```yaml
-name: Terraform Deployment - Account1
+⸻
 
-on:
-  push:
-    paths:
-      - 'accounts/account1/**'
-    branches:
-      - main
+2. Configure build-account1.yml like this:
 
-jobs:
-  terraform:
-    name: 'Terraform Apply - Account1'
-    runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: accounts/account1
-
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCOUNT1_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_ACCOUNT1_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: ${{ secrets.AWS_ACCOUNT1_REGION }}
-
-    steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: 1.6.6
-
-    - name: Terraform Init
-      run: terraform init -backend-config="backend.s3.tfbackend"
-
-    - name: Terraform Plan
-      run: terraform plan -var-file="terraform.tfvars"
-
-    - name: Terraform Apply
-      if: github.ref == 'refs/heads/main'
-      run: terraform apply -auto-approve -var-file="terraform.tfvars"
-```
-
----
-
-### **Step 3: Backend & Folder Setup**
-
-In `accounts/account1/backend.s3.tfbackend`:
-```hcl
-bucket         = "tfstate-account1"
-key            = "account1-central.tfstate"
-region         = "us-east-1"
-dynamodb_table = "tf-locks-account1"
-encrypt        = true
-```
-
-In `accounts/account1/terraform.tfvars`:
-```hcl
-region = "us-east-1"
-
-tags = {
-  account     = "account1"
-  owner       = "terraform"
-  environment = "prod"
-}
-
-aws_profile = ""
-```
-
-In `accounts/account1/networking/main.tf` and `security/main.tf`, put your resources or modules.
-
----
-
-### **Step 4: Test Locally (One Time)**
-
-Before triggering the pipeline:
-```bash
-cd accounts/account1/networking
-terraform init -backend-config=../backend.s3.tfbackend
-terraform plan -var-file=../terraform.tfvars
-```
-
-Make sure this works to avoid CI failures due to initialization or backend issues.
-
----
-
-### **Step 5: Push to GitHub**
-
-Once code is ready:
-```bash
-git add .
-git commit -m "Refactor account1 with GitHub Actions support"
-git push origin main
-```
-
-The workflow will trigger automatically when:
-- Code under `accounts/account1/**` changes
-- You push to `main` branch
-
----
-
-### **Optional: Reusable Workflow for Multiple Accounts**
-
-Instead of one workflow per account, use a **reusable composite action** and call it with account-specific parameters (`env`, secrets, paths).
-
----
-
-### **Advanced Enhancements**
-
-| Enhancement                 | Description |
-|-----------------------------|-------------|
-| **Manual Approvals**        | Use `workflow_dispatch` + `terraform plan` only on push, `apply` on approval |
-| **Environment Protection**  | GitHub Environments + Required Reviewers |
-| **Workspaces (if needed)**  | For different lifecycles (dev/stage/prod) in same account |
-| **Cost-aware planning**     | Add cost estimation with infracost |
-| **Slack/MS Teams alerts**   | Add status notifications to collaboration tools |
-
----
-
-## **Visual Summary**
-
-```
-terraform-iam-multi-account/
-├── .github/
-│   └── workflows/
-│       ├── terraform-account1.yml
-├── accounts/
-│   └── account1/
-│       ├── terraform.tfvars
-│       ├── backend.s3.tfbackend
-│       ├── networking/
-│       │   └── main.tf
-│       ├── security/
-│       │   └── main.tf
-```
-
----
-==============
-
-
-Modular Terraform Deployment for Account1
-
-Below is the complete repository structure for Account1. It defines a reusable Terraform module to create an IAM user with administrative access, and uses a GitHub Actions workflow to automatically run Terraform for each department (networking, security, engineering) in Account1. The Terraform state is stored remotely in a centralized S3 backend (with DynamoDB for state locking). The GitHub Actions pipeline uses a matrix strategy to initialize, plan, and apply Terraform in each department subfolder, with AWS credentials provided via GitHub Secrets.
-
-.github/workflows/terraform-account1.yml
-
-name: Terraform Deploy (Account1)
-
-on:
-  push:
-    branches: [ "main" ]
-    paths: 
-      - "accounts/account1/**"    # Only run when files in account1 change
-  workflow_dispatch:             # Allow manual trigger
-
-jobs:
-  terraform:
-    name: Terraform Account1 (${{ matrix.department }})
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        department: [ "networking", "security", "engineering" ]
-    defaults:
-      run:
-        working-directory: accounts/account1/${{ matrix.department }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.4.0
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCOUNT1_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_ACCOUNT1_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Initialize Terraform
-        run: terraform init -backend-config=../backend.s3.tfbackend
-
-      - name: Terraform Plan
-        run: terraform plan -var-file=../terraform.tfvars
-
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/main'   # Only apply on main branch
-        run: terraform apply -var-file=../terraform.tfvars -auto-approve
-
-modules/iam-user/main.tf
-
-// IAM user resource module - creates a user and attaches AdministratorAccess
-resource "aws_iam_user" "this" {
-  name = var.user_name
-}
-
-resource "aws_iam_user_policy_attachment" "admin_policy" {
-  user       = aws_iam_user.this.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
-}
-
-modules/iam-user/variables.tf
-
-variable "user_name" {
-  description = "The name of the IAM user to create with admin access"
-  type        = string
-}
-
-accounts/account1/backend.s3.tfbackend
-
-# Remote state backend configuration for Account1
-bucket         = "my-central-terraform-state"      # S3 bucket for state storage
-key            = "account1/terraform.tfstate"      # State file path within the bucket
-region         = "us-east-1"                       # AWS region of the S3 bucket
-dynamodb_table = "terraform-state-locks"           # DynamoDB table for state locking
-encrypt        = true                              # Encrypt state file at rest
-
-accounts/account1/terraform.tfvars
-
-# Terraform variable values for Account1
-user_name = "pri-git-action-user"   # IAM user name for the GitHub Actions user
-region    = "us-east-1"             # AWS region for all resources in Account1
-
-accounts/account1/networking/main.tf
-
-// Terraform configuration for the Networking department in Account1
-terraform {
-  backend "s3" {}  # uses settings from ../backend.s3.tfbackend during init
-}
-
-provider "aws" {
-  region = var.region
-}
-
-# Declare variables used in this configuration
-variable "region" {
-  description = "AWS region for resources"
-  type        = string
-}
-variable "user_name" {
-  description = "IAM user name to create"
-  type        = string
-}
-
-module "iam_user" {
-  source    = "../../modules/iam-user"
-  user_name = var.user_name
-}
-
-accounts/account1/security/main.tf
-
-// Terraform configuration for the Security department in Account1
-terraform {
-  backend "s3" {}
-}
-
-provider "aws" {
-  region = var.region
-}
-
-variable "region" {
-  description = "AWS region for resources"
-  type        = string
-}
-variable "user_name" {
-  description = "IAM user name to create"
-  type        = string
-}
-
-module "iam_user" {
-  source    = "../../modules/iam-user"
-  user_name = var.user_name
-}
-
-accounts/account1/engineering/main.tf
-
-// Terraform configuration for the Engineering department in Account1
-terraform {
-  backend "s3" {}
-}
-
-provider "aws" {
-  region = var.region
-}
-
-variable "region" {
-  description = "AWS region for resources"
-  type        = string
-}
-variable "user_name" {
-  description = "IAM user name to create"
-  type        = string
-}
-
-module "iam_user" {
-  source    = "../../modules/iam-user"
-  user_name = var.user_name
-}
-
-
---------
-
-name: Build
+name: Build - Account1
 
 on:
   pull_request:
     branches: [ master ]
-    paths:
-      - automation/pri-aws-accounts/prim-dev-12345678987/**
-      - compliance/pri-aws-accounts/prim-dev-12345678987/**
-      - cspm/pri-aws-accounts/prim-dev-12345678987/**
-      - monitoring/pri-aws-accounts/prim-dev-12345678987/**
-      - scripts/pri-aws-accounts/prim-dev-12345678987/**
 
 jobs:
   build:
-    runs-on: [ self-hosted ]
+    runs-on: self-hosted
     strategy:
       matrix:
         department: [automation, compliance, cspm, monitoring, scripts]
 
     defaults:
       run:
-        working-directory: ${{ matrix.department }}/pri-aws-accounts/prim-dev-12345678987/
+        working-directory: ${{ matrix.department }}/pri-aws-accounts/primerica-dev-<ACCOUNT1-ID>/
+
+    if: startsWith(github.head_ref, 'account1/')
 
     steps:
-
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v2
 
-      - name: Get list of changed files
-        id: changed
-        uses: tj-actions/changed-files@v44
+      - name: Skip if department doesn't match
+        if: startsWith(github.head_ref, format('account1/{0}/', matrix.department))
+        run: echo "Proceeding with ${{ matrix.department }} deployment"
 
-      - name: Skip if department path not modified
-        if: ${{ !contains(steps.changed.outputs.all_changed_files, format('{0}/pri-aws-accounts/prim-dev-12345678987/', matrix.department)) }}
+      # Terraform init, plan steps...
+
+This means:
+	•	Only build-account1.yml runs for PRs from account1/...
+	•	Within that, only the matrix job matching the department in the branch runs
+	•	All other departments will skip
+
+⸻
+
+3. Your build-account2.yml would look similar, just using:
+
+if: startsWith(github.head_ref, 'account2/')
+
+
+
+⸻
+
+4. Your Paths Can Be Kept Static per Workflow
+
+Each workflow can keep its department path filters scoped, like:
+
+paths:
+  - automation/pri-aws-accounts/primerica-dev-<account1-id>/**
+  - compliance/pri-aws-accounts/primerica-dev-<account1-id>/**
+  ...
+
+This is optional if you fully rely on head_ref.
+
+⸻
+
+✅ What You Achieve
+
+Feature	Achieved?
+Only one workflow runs per PR	Yes — via startsWith(github.head_ref, 'account1/')
+Only one matrix job runs per PR	Yes — via startsWith(github.head_ref, format('account1/{0}/', matrix.department))
+Easy to scale to N accounts	Yes — just duplicate the workflow and update branch prefix + backend
+GitHub compute cost minimized	Yes — no redundant jobs
+
+
+
+⸻
+
+Final Notes
+	•	This model assumes you enforce branch naming policies (via pre-commit hooks or docs).
+	•	You can optionally use workflow_dispatch to override manual selections.
+	•	Add a PR label or metadata check if you want to override with approval gates (/ok-to-apply logic).
+
+⸻
+
+Would you like me to output a full working build-account1.yml using this model now — with all structure, filtering, and example Terraform sections baked in?
+
+
+Perfect — now we’re aligning directory structure and branch naming conventions.
+
+Let’s go through how to name the branch correctly for your scenario, and why.
+
+⸻
+
+Your File Path:
+
+automation/pri-aws-accounts/primerica-dev-<account1-id>/developer-roles/main.tf
+
+This indicates:
+	•	You are working on:
+	•	account1
+	•	Under the automation department
+	•	Inside the developer-roles resource scope
+
+⸻
+
+✅ Recommended Feature Branch Naming Convention
+
+To match the production-ready GitHub Actions strategy I recommended, name the branch like:
+
+account1/automation/feature/developer-roles
+
+Or if you want to track work type clearly:
+
+account1/automation/feature/add-developer-role-policy
+account1/automation/bugfix/fix-tag-policy
+
+The structure is:
+
+account_id / department / work_type / short-description
+
+
+
+⸻
+
+Why This Works
+	•	The workflow file is named per account (build-account1.yml)
+	•	Inside the workflow, this check controls execution:
+
+if: startsWith(github.head_ref, 'account1/')
+
+
+	•	The matrix jobs represent each department:
+
+matrix:
+  department: [automation, compliance, cspm, monitoring, scripts]
+
+
+	•	The department match logic:
+
+if: startsWith(github.head_ref, format('account1/{0}/', matrix.department))
+
+
+
+So only:
+	•	build-account1.yml triggers
+	•	And inside that, only the matrix job for automation runs
+
+⸻
+
+✅ Summary
+
+Element	Value
+File being changed	automation/pri-aws-accounts/primerica-dev-<account1-id>/developer-roles/main.tf
+Git feature branch	account1/automation/feature/developer-roles
+Workflow triggered	.github/workflows/build-account1.yml
+Job that runs	build (automation) from matrix logic
+
+
+
+⸻
+
+Let me know if you’d like a naming policy table you can share with your team or integrate into a branch protection rule.
+
+
+gggggggggggggg
+
+Excellent — here’s a full production-grade build-account1.yml, designed to support:
+	•	PRs coming from branches like account1/automation/feature/xyz
+	•	Multiple departments under account1 (automation, compliance, cspm, monitoring, scripts)
+	•	Matrix strategy with branch-aware filtering (only matching department builds)
+	•	Centralized Vault secrets for short-lived AWS credentials
+	•	Modular working directory structure
+
+⸻
+
+✅ .github/workflows/build-account1.yml
+
+name: Build - Account1
+
+on:
+  pull_request:
+    branches: [ master ] # PRs targeting master will trigger this workflow
+
+jobs:
+  build:
+    name: Build (${{ matrix.department }})
+    runs-on: self-hosted
+
+    if: startsWith(github.head_ref, 'account1/')
+
+    strategy:
+      matrix:
+        department: [automation, compliance, cspm, monitoring, scripts]
+
+    defaults:
+      run:
+        working-directory: ${{ matrix.department }}/pri-aws-accounts/primerica-dev-123456789012/
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Skip if branch doesn't match department
+        if: ${{ !startsWith(github.head_ref, format('account1/{0}/', matrix.department)) }}
         run: |
-          echo "No relevant changes for ${{ matrix.department }} – skipping job."
+          echo "Skipping ${{ matrix.department }}: no matching branch prefix"
           exit 0
 
       - name: Setup proxy
         uses: pri-actions/setup-proxy@v0.0.2
 
-      - name: Import secrets
+      - name: Import Vault secrets for AWS access
         id: secrets
         uses: pri-actions/vault-action@v2.1.2
         with:
@@ -396,10 +257,10 @@ jobs:
           secretId: ${{ secrets.VAULTSB_SECRET_ID }}
           tlsSkipVerify: true
           secrets: |
-            secret/data/aws/pri-dev/github-actions AWS_ACCESS_KEY_ID | AWS_ACCESS_KEY_ID ;
-            secret/data/aws/pri-dev/github-actions AWS_SECRET_ACCESS_KEY | AWS_SECRET_ACCESS_KEY ;
+            secret/data/aws/primerica-dev-123456789012/github-actions AWS_ACCESS_KEY_ID | AWS_ACCESS_KEY_ID ;
+            secret/data/aws/primerica-dev-123456789012/github-actions AWS_SECRET_ACCESS_KEY | AWS_SECRET_ACCESS_KEY ;
 
-      - name: Git config for GitHub Enterprise
+      - name: Configure GitHub Enterprise credentials (optional)
         run: |
           git config --global url."https://foo:${{ steps.secrets.outputs.github_token }}@git01.exactt.com".insteadOf "https://git01.exactt.com"
 
@@ -418,44 +279,45 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ steps.secrets.outputs.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ steps.secrets.outputs.AWS_SECRET_ACCESS_KEY }}
 
-      - name: Post cleanup
+      - name: Post Cleanup
         if: always()
         run: rm -f ~/.gitconfig
 
 
-ttttttttttttttttttttt
 
-name: Build
+⸻
 
-on:
-  pull_request:
-    branches: [ master ]
-    paths:
-      - automation/pri-aws-accounts/prim-dev-12345678987/**
-      - compliance/pri-aws-accounts/prim-dev-12345678987/**
-      - cspm/pri-aws-accounts/prim-dev-12345678987/**
-      - monitoring/pri-aws-accounts/prim-dev-12345678987/**
-      - scripts/pri-aws-accounts/prim-dev-12345678987/**
+✅ What This Supports
 
-jobs:
-  build-automation:
-    name: Build (automation)
-    if: contains(github.event.pull_request.changed_files, 'automation/pri-aws-accounts/prim-dev-12345678987/')
-    runs-on: self-hosted
-    defaults:
-      run:
-        working-directory: automation/pri-aws-accounts/prim-dev-12345678987/
-    steps:
-      # Terraform build steps for automation...
+Feature	Value
+Trigger	PR targeting master branch
+Scoped to account1	via if: startsWith(github.head_ref, 'account1/')
+Department-specific execution	via matrix + branch prefix match
+Uses Vault	for secure short-lived AWS credentials
+Modular infra	folder structure mapped to working directory
+Scalable	Easily cloned for build-account2.yml, build-account3.yml
 
-  build-compliance:
-    name: Build (compliance)
-    if: contains(github.event.pull_request.changed_files, 'compliance/pri-aws-accounts/prim-dev-12345678987/')
-    runs-on: self-hosted
-    defaults:
-      run:
-        working-directory: compliance/pri-aws-accounts/prim-dev-12345678987/
-    steps:
-      # Terraform build steps for compliance...
 
-  # Repeat for cspm, monitoring, scripts...
+
+⸻
+
+Example PR Setup
+
+Branch Name:
+
+account1/automation/feature/add-developer-role
+
+File Changed:
+
+automation/pri-aws-accounts/primerica-dev-123456789012/developer-roles/main.tf
+
+Result:
+	•	build-account1.yml triggers
+	•	Matrix jobs start
+	•	Only the automation department job runs (others exit)
+
+⸻
+
+Let me know if you’d like the matching deploy-account1.yml file with /ok-to-apply PR comment support, using the same model.
+
+
