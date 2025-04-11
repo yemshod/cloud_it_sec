@@ -1,3 +1,169 @@
+Perfect — since you’re using Option A (a single workflow file with multiple jobs, one per department), and you want each job to:
+	•	Run only if /ok-to-apply is commented on the PR
+	•	Check the PR branch name dynamically (e.g., starts with primerica-dev-1234567890/automation/)
+	•	Then apply Terraform in the changed folder under that department
+
+Here is the refactored, production-ready deploy.yml using multiple department-specific jobs, all within the same workflow.
+
+⸻
+
+✅ .github/workflows/deploy.yml
+
+name: Deploy Terraform (Multi-Department)
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  # -----------------------------------------
+  get-branch:
+    name: Get PR branch name
+    runs-on: self-hosted
+    outputs:
+      pr_branch: ${{ steps.get.outputs.pr_branch }}
+      is_ok_to_apply: ${{ steps.check.outputs.is_ok_to_apply }}
+
+    steps:
+      - name: Check if comment is /ok-to-apply
+        id: check
+        run: |
+          if [[ "${{ github.event.comment.body }}" == /ok-to-apply* ]]; then
+            echo "is_ok_to_apply=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_ok_to_apply=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Fetch PR branch name
+        id: get
+        if: steps.check.outputs.is_ok_to_apply == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: string
+          script: |
+            const pr = await github.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            return pr.data.head.ref;
+
+  # -----------------------------------------
+  deploy-automation:
+    name: Deploy (automation)
+    runs-on: self-hosted
+    needs: get-branch
+    if: needs.get-branch.outputs.is_ok_to_apply == 'true' &&
+        startsWith(needs.get-branch.outputs.pr_branch, 'primerica-dev-1234567890/automation/')
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Import Vault secrets
+        id: secrets
+        uses: pri-actions/vault-action@v2.1.2
+        with:
+          url: https://vaultsb.exactt.com
+          method: approle
+          roleId: ${{ secrets.VAULTSB_ROLE_ID }}
+          secretId: ${{ secrets.VAULTSB_SECRET_ID }}
+          tlsSkipVerify: true
+          secrets: |
+            secret/data/aws/primerica-dev-1234567890/github-actions AWS_ACCESS_KEY_ID | AWS_ACCESS_KEY_ID ;
+            secret/data/aws/primerica-dev-1234567890/github-actions AWS_SECRET_ACCESS_KEY | AWS_SECRET_ACCESS_KEY ;
+
+      - name: Detect automation subfolder
+        id: tf_folder
+        run: |
+          folder=$(git diff --name-only origin/master...HEAD \
+            | grep '^automation/pri-aws-accounts/primerica-dev-1234567890/.*/.*\.tf$' \
+            | head -n 1 | xargs dirname)
+
+          if [ -z "$folder" ]; then
+            echo "No .tf changes in automation. Exiting."
+            exit 1
+          fi
+
+          echo "TF_FOLDER=$folder" >> $GITHUB_ENV
+          echo "Terraform folder: $folder"
+
+      - name: Setup Terraform
+        uses: pri-actions/setup-terraform@v1.8.5
+
+      - name: Terraform Init
+        working-directory: ${{ env.TF_FOLDER }}
+        run: terraform init -backend-config=${{ github.workspace }}/automation/backend.s3.tfbackend
+        env:
+          AWS_ACCESS_KEY_ID: ${{ steps.secrets.outputs.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.secrets.outputs.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Terraform Apply
+        working-directory: ${{ env.TF_FOLDER }}
+        run: terraform apply -auto-approve -var-file=${{ github.workspace }}/automation/terraform.tfvars
+        env:
+          AWS_ACCESS_KEY_ID: ${{ steps.secrets.outputs.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.secrets.outputs.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Comment success
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: "Terraform Apply completed for automation folder: `${{ env.TF_FOLDER }}`"
+            })
+
+  # -----------------------------------------
+  deploy-compliance:
+    name: Deploy (compliance)
+    runs-on: self-hosted
+    needs: get-branch
+    if: needs.get-branch.outputs.is_ok_to_apply == 'true' &&
+        startsWith(needs.get-branch.outputs.pr_branch, 'primerica-dev-1234567890/compliance/')
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # ... Same logic as above but with compliance-specific backend, tfvars and secrets
+
+You can repeat this pattern for other departments like cspm, monitoring, etc.
+
+⸻
+
+✅ Benefits of This Setup
+
+Capability	Implemented
+Single workflow YAML file	Yes
+One job per department	Yes
+Comment-triggered apply	Yes (/ok-to-apply)
+Dynamic PR branch filtering	Yes (via github-script)
+Git diff folder detection	Yes
+Per-folder apply with isolated state	Yes
+Vault-based AWS auth	Yes
+
+
+
+⸻
+
+Would you like me to scaffold the full deploy.yml with all five departments filled in?
+
+
+
+
+
+
+
+
 if: github.event.issue.pull_request &&
     contains(github.event.comment.html_url, '/pull/') &&
     startsWith(github.event.comment.body, '/ok-to-apply') &&
