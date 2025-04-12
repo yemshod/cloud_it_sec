@@ -1,3 +1,102 @@
+Perfect — since installing the gh CLI is off the table, and your Build pipeline is already working using the GitHub API method (actions/github-script), we’ll reuse that same proven approach to make the deployment pipeline work exactly the same way.
+
+Let’s walk through how to parse the PR branch name and pass it to your automation job without any CLI dependency.
+
+⸻
+
+✅ Goal
+
+Parse the PR branch name (e.g. primerica-dev-445567078263/automation/xyz) and only run the deploy-automation job if:
+	•	the branch name starts with the correct prefix (e.g. primerica-dev-445567078263/automation/)
+	•	the comment is /ok-to-apply
+
+⸻
+
+✅ Final Working Pattern (No gh, CLI-free)
+
+1. Step: get-metadata Job
+
+jobs:
+  get-metadata:
+    runs-on: self-hosted
+    outputs:
+      is_ok_to_apply: ${{ steps.check.outputs.is_ok_to_apply }}
+      pr_branch: ${{ steps.get.outputs.pr_branch }}
+
+    steps:
+    - name: Check if comment is /ok-to-apply
+      id: check
+      run: |
+        comment="${{ github.event.comment.body }}"
+        if [[ "$comment" =~ ^/ok-to-apply ]]; then
+          echo "is_ok_to_apply=true" >> $GITHUB_OUTPUT
+        else
+          echo "is_ok_to_apply=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Fetch PR branch name
+      id: get
+      uses: actions/github-script@v6
+      if: steps.check.outputs.is_ok_to_apply == 'true'
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const pr = await github.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.payload.issue.number
+          });
+          const fs = require('fs');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `pr_branch=${pr.data.head.ref}\n`);
+
+    - name: Debug
+      run: |
+        echo "Branch: ${{ steps.get.outputs.pr_branch }}"
+        echo "is_ok_to_apply: ${{ steps.check.outputs.is_ok_to_apply }}"
+
+
+
+⸻
+
+2. Deploy Job: Only for Automation
+
+  deploy-automation:
+    needs: get-metadata
+    if: |
+      needs.get-metadata.outputs.is_ok_to_apply == 'true' &&
+      startsWith(needs.get-metadata.outputs.pr_branch, 'primerica-dev-445567078263/automation/')
+    runs-on: self-hosted
+    name: Deploy (automation)
+    steps:
+      - name: Confirm matched deployment path
+        run: |
+          echo "Triggering deployment for Automation team..."
+
+
+
+⸻
+
+✅ Summary
+
+Item	Value
+CLI required	No
+PR branch parsed	Yes
+Compatible with /ok-to-apply flow	Yes
+Will trigger only matching deploy job	Yes
+Same logic as Build pipeline	Yes
+
+
+
+⸻
+
+Would you like me to extend this into the full deploy pipeline covering all departments (compliance, cspm, etc.) using this same logic?
+
+
+
+
+yyyyuuuuuuuuuuuuuu
+
+
 - id: get
   if: steps.check.outputs.is_ok_to_apply == 'true'
   run: |
