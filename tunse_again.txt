@@ -177,3 +177,23 @@ jobs:
           exit 0
         fi
         echo "tf_folder=$folder" >> $GITHUB_OUTPUT
+
+
+
+
+
+- name: Detect TF Folder Path
+  id: setpath
+  run: |
+    git fetch origin master
+    tf_file=$(git diff --name-only origin/master...HEAD | grep '^cloud-security/automation/pri-aws-accounts/primerica-dev-1234567890/' | grep '\.tf' | head -n 1)
+
+    if [[ -z "$tf_file" ]]; then
+      echo "No Terraform file changed — exiting safely"
+      echo "tf_folder=none" >> $GITHUB_OUTPUT
+      exit 0
+    fi
+
+    folder=$(dirname "$tf_file")
+    echo "TF folder: $folder"
+    echo "tf_folder=$folder" >> $GITHUB_OUTPUT
