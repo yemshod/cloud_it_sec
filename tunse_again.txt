@@ -127,3 +127,53 @@ Targets correct nested directory	✅
 ⸻
 
 Let me know if you want me to replicate this for other departments like compliance, scripts, etc. I can help modularize it across workflows or unify into a matrix job based on your preference.
+
+
+-----
+
+jobs:
+  get-metadata:
+    runs-on: self-hosted
+    outputs:
+      is_ok_to_apply: ${{ steps.check.outputs.is_ok_to_apply }}
+      tf_folder: ${{ steps.setpath.outputs.tf_folder }}
+      pr_branch: ${{ steps.branch.outputs.pr_branch }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0  # required for git diff
+
+    - name: Configure Git credentials
+      run: |
+        git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+    - name: Check if comment is /ok-to-apply
+      id: check
+      run: |
+        comment="${{ github.event.comment.body }}"
+        if [[ "$comment" =~ ^/ok-to-apply ]]; then
+          echo "is_ok_to_apply=true" >> $GITHUB_OUTPUT
+        else
+          echo "is_ok_to_apply=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Determine PR Branch Name
+      id: branch
+      if: steps.check.outputs.is_ok_to_apply == 'true'
+      run: |
+        branch_name=$(git rev-parse --abbrev-ref HEAD)
+        echo "pr_branch=$branch_name" >> $GITHUB_OUTPUT
+
+    - name: Detect TF Folder Path
+      id: setpath
+      if: steps.check.outputs.is_ok_to_apply == 'true'
+      run: |
+        git fetch origin master
+        folder=$(git diff --name-only origin/master...HEAD | grep '^cloud-security/automation/pri-aws-accounts/primerica-dev-1234567890/' | grep '\.tf' | head -n 1 | xargs dirname)
+        if [[ -z "$folder" ]]; then
+          echo "tf_folder=none" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        echo "tf_folder=$folder" >> $GITHUB_OUTPUT
