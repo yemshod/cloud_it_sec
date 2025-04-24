@@ -1,4 +1,0 @@
-CalypsoAI is an advanced platform providing comprehensive AI security and enablement solutions, particularly focusing on large language models (LLMs). The following table outlines its capabilities compared to the current state of AI security, mapping these features to potential security concerns with LLMs.
-
-
-Feel free to adjust the details as needed to better match your specific context and career goals.
