@@ -1,1 +1,0 @@
-name = "pri-git-action-user"
