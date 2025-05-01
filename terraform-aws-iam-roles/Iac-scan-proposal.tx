@@ -1,0 +1,224 @@
+
+
+Proposal: Integrating IaC Scanning into CI/CD for Azure and GCP
+
+Overview
+
+To proactively enforce security and configuration best practices at the point of infrastructure provisioning, this proposal introduces Infrastructure as Code (IaC) scanning into the CI/CD pipeline for cloud workloads deployed on Azure and GCP.
+
+This initiative is aimed at shifting security left—catching misconfigurations, policy violations, and insecure patterns at code level, before deployment occurs. This aligns with our cloud governance strategy of embedding security by design and reducing reliance on post-deployment detection and response.
+
+Current Challenge
+
+While Azure and GCP support policy-based controls (e.g., Azure Policy, GCP Org Policies), these are reactive or runtime-level enforcement mechanisms. They offer incomplete coverage, especially in the following scenarios:
+	•	Lack of context during development.
+	•	Delayed feedback loop for engineers.
+	•	Limited pattern-matching/custom policy depth (e.g., Azure Policy regex constraints).
+	•	Poor developer usability or actionable guidance.
+
+Why IaC Scanning?
+
+IaC allows infrastructure to be defined in human-readable, version-controlled files (e.g., Terraform, ARM, Bicep). By scanning these artifacts pre-deployment, we can:
+	•	Prevent misconfigurations at the earliest stage of the SDLC.
+	•	Provide developers actionable feedback with exact code line references.
+	•	Enforce custom policy logic using languages like Rego (OPA).
+	•	Reduce risk of policy circumvention via manual provisioning or inconsistent CI/CD logic.
+
+Targeted Tooling for Implementation
+
+Tool	Description	Pros	Limitations
+Wiz Code (Preferred)	CI-integrated scanning with visibility into IaC misconfigs, secrets, and policy violations. Maps findings to IaC blocks.	- Strong Rego support- Feedback to PR- Maps runtime findings to source code	Licensing cost
+Snyk IaC	IDE & CI integrations with IaC scanning, secrets detection, and code security	- VS Code integration- Open source policies- Multi-cloud	May lack runtime mapping or context
+Azure Defender for Cloud CI/CD (Preview)	Native CI/CD scanning for Azure DevOps & GitHub	- Native to Azure- Policy-as-code aligned	Feature-limited, lacks flexibility in customization
+
+We recommend adopting Wiz Code as the core scanner, with room for additional Azure native layers where suitable.
+
+⸻
+
+Architecture & Workflow
+
+CI/CD Integration Flow:
+	1.	Developer pushes IaC (e.g., Terraform) to Git repo.
+	2.	CI pipeline triggers Wiz Code scan.
+	3.	Findings are evaluated against pre-defined tagging/security/policy rules.
+	4.	PRs fail or pass based on severity and compliance thresholds.
+	5.	Feedback is shown inline, referencing exact line numbers and suggestions.
+	6.	Successful commits progress to deployment stage.
+
+This promotes developer enablement, reduces rework, and supports repeatable enforcement in a DevSecOps-aligned manner.
+
+⸻
+
+Policy Enforcement Strategy
+
+We propose the following controls be enforced as hard checks within IaC scans:
+
+Control Area	Description
+Tagging Standards	Ensure all required tags (owner, env, app, data_classification, etc.) are present
+Public Access	Flag if S3 buckets, Azure Storage, or GCP buckets are public
+Encryption Enforcement	Validate encryption-at-rest and in-transit settings
+Resource Types	Restrict usage of disallowed services (e.g., unrestricted NSGs, unmanaged disks)
+Network Exposure	Disallow 0.0.0.0/0 exposure on sensitive ports
+
+These policies are defined in Wiz Code Rego rules and enforced via the CI gate.
+
+⸻
+
+Developer Experience (DX)
+
+Wiz Code also supports:
+	•	VS Code extensions for scanning locally before commit.
+	•	Detailed feedback that maps runtime risk back to source-level IaC.
+	•	Container image scanning, secret detection, and more as part of secure SDLC.
+
+This results in a faster, more developer-friendly feedback loop, compared to runtime detection or after-the-fact Azure Policy violations.
+
+⸻
+
+Value Proposition
+
+Benefit	Description
+Shift-left security	Enforces policies at commit/merge time, not after deployment.
+Security by design	Encourages secure defaults, consistent resource definition.
+Developer empowerment	Provides context-aware remediation guidance within code editors or CI jobs.
+Reduced drift	Codified policies prevent config drift from runtime environments.
+Multi-cloud control	Applies consistently across Azure, GCP, and potentially AWS.
+
+
+Certainly. Below is a detailed comparative table between IaC Scanning and Azure Policies, structured to highlight their respective preventive vs detective capabilities, along with other operational and governance trade-offs. This is suitable for use in a governance proposal or technical standards documentation.
+
+⸻
+
+Comparison: IaC Scanning vs Azure Policy
+
+Aspect	IaC Scanning (e.g., Wiz Code, Checkov)	Azure Policy (e.g., Built-in or Custom Definitions)
+Control Type	Preventive – blocks misconfigurations before deployment	Detective + Preventive – blocks or audits deployed resources
+Timing of Enforcement	Pre-deployment (shift-left) during CI/CD pipeline	Post-deployment or at runtime (except for Deny policies)
+Enforcement Scope	Source code (Terraform, Bicep, ARM templates)	Azure Resource Manager (ARM) layer during/after resource deployment
+Developer Feedback Loop	Immediate, actionable (with line-level errors in PRs)	Delayed (after resource is deployed or denied, no detailed remediation)
+Customization Flexibility	High – supports complex logic (e.g., Rego, regex, nested context)	Moderate – limited expression language (JSON logic), regex support is minimal
+Coverage Across Cloud Providers	Multi-cloud (Azure, AWS, GCP, etc.)	Azure-specific only
+Supports Shift-Left Security	Yes – part of secure SDLC practices	No – focuses on enforcement at runtime
+False Positives Risk	Low – checks static config, avoids runtime anomalies	Medium – audit policies may trigger noisy alerts
+Policy Centralization	Scanned from IaC repo or GitOps tools	Managed centrally in Azure Policy engine
+Governance Enforcement Type	Prevents merges/deploys if violations exist	Can audit, deny, append, or modify resource definitions
+Remediation Support	Often includes suggested code fixes for PR resolution	Manual or via remediation tasks; no inline code feedback
+IDE Integration (Dev Experience)	Yes – extensions for VS Code, IntelliJ, etc.	No – enforced externally via platform
+Dependency on Cloud Platform	Independent – works with Terraform/ARM pre-Azure	Tightly coupled with Azure infrastructure
+Supports Cross-Team Standards	Yes – can enforce org-wide IaC baselines across teams	Yes – via Policy Assignments, but harder to align with dev pipelines
+Ease of Bypass	Difficult – fails builds if scanning is enforced in pipeline	Possible – if deployment is outside scope or policy is set to Audit only
+Complementary to Other Controls	Yes – works well with policy-as-code, GitOps, and runtime guardrails	Yes – integrates with RBAC, Blueprints, and Defender for Cloud
+
+
+
+⸻
+
+Summary View:
+
+Control Type	IaC Scanning	Azure Policy
+Preventive	Yes	Yes (Deny policies)
+Detective	No (Unless post-scan audit is run)	Yes (Audit policies)
+
+
+
+⸻
+
+Recommendation:
+
+Use IaC scanning as the primary preventive control (shift-left) and apply Azure Policies as runtime guardrails or detective enforcement for anything not provisioned through CI/CD. This layered approach ensures security is enforced by design, while backstopping runtime gaps via native policy engines.
+
+Would you like a visual heatmap of this comparison or embed it as a standards matrix in your broader cloud security governance document?
+
+
+
+
+⸻
+
+Next Steps
+	•	Define baseline Rego rules or use available Wiz policies aligned to Exact Trust controls.
+	•	Pilot the integration in one Azure DevOps project and one GCP repo.
+	•	Measure pass/fail rate, feedback loops, and developer adoption.
+	•	Expand to broader teams with templates and 
+
+Certainly. Below is a Jira Story format for introducing IaC scanning in CI/CD pipelines for Azure and GCP, with clearly structured deliverables broken down into weekly/day-level sub-tasks. This story can be aligned under an epic like “Cloud DevSecOps Enablement” or “Secure SDLC Enforcement for Cloud Infrastructure.”
+
+⸻
+
+JIRA Story: Implement IaC Scanning in CI/CD for Azure and GCP
+
+Story Title:
+Integrate Infrastructure-as-Code (IaC) scanning into CI/CD pipelines for Azure and GCP using Wiz Code (Preferred)
+
+Story Description:
+As a Cloud Security Architect, I want to integrate IaC scanning into the CI/CD process for Azure and GCP environments using Wiz Code (preferred), Snyk, or Azure Defender for Cloud CI/CD scanning capabilities. This will enable proactive enforcement of security and compliance policies before infrastructure is deployed, supporting shift-left security and reducing post-deployment risk.
+
+Acceptance Criteria:
+	•	IaC scanning is embedded into at least one Azure DevOps pipeline and one GCP GitLab/GitHub pipeline.
+	•	Findings are enforced as hard gates (PR fails if critical findings are present).
+	•	Baseline security and tagging policies are defined and implemented as Rego or equivalent policy checks.
+	•	Documentation is created outlining tool usage, developer workflow, and exception handling process.
+	•	Success criteria includes clear developer feedback loops and identification of remediation lines in code.
+
+⸻
+
+Deliverables by Week / Task Breakdown
+
+Week 1 – Discovery & Planning
+	•	Research supported integrations for Wiz Code, Snyk, and Azure CI/CD Defender
+	•	Document use case comparisons and tooling selection rationale (✔ Preferred: Wiz Code)
+	•	Define minimum policy controls (e.g., tagging, public access, encryption, network exposure)
+	•	Review CI/CD workflows (Azure DevOps, GitHub, GitLab) for integration feasibility
+	•	Present proposal to stakeholders for tool approval and architectural alignment
+
+⸻
+
+Week 2 – Baseline Setup & Policy Authoring
+	•	Enable Wiz Code on test repositories (Azure + GCP repo)
+	•	Author Rego policies for 3–5 core controls (tagging, public exposure, unencrypted resources)
+	•	Validate Rego syntax and simulate violations in dummy IaC code
+	•	Build initial CI/CD pipeline step to trigger scan during PR creation or push
+	•	Review feedback loop to ensure line-level errors are returned in pipeline
+
+⸻
+
+Week 3 – Pilot Integration in Azure & GCP Pipelines
+	•	Integrate IaC scan into Azure DevOps pipeline
+	•	Integrate IaC scan into GitHub/GitLab for GCP repo
+	•	Validate PR gating behavior and pipeline pass/fail conditions
+	•	Capture developer feedback and code remediation workflows
+	•	Create screenshots or screencasts for demo of working scan-to-fix loop
+
+⸻
+
+Week 4 – Harden Policy & Developer Enablement
+	•	Expand Rego policies to include more controls (resource-specific or compliance-aligned)
+	•	Build a reusable pipeline template (.yml or action file) for team-wide adoption
+	•	Publish developer guide with:
+	•	Required tags
+	•	Common violations
+	•	How to scan locally (e.g., VS Code extensions)
+	•	Exceptions/escalation process
+	•	Meet with Engineering and DevOps teams to finalize rollout plan
+
+⸻
+
+Week 5 – Reporting & Operationalization
+	•	Enable scan dashboards (Wiz UI or integrate into Jira/Splunk for alerting)
+	•	Schedule periodic IaC policy review process
+	•	Onboard additional application teams to use pipeline
+	•	Submit final documentation to Confluence under Secure SDLC section
+	•	Prepare retrospective report on pilot, gaps identified, and scale-up strategy
+
+⸻
+
+Story Points:
+
+13 (Epic-level initiative with multiple implementation tasks)
+
+Linked Epic:
+
+CLOUD-SEC-001: DevSecOps Controls & IaC Governance
+
+Labels:
+
+DevSecOps IaC-Scanning Wiz-Code CI-CD Azure GCP Shift-Left-Security
