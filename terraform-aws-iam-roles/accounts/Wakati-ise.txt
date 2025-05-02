@@ -1,0 +1,29 @@
+04/28 – Monday
+	•	1 hour – Meetings
+	•	3 hours – Final Reviewed Proofpoint-Normalyze PoC onboarding documentation and environment readiness steps
+	•	2 hours – Planning for proposing IaC scanning project, including documentation structure
+	•	1.5 hours – General architectural research and internal documentation review
+
+04/29 – Tuesday
+	•	1.5 hours – Meetings
+	•	3 hours – Reviewed Azure onboarding script from Normalyze vendor; applied customizations and raised clarification questions
+	•	2 hours – Assessed GCP Org Policies as part of IS-2575 to identify control gaps and external access constraints
+	•	1 hour – Reviewed Wiz Code documentation and CI/CD integration scenarios
+
+04/30 – Wednesday
+	•	2 hours – Meetings
+	•	2.5 hours – Partnered with Architecture team to review and update C4 diagram for DLP PoC
+	•	1.5 hours – Conducted CIS v4 gap analysis against existing Azure policy baselines
+	•	1 hour – Took online training on integration design for IaC scanning in person pipelines
+
+05/01 – Thursday
+	•	2 hours – Meetings
+	•	2.5 hours – Created tooling comparison matrix: Wiz Code vs. Snyk vs. Defender; drafted selection rationale
+	•	1.5 hours – Review current tagging and workload classification strategy
+	•	1 hour – Reviewed and documented vendor risk assessment submission process for Normalyze
+
+05/02 – Friday
+	•	2.5 hours – Meetings
+	•	2 hours – Studied Microsoft Azure Baseline Security v4 best practices and mapped to internal controls
+	•	1.5 hours – Analyzed Proofpoint-Normalyze dashboard and onboarding prerequisites
+	•	1 hour – Finalized documentation, backlog notes, and prepared plan for next week’s workstreams
