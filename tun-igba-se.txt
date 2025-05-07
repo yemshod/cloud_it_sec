@@ -1,0 +1,88 @@
+The error you’re encountering:
+
+InsufficientS3BucketPolicyException: Incorrect S3 bucket policy is detected for bucket: pri-central-s3-logs
+
+occurs because CloudTrail requires very specific S3 bucket policy statements, even when you’re setting up object-level logging from a bucket in a different AWS account (e.g., for S3 Data Events).
+
+⸻
+
+Why This Happens
+
+When you configure CloudTrail (especially with Data Events) to deliver logs to an S3 bucket in a different account, CloudTrail checks whether:
+	1.	The destination bucket explicitly allows cloudtrail.amazonaws.com as the principal.
+	2.	The PutObject permission is scoped to the right SourceArn, SourceAccount, and expected key prefix.
+	3.	The policy follows the strict AWS-prescribed format, especially for cross-account CloudTrail integration.
+
+⸻
+
+Required Bucket Policy Fix
+
+Here’s the correct bucket policy you must apply to the centralized bucket (pri-central-s3-logs) in your PRI Audit account, allowing CloudTrail from other AWS accounts (e.g., 123456789012) to write to it:
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Allow CloudTrail from Source Account",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "cloudtrail.amazonaws.com"
+      },
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::pri-central-s3-logs/AWSLogs/123456789012/*",
+      "Condition": {
+        "StringEquals": {
+          "s3:x-amz-acl": "bucket-owner-full-control"
+        }
+      }
+    }
+  ]
+}
+
+Key Notes:
+	•	Replace 123456789012 with the actual source account ID.
+	•	Ensure your CloudTrail trail is configured to deliver logs under the path AWSLogs/<account-id>/.
+
+⸻
+
+Additional Required Configurations
+
+1. Enable bucket-owner-full-control ACL on CloudTrail
+
+CloudTrail must be configured with:
+
+s3_bucket_name          = "pri-central-s3-logs"
+s3_key_prefix           = "AWSLogs/123456789012"
+s3_bucket_owner         = "AUDIT_ACCOUNT_ID" # Needed for cross-account
+include_global_service_events = true
+is_multi_region_trail  = true
+
+2. Ensure Ownership Controls on the Central Bucket
+
+You must ensure the centralized bucket has:
+
+resource "aws_s3_bucket_ownership_controls" "central" {
+  bucket = aws_s3_bucket.central.id
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
+This guarantees the Audit account retains ownership even when another account writes logs with ACLs.
+
+⸻
+
+Fix Flow Summary
+
+Task	Description
+Fix Bucket Policy	Add CloudTrail-specific s3:PutObject policy for each source account, with correct path and bucket-owner-full-control
+Ensure ACL	CloudTrail must use ACL bucket-owner-full-control during log delivery
+Set Ownership Controls	Set object_ownership = BucketOwnerPreferred
+Prefix Path	CloudTrail must use path like AWSLogs/<account-id>/ or the S3 key prefix must match the policy
+Validate Cross-Account Setup	Confirm the trail’s s3_bucket_owner is set to the Audit account ID if configured from a different account
+
+
+
+⸻
+
+Would you like a Terraform version of this specific CloudTrail-compatible S3 bucket policy for your centralized logging bucket?
