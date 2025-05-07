@@ -86,3 +86,66 @@ Validate Cross-Account Setup	Confirm the trail’s s3_bucket_owner is set to the
 ⸻
 
 Would you like a Terraform version of this specific CloudTrail-compatible S3 bucket policy for your centralized logging bucket?
+
+
+---------
+
+Below is the corrected Terraform-compatible aws_s3_bucket_policy block that supports CloudTrail cross-account delivery to your pri-central-s3-logs bucket, following the style of the code in your image and integrating bucket-owner-full-control ACL and AWSLogs/<account-id>/* prefix:
+
+resource "aws_s3_bucket_policy" "central_logs" {
+  bucket = aws_s3_bucket.central_logs.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid       = "AllowCloudTrailLogsFromSourceAccounts",
+        Effect    = "Allow",
+        Principal = {
+          Service = "cloudtrail.amazonaws.com"
+        },
+        Action    = "s3:PutObject",
+        Resource  = var.allowed_source_accounts[*] != null ? [
+          for account in var.allowed_source_accounts :
+          "${aws_s3_bucket.central_logs.arn}/AWSLogs/${account}/*"
+        ] : [],
+        Condition = {
+          StringEquals = {
+            "s3:x-amz-acl" = "bucket-owner-full-control"
+          }
+        }
+      }
+    ]
+  })
+}
+
+
+
+⸻
+
+Required Variables:
+
+variable "allowed_source_accounts" {
+  description = "List of AWS account IDs allowed to send CloudTrail logs"
+  type        = list(string)
+}
+
+Example Usage:
+
+allowed_source_accounts = [
+  "111111111111",
+  "222222222222"
+]
+
+
+
+⸻
+
+Important:
+	•	This version assumes you’re delivering logs to paths like: s3://pri-central-s3-logs/AWSLogs/<account-id>/...
+	•	You must configure CloudTrail in the source account with:
+	•	s3_bucket_name = "pri-central-s3-logs"
+	•	s3_key_prefix = "AWSLogs/<account-id>"
+	•	s3_bucket_owner = "<Audit Account ID>"
+
+Would you like me to wrap this into a reusable module block (like pri-cloudtrail-crossaccount-policy) or add inline comments for clarity?
