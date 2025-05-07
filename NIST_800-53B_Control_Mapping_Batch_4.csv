@@ -1,0 +1,22 @@
+Security Domain,Control ID,Control Description,Capabilities Exist,Tools/Capabilities
+Risk and Compliance Management,PM-5,Information Security Program Plan,Process Related,Manually documented and periodically updated
+Risk and Compliance Management,PM-6,Information Security Measures of Performance,Process Related,Manual performance tracking and reporting
+Risk and Compliance Management,PM-7,Enterprise Architecture,Process Related,Manually documented enterprise architecture
+Risk and Compliance Management,PM-8,Critical Infrastructure Plan,Process Related,Manual critical infrastructure planning documentation
+Risk and Compliance Management,PM-9,Risk Management Strategy,Process Related,Manual risk management strategy documents
+Risk and Compliance Management,PM-10,Security Authorization Process,Process Related,Manual authorization and review process
+Risk and Compliance Management,PM-11,Mission/Business Process Definition,Process Related,Manually defined and documented
+Risk and Compliance Management,PM-12,Insider Threat Program,Process Related,Defined through manual training and policy
+Risk and Compliance Management,PM-13,Information Security Resources,Process Related,Manually allocated and budgeted
+System and Communications Protection,SC-12,Cryptographic Key Establishment,Y,"TLS, AWS KMS"
+System and Communications Protection,SC-13,Cryptographic Protection,Y,"TLS, AWS KMS"
+System and Communications Protection,SC-17,Public Key Infrastructure Certificates,Y,"AWS ACM, Internal PKI"
+System and Communications Protection,SC-28,Protection of Information at Rest,Y,"AWS S3 Encryption, AWS KMS"
+System and Communications Protection,SC-28(1),Encryption of Information at Rest,Y,"AWS KMS, EBS encryption"
+System and Communications Protection,SC-28(3),Use of Cryptographic Methods,Y,"TLS 1.2+, AWS KMS"
+System and Communications Protection,SC-29,Information Exchange,Y,"TLS, Palo Alto Networks"
+System and Communications Protection,SC-30,Concealment of Information at Rest,Y,AWS S3 Default Encryption
+System and Communications Protection,SC-31,Concealment of Information in Transit,Y,TLS
+System and Communications Protection,SC-32,Information System Partitioning,Y,"AWS VPC, Subnets"
+System and Communications Protection,SC-34,Non-Modifiable Audit Records,Y,AWS CloudTrail with S3 Object Lock
+System and Communications Protection,SC-38,Operations Security,Y,"Splunk, GuardDuty, CloudWatch"
