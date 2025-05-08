@@ -1,6 +1,4 @@
-Certainly! I’ll consolidate all the tables previously provided into a single GitHub-friendly Markdown format. GitHub uses Markdown for rendering tables, which requires a specific syntax with pipes (|) and dashes (-) to define headers and rows. I’ll ensure the table is properly formatted for GitHub, covering all 160+ NIST 800-53B Moderate controls we’ve mapped so far. The table will include the columns: Security Domain, Control ID, Control Title/Description, Capabilities Exist Y/N, and Tools/Capabilities.
-Below is the consolidated table in GitHub Markdown format, ready to be copied and pasted into a GitHub repository (e.g., in a .md file). Due to the large number of rows (160+), I’ll present the full table, ensuring it’s complete and properly formatted.
-GitHub Markdown Table: NIST 800-53B Moderate Controls Mapping
+
 # NIST 800-53B Moderate Controls Mapping to Security Domains and Tools
 
 | Security Domain         | Control ID | Control Title/Description                                                                                      | Capabilities Exist Y/N | Tools/Capabilities                                                                                       |
