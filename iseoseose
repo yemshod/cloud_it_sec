@@ -1,0 +1,59 @@
+
+05/05 – Monday
+	•	1 hour – Meetings
+	•	2 hours – Documented 5Ws for Ivanti Application Control Manager (IS-2760) and began architectural summary
+	•	2 hours – Reviewed updated onboarding artifacts for Proofpoint-Normalyze PoC and vendor communications
+	•	1.5 hours – Technical review of Snyk capabilities and IaC scanning proposal refinement (IS-2574)
+
+05/06 – Tuesday
+	•	2.5 hours – Meetings
+	•	2 hours – Validated newly shared Azure and GCP C4 diagrams for DLP PoC; prepared for AGC prep (IS-276)
+	•	2 hours – Hands-on research and testing of Wiz Code CLI scanning behavior and results normalization
+	•	1 hour – GCP Fundamentals security policy training
+
+05/07 – Wednesday
+	•	2 hours – Meetings
+	•	2 hours – Collaborated with vendor to troubleshoot Proofpoint-created tenant access issues for Normalyze
+	•	2 hours – Reviewed and annotated active and non-active GCP Org Policies (IS-2575)
+	•	1 hour – Internal self-paced Azure governance course (focus: Azure Blueprints & Policy insights)
+
+05/08 – Thursday
+	•	2.5 hours – Meetings
+	•	2 hours – Continued Normalyze onboarding troubleshooting, vendor engagement pending resolution
+	•	2 hours – Created summary note and submitted proposal documentation for Shift-Left Design (IS-2574)
+	•	1 hour – Requested installation support and initiated install for Ivanti platform (IS-2759)
+
+05/09 – Friday
+	•	2 hours – Meetings
+	•	2 hours – Reviewed comments on GCP Org Policies and followed up with draft improvement recommendations
+	•	1.5 hours – Prepared AGC risk submission tracking update for Normalyze PoC; pending Tokyo feedback
+	•	1 hour – Reviewed Splunk dashboard mapping opportunities for Ivanti log integration (exploratory)
+
+⸻
+
+Key Project Highlights
+
+Proofpoint-Normalyze DLP PoC (IS-276 / IS-1085):
+	•	Encountered onboarding friction due to misconfigured vendor-provisioned tenants; ongoing vendor coordination underway
+	•	Reviewed final C4 diagrams for both Azure and GCP platforms
+	•	Risk assessment request was formally submitted; awaiting regional (Tokyo) feedback before AGC clearance
+	•	Working session to initiate technical PoC deferred pending resolution of access issues
+
+IaC Scanning Integration (IS-2574):
+	•	Created draft of Security Design documentation to support shift-left enforcement strategy
+	•	Requested access to Snyk for PoC evaluation
+	•	Conducted CLI-based Wiz scanning tests to validate detection behaviors and IaC policy alignment
+
+GCP Organization Policies Review (IS-2575):
+	•	Completed analysis of all active policies
+	•	Began review of non-active policies for applicability, and added preliminary recommendations for control expansion
+	•	Noted several opportunities for alignment with broader organizational governance themes
+
+Ivanti Application Control Manager (IS-2759 / IS-2760):
+	•	Created first draft of “5Ws” documentation (What, Why, Who, When, Where) and started application architecture mapping
+	•	Installation request submitted and pending deployment support
+	•	Preliminary research initiated on log observability and security posture management opportunities
+
+Security Training (Ongoing):
+	•	Continued security fundamentals and policy enforcement training across Azure and GCP environments
+	•	Studied Azure Blueprints, RBAC policy inheritance, and GCP Constraint Templates for Org Policy Design
