@@ -222,3 +222,14 @@ CLOUD-SEC-001: DevSecOps Controls & IaC Governance
 Labels:
 
 DevSecOps IaC-Scanning Wiz-Code CI-CD Azure GCP Shift-Left-Security
+
+
+
+
+iiioooooooooo
+
+mongoimport --uri "<your-mongodb-connection-string>" \
+  --collection customers \
+  --database pii-pci-db \
+  --file dummy_pii_pci_customers_1300.json \
+  --jsonArray
