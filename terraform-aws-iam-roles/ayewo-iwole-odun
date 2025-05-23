@@ -582,3 +582,224 @@ Additional Notes
 	•	Documentation: Maintain a central repository (e.g., Azure DevOps Wiki or SharePoint) for scripts, Splunk queries, and audit outputs to ensure repeatability.
 	•	Security Considerations: Ensure scripts run with least privilege (e.g., use managed identities for automation accounts) and store outputs securely with encryption.
 This detailed process for the Analysis phase, combined with the Splunk query and automation scripts, provides a repeatable framework for auditing IAM permissions. Let me know if you need further clarification or additional scripts!
+
+
+===========
+
+Thank you — based on your clarification that GTTS Security’s annual IAM permissions review includes all access provisioned via Entra ID (formerly Azure AD) across Azure and other connected applications/platforms (e.g., SaaS apps, enterprise apps, third-party integrations), here’s the updated formal documented process, now expanded beyond Azure RBAC to include full Entra ID identity governance scope.
+
+⸻
+
+GTTS Annual Entra ID IAM Permissions Review Process
+
+Document Owner: GTTS Security Team
+Effective Date: [Insert Date]
+Review Frequency: Annually
+Applies To:
+	•	Azure Subscriptions (via RBAC)
+	•	Entra ID roles and objects (users, groups, SPNs, managed identities)
+	•	All applications integrated with Entra ID
+	•	Conditional Access Policies, PIM, and App Assignments
+
+⸻
+
+1. Objectives
+	•	Review and validate user access, group memberships, application assignments, and role grants across the Entra ID ecosystem.
+	•	Ensure permissions align with least privilege, Zero Trust, CMMC, and NIST 800-53 controls.
+	•	Identify and revoke unused or unnecessary access.
+
+⸻
+
+2. Scope of the Review
+
+Area	Description
+Entra ID Roles	All privileged roles assigned to users, service principals, and groups
+Azure RBAC	Resource-level access across all subscriptions
+App Registrations	App roles, API permissions, consent grants, secret expiration
+Enterprise Apps	User/group assignments, SSO configurations, permissions granted
+Conditional Access Policies	Policies enforcing access controls, MFA, device compliance
+PIM (Privileged Identity Management)	Eligible vs. active assignments and usage frequency
+
+
+⸻
+
+3. Governance and Setup
+
+3.1. Assign Responsibilities
+	•	Security Owner: Leads execution, documentation
+	•	IAM Analyst: Extracts and processes data
+	•	App/Subscription Owners: Validate and approve access
+	•	Compliance Auditor: Verifies process outcomes
+
+3.2. Communication Plan
+	•	Notify stakeholders with a 30-day heads-up.
+	•	Provide timelines and expected deliverables.
+
+⸻
+
+4. Execution Steps
+
+4.1. Entra ID Role and Group Membership Review
+
+Console Steps:
+	1.	Portal:
+Go to Entra ID > Roles & Administrators
+	•	Export users in each role (Download button)
+	2.	PowerShell / Graph:
+
+Get-AzureADDirectoryRole | ForEach-Object {
+    Get-AzureADDirectoryRoleMember -ObjectId $_.ObjectId
+}
+
+
+	3.	Review Group Memberships
+	•	Go to Entra ID > Groups > All Groups
+	•	Filter by “Assigned” or “Dynamic Membership”
+	•	Export group membership for each group
+	4.	Analysis:
+	•	Identify over-privileged roles
+	•	Identify stale/inactive users
+	•	Flag groups with nested elevated permissions
+
+⸻
+
+4.2. Azure RBAC Role Assignment Review
+
+Console Steps:
+	1.	Azure Portal > Subscriptions > Access Control (IAM) > Role Assignments
+	•	Export all assignments by scope (Subscription, RG, or Resource)
+	2.	CLI:
+
+az role assignment list --all > az-role-assignments.json
+
+
+	3.	Review:
+	•	Check for Owner/Contributor at subscription level
+	•	Confirm justification for custom roles
+	•	Flag permanent vs. PIM-based access
+
+⸻
+
+4.3. Enterprise App Access Review (SaaS/Custom Apps)
+
+Console Steps:
+	1.	Go to Entra ID > Enterprise Applications > All Applications
+	2.	For each app:
+	•	Select the app > Users and groups
+	•	Export assignments
+	•	Review “Permissions” tab for consent grants
+	3.	Graph API / PowerShell:
+
+Get-AzureADServicePrincipal | ForEach-Object {
+    Get-AzureADServiceAppRoleAssignment -ObjectId $_.ObjectId
+}
+
+
+	4.	Review:
+	•	Remove assignments to unused apps
+	•	Identify delegated permissions or excessive admin consents
+	•	Check for broad “All Users” assignments
+
+⸻
+
+4.4. App Registration (Service Principals and Secrets)
+
+Console Steps:
+	1.	Go to Entra ID > App registrations
+	2.	Filter by “All Applications”
+	3.	Review:
+	•	API permissions (Delegated / Application)
+	•	Certificate & Secret expiration
+	•	Consent grants to Graph or Microsoft APIs
+	4.	Graph API:
+Use Graph Explorer or PowerShell to identify:
+	•	Inactive SPNs
+	•	Non-expiring secrets
+	•	High-scope Graph permissions
+
+⸻
+
+4.5. Conditional Access Policy Validation
+
+Console Steps:
+	1.	Go to Entra ID > Security > Conditional Access
+	2.	Export all policies using Microsoft Graph or JSON export
+	3.	Review:
+	•	Applicability (users/groups)
+	•	Grant Controls (MFA, device compliance)
+	•	High-privilege roles covered
+
+⸻
+
+4.6. Privileged Identity Management (PIM)
+
+Console Steps:
+	1.	Go to Entra ID > PIM > Azure AD Roles / Azure Resources
+	2.	Export:
+	•	Eligible assignments
+	•	Active usage history
+	•	Role activation justification logs
+	3.	Review:
+	•	Convert direct assignments to eligible
+	•	Ensure activation requires approval & MFA
+	•	Validate roles not being held indefinitely
+
+⸻
+
+5. Stakeholder Validation & Approval
+	•	Provide each team/app owner a breakdown of:
+	•	Assigned users/groups
+	•	Role/permission scopes
+	•	Recommended actions (Keep, Revoke, Reduce Scope)
+	•	Document justifications for any exceptions or extended access
+
+⸻
+
+6. Remediation Activities
+
+Task	Tool	Notes
+Revoke outdated permissions	Entra Console / PowerShell	Document all revocations
+Adjust access scopes	Azure IAM / PIM	Move from subscription to resource-level where possible
+Reconfigure PIM	Entra PIM	Add approval workflows and usage policies
+Review Conditional Access	Entra CA Portal	Add policies for uncovered roles or risky apps
+Rotate secrets / SPN keys	App Registration Portal	Flag secrets >90 days old
+
+
+⸻
+
+7. Documentation & Reporting
+	•	Store all reports, approvals, meeting notes, and export data in secure SharePoint or Confluence.
+	•	Final report should include:
+	•	Number of reviewed identities
+	•	Count of revoked/adjusted permissions
+	•	Exception logs
+	•	Risk classification
+
+⸻
+
+8. Continuous Improvement
+	•	Capture lessons learned.
+	•	Develop automated scripts to extract permissions and cross-reference changes year over year.
+	•	Establish KPIs (e.g., 100% role justifications, 0 unassigned Owner roles).
+
+⸻
+
+Appendix: Tools
+
+Tool	Purpose
+Entra Admin Portal	UI-based review and configuration
+PowerShell (AzureAD, Az, MSOnline)	Bulk review, exports
+Microsoft Graph API	Fine-grained automation
+Access Reviews (Microsoft Entra)	Optional integrated tool for delegated user self-review
+Azure Workbook / PowerBI	Visualize assignments and risk posture
+
+
+⸻
+
+Let me know if you want this turned into:
+	•	A Confluence documentation page
+	•	A repeatable Azure DevOps Pipeline task
+	•	An Excel template for stakeholder validation
+	•	Or a PowerShell/Graph automation bundle to support it
+
+Also happy to create versioning or control plan if GTTS wants this embedded into their governance lifecycle.
