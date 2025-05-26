@@ -1,68 +1,64 @@
-Here is your Jira-ready Weekly Status Report for 05/12 – 05/16, reflecting meeting times and activities across your DLP PoC testing, IaC scanning, Azure governance, Ivanti study, and mandatory training efforts.
+Here is your Jira-ready Weekly Status Report for 05/19 – 05/23, maintaining the established structure and incorporating your PoC testing, vendor collaboration, Ivanti engagement, and GCP training efforts.
 
 ⸻
 
-Weekly Status Update – [05/12 – 05/16]
+Weekly Status Update – [05/19 – 05/23]
 
 Summary:
-This week’s activities centered on hands-on validation of the Normalyze DLP tool within the Azure lab, conducting in-depth analysis of Snyk scan outputs, initiating Azure policy change requests, and reviewing Ivanti policy documentation. Mandatory compliance trainings were also completed ahead of their due dates. These efforts supported multiple concurrent initiatives under security governance, tooling adoption, and engineering enablement.
+This week’s efforts were heavily focused on hands-on validation and issue resolution related to the Normalyze PoC in the Azure environment. Additional time was dedicated to advancing familiarity with Ivanti Application Control through documentation study, and continuing GCP engineering training. Vendor collaboration was ongoing to address CosmosDB scanning issues encountered during testing.
 
 ⸻
 
 Breakdown by Day
 
-05/12 – Monday
+05/19 – Monday
 	•	1 hour – Meetings
-	•	3 hours – Normalyze testing in Azure lab environment; validated alert behavior and incident correlation
-	•	2 hours – Drafted Azure Policy update change requests (CHG) for internal governance board
-	•	1.5 hours – Reviewed CHG process documentation and updated supporting control justification
+	•	3 hours – Normalyze PoC testing (Azure test workloads: file movement, DLP triggers, logging validations)
+	•	2 hours – Reviewed PoC evaluation criteria against implemented policy/test cases
+	•	1 hour – Began GCP engineering training module on secure compute services
 
-05/13 – Tuesday
-	•	2.5 hours – Meetings
-	•	3 hours – Reviewed Normalyze DLP scan logs and policy match conditions; documented edge-case handling
-	•	2 hours – Analyzed Azure onboarding deviations and troubleshooting logs
-	•	1 hour – Initial review of Ivanti Application Control policy documentation
-
-05/14 – Wednesday
+05/20 – Tuesday
 	•	1.5 hours – Meetings
-	•	3 hours – Received Snyk platform access; explored project configuration, policies, and active findings
-	•	2 hours – Conducted side-by-side review of IaC scan results across Terraform templates
-	•	1 hour – Planned discussion points for follow-up sync with the Snyk team next week
+	•	3 hours – Troubleshot CosmosDB scanning limitations with vendor support and Azure logging diagnostics
+	•	2 hours – Performed validation walkthrough of remaining Normalyze test cases; captured observations
+	•	1 hour – Reviewed Ivanti control rule types and policy enforcement examples
 
-05/15 – Thursday
-	•	3 hours – Meetings
-	•	2 hours – Continued testing of Normalyze policy violations and validation against synthetic workloads
-	•	2 hours – Deep dive into Ivanti policy groups, enforcement modes, and audit workflows
-	•	1 hour – Created knowledge base draft notes for Ivanti implementation prerequisites
+05/21 – Wednesday
+	•	5.5 hours – Meetings
+	•	2 hours – Worked with vendor team on onboarding architecture clarification for CosmosDB use case
+	•	0.5 hours – Documented gaps between required vs. available telemetry in Azure for Normalyze
 
-05/16 – Friday
+05/22 – Thursday
 	•	3.5 hours – Meetings
-	•	3 hours – Completed corporate-mandated compliance and ethics training modules
-	•	1.5 hours – Reviewed training documentation for cross-cloud security models and zero trust
-	•	1 hour – Closed documentation for Normalyze troubleshooting findings and tagged unresolved issues for follow-up
+	•	2 hours – Continued validation of DLP policy triggers with synthetic data exfiltration patterns
+	•	1 hour – Updated evaluation tracker with results from each scenario
+	•	1 hour – GCP IAM and Org Policy deep-dive (training module)
+
+05/23 – Friday
+	•	2.5 hours – Meetings
+	•	2 hours – Reviewed Ivanti audit logs and filtering mechanisms; documented local test steps
+	•	1 hour – Self-paced module: GCP VPC Service Controls and data boundary enforcement
+	•	1 hour – Logged and summarized open issues with vendor for escalation in next PoC sync
 
 ⸻
 
 Key Project Highlights
 
 Normalyze DLP PoC (IS-276 / IS-1085):
-	•	Performed extended lab testing for policy validation, alert review, and incident reporting behaviors in Azure
-	•	Identified issues in tenant onboarding and policy mismatches; documented test cases and flagged areas requiring vendor engagement
-	•	Finalized week’s log with unresolved issues to be revisited in next week’s working session
-
-IaC Scanning – Snyk Engagement (IS-2574):
-	•	Met with platform owner to gain access to Snyk
-	•	Conducted initial walkthrough of scan results, reviewing project tagging, rulesets, and output patterns
-	•	Preparing follow-up review session for scan tuning and remediation process alignment
-
-Azure Governance (Ad-hoc):
-	•	Created and submitted change requests (CHG) related to Azure Policy updates, supporting internal security alignment
-	•	Reviewed justification mappings and compliance implications across monitored resource groups
+	•	Executed full round of Azure-based test scenarios per defined use cases (file transfer, tagging, exfiltration)
+	•	Encountered functional gap with CosmosDB scanning; worked directly with vendor support to troubleshoot
+	•	Identified telemetry/data access limitations and updated evaluation worksheet accordingly
+	•	Testing continues into next week pending vendor fix for CosmosDB visibility
 
 Ivanti Application Control (IS-2759 / IS-2760):
-	•	Completed foundational reading on policy management strategies and Ivanti control modes
-	•	Captured key insights to aid eventual implementation and control alignment with least privilege enforcement
+	•	Expanded understanding of Ivanti enforcement rules, audit settings, and policy deployment behavior
+	•	Reviewed example control files and observed runtime behavior via provided documentation
+	•	Documented sample scenarios for future local lab testing
 
-Corporate Training & Learning (General):
-	•	Completed all required compliance, ethics, and risk training ahead of due dates
-	•	Reinforced learning on cross-cloud IAM, data classification, and governance alignment through curated modules
+GCP Engineering Training (Ongoing):
+	•	Completed several modules focusing on IAM, policy enforcement, and VPC Service Controls
+	•	Applied training context to refine perspective on multi-cloud security guardrails
+
+⸻
+
+Let me know once the 05/27–05/31 input is ready. I’ll maintain the same structured format.
