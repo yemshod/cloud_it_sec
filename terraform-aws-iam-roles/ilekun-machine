@@ -1,0 +1,101 @@
+Here are the key considerations for configuring Avanti policies and testing the agent functionality:
+
+1. Policy Creation:
+- Create a dev policy with inventory scanner and edge intelligence
+- Set LAN and WAN settings to 50
+- Configure reboot experience settings
+
+2. Agent Installation:
+- Download both the executable and options files
+- Perform a silent install with elevated permissions
+- Install on a test machine initially
+
+3. Testing Approach:
+- Start in audit mode to understand how policies impact the system
+- Monitor event logs and AppSense logs
+- Test with local "Everyone" and "Administrator" groups initially
+- Observe which applications get blocked (e.g., CMD, PowerShell)
+
+4. Group Management:
+- Plan to create role-based groups for granular access control
+- Prepare to use the TCR process for adding new groups
+- Consider different policies for different user roles
+
+5. Future Considerations:
+- Plan to add certificate for Azure group access
+- Prepare for potential Mac agent deployment
+- Be ready to adjust policies based on initial testing results
+
+The goal is to gradually build and refine policies while understanding the agent's impact on your environment
+
+.
+
+
+Here are the steps to create agent installation files:
+
+1. Access Avanti Neurons Console
+- Log into the cloud console
+- Navigate to agent deployment section
+
+2. Create Agent Policy
+- Go to "Policies" section
+- Create a new policy (e.g., "dev policy")
+- Select inventory scanner and edge intelligence
+- Configure LAN/WAN settings to 50
+- Save the policy
+
+3. Generate Enrollment Key
+- Go to "Enrollment Keys" section
+- Create a new key
+- Name the key (e.g., "dev enrollment")
+- Set number of allowed agents (recommended 20)
+- Set expiration date (suggest 1 year out)
+
+4. Prepare Installation Files
+- Select "Agent Deployment"
+- Choose manual install
+- Select Windows platform
+- Choose silent install option
+- Copy the provided command line script
+- Download executable and options files
+- Ensure both files are in same location
+
+5. Optional Certificate Configuration
+- Prepare certificate for Azure group access
+- Will be added to installation script in future stages
+
+Key Tip: The command line script and downloaded files are critical for silent installation across multiple machines.
+
+
+For Mac agent deployment, here are the key next steps:
+
+1. Immediate Actions:
+- Contact Avanti directly to understand Mac agent capabilities
+- Schedule a specific meeting with Avanti to discuss Mac OS agent functionality
+- Confirm exact protection and monitoring features for Mac devices
+
+2. Current Limitations:
+- No native app control format for Mac currently
+- Limited understanding of Mac agent's full capabilities
+- Need to verify inventory and control mechanisms
+
+3. Planned Approach:
+- Get detailed documentation from Avanti about Mac agent
+- Determine if Mac agent supports:
+  * Inventory tracking
+  * Device monitoring
+  * Application control
+- Develop a separate testing strategy for Mac deployment
+
+4. Installation Preparation:
+- Obtain Mac-specific installation files
+- Prepare for potential silent installation process
+- Plan to test agent functionality in controlled environment
+
+5. Coordination Needed:
+- Involve IT security team in Mac agent evaluation
+- Align Mac agent deployment with existing security policies
+- Consider potential differences from Windows agent configuration
+
+
+The primary focus is gathering comprehensive information about Mac agent capabilities before full deployment.
