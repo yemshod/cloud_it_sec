@@ -1,1 +1,57 @@
-weekly report
+Here is your Jira-ready Weekly Status Report for 05/26 – 05/30, incorporating the Memorial Day holiday and your active engagements across Ivanti implementation, Normalyze PoC progression, and pre-AGC risk coordination.
+
+⸻
+
+Weekly Status Update – [05/26 – 05/30]
+
+Summary:
+This week was split between hands-on Ivanti agent setup and validation, continued Azure testing within the Normalyze PoC, and supporting risk review efforts with the Tokyo team ahead of AGC review. The MongoDB scanning issue remains pending with Proofpoint. A U.S. federal holiday (Memorial Day) was observed on Monday.
+
+⸻
+
+Breakdown by Day
+
+05/26 – Monday
+	•	8 hours – Memorial Holiday (U.S. Federal Observance)
+
+05/27 – Tuesday
+	•	2 hours – Meetings
+	•	2 hours – Installed Ivanti Management Console on Windows endpoint
+	•	1 hour – Created Ivanti agent install file for macOS; submitted ticket to Desktop Support for assistance
+	•	1 hour – Reviewed Normalyze PoC test results and retested Azure alert logic
+
+05/28 – Wednesday
+	•	2.5 hours – Meetings
+	•	2 hours – Installed Ivanti agent on Windows endpoint and verified device visibility in Ivanti Neurons Console
+	•	1 hour – Validated policies synced correctly with console rules
+	•	1 hour – Retested and logged Normalyze detection cases pending MongoDB support
+
+05/29 – Thursday
+	•	3 hours – Meetings
+	•	2 hours – Completed review of Tokyo team’s Pre-AGC risk questions for Normalyze PoC and submitted detailed responses
+	•	1 hour – Reviewed updated DLP use case tracking sheet and marked validation status per test item
+
+05/30 – Friday
+	•	4.5 hours – Meetings
+	•	2 hours – Additional Azure-based testing of Normalyze PoC for tagging, access, and data movement scenarios
+	•	1 hour – Discussed coordination steps with Proofpoint for MongoDB issue resolution planned for next week
+	•	0.5 hours – Logged Ivanti client behavior and dashboard integration observations
+
+⸻
+
+Key Project Highlights
+
+Normalyze DLP PoC (IS-276 / IS-1085):
+	•	Conducted further use case validation in Azure; tagging and alert scenarios validated successfully
+	•	Worked with vendor to review outstanding MongoDB scanning issue, pending vendor-side resolution
+	•	Reviewed and responded to Pre-AGC Risk Assessment questions from Tokyo, ensuring readiness for AGC review milestone
+
+Ivanti Application Control (IS-2759 / IS-2760):
+	•	Installed Ivanti Management Console on Windows host
+	•	Generated macOS installation file and submitted request for Desktop Support-led deployment
+	•	Successfully onboarded Windows endpoint to Ivanti Neurons Console and validated visibility
+	•	Reviewed initial enforcement policies and confirmed device compliance state
+
+⸻
+
+Let me know once you’re ready for the 06/02 – 06/07 entry. The format will remain consistent for Jira updates unless you specify a change.
