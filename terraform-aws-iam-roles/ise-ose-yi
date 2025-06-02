@@ -1,57 +1,71 @@
-Here is your Jira-ready Weekly Status Report for 05/26 – 05/30, incorporating the Memorial Day holiday and your active engagements across Ivanti implementation, Normalyze PoC progression, and pre-AGC risk coordination.
+From your new screenshot, here are the key issues causing the Ivanti Agent installation to fail again:
 
 ⸻
 
-Weekly Status Update – [05/26 – 05/30]
+❌ Errors Observed:
+	1.	Invalid package path:
 
-Summary:
-This week was split between hands-on Ivanti agent setup and validation, continued Azure testing within the Normalyze PoC, and supporting risk review efforts with the Tokyo team ahead of AGC review. The MongoDB scanning issue remains pending with Proofpoint. A U.S. federal holiday (Memorial Day) was observed on Monday.
+installer: Error – the package path specified was invalid: “/Users/waade/Downloads/Ivanti.Neurons.Agent.dmg”.
 
-⸻
+🔍 The command is trying to install a .dmg file directly as a package, but installer -pkg expects a .pkg file inside a mounted .dmg. You need to mount the .dmg first, then point to the .pkg inside it.
 
-Breakdown by Day
+	2.	Agent binary not found:
 
-05/26 – Monday
-	•	8 hours – Memorial Holiday (U.S. Federal Observance)
+zsh: no such file or directory: /usr/local/com.ivanti.cloud.agent/IvantiAgent/bin/stagentctl
 
-05/27 – Tuesday
-	•	2 hours – Meetings
-	•	2 hours – Installed Ivanti Management Console on Windows endpoint
-	•	1 hour – Created Ivanti agent install file for macOS; submitted ticket to Desktop Support for assistance
-	•	1 hour – Reviewed Normalyze PoC test results and retested Azure alert logic
-
-05/28 – Wednesday
-	•	2.5 hours – Meetings
-	•	2 hours – Installed Ivanti agent on Windows endpoint and verified device visibility in Ivanti Neurons Console
-	•	1 hour – Validated policies synced correctly with console rules
-	•	1 hour – Retested and logged Normalyze detection cases pending MongoDB support
-
-05/29 – Thursday
-	•	3 hours – Meetings
-	•	2 hours – Completed review of Tokyo team’s Pre-AGC risk questions for Normalyze PoC and submitted detailed responses
-	•	1 hour – Reviewed updated DLP use case tracking sheet and marked validation status per test item
-
-05/30 – Friday
-	•	4.5 hours – Meetings
-	•	2 hours – Additional Azure-based testing of Normalyze PoC for tagging, access, and data movement scenarios
-	•	1 hour – Discussed coordination steps with Proofpoint for MongoDB issue resolution planned for next week
-	•	0.5 hours – Logged Ivanti client behavior and dashboard integration observations
+This error confirms the agent wasn’t installed — because the previous step failed.
 
 ⸻
 
-Key Project Highlights
+✅ Step-by-Step Fix:
 
-Normalyze DLP PoC (IS-276 / IS-1085):
-	•	Conducted further use case validation in Azure; tagging and alert scenarios validated successfully
-	•	Worked with vendor to review outstanding MongoDB scanning issue, pending vendor-side resolution
-	•	Reviewed and responded to Pre-AGC Risk Assessment questions from Tokyo, ensuring readiness for AGC review milestone
+🔧 Corrected Manual Installation Commands:
 
-Ivanti Application Control (IS-2759 / IS-2760):
-	•	Installed Ivanti Management Console on Windows host
-	•	Generated macOS installation file and submitted request for Desktop Support-led deployment
-	•	Successfully onboarded Windows endpoint to Ivanti Neurons Console and validated visibility
-	•	Reviewed initial enforcement policies and confirmed device compliance state
+Run these exact commands, step by step:
+
+# Step 1: Mount the DMG file
+hdiutil attach ~/Downloads/Ivanti.Neurons.Agent.dmg -mountpoint /tmp/cloudinstall -nobrowse
+
+# Step 2: Run the installer (must be the .pkg inside the mounted image)
+sudo /usr/sbin/installer -pkg /tmp/cloudinstall/Ivanti\ Neurons\ Agent.pkg -target /
+
+# Step 3: Detach the DMG
+hdiutil detach /tmp/cloudinstall
+
+# Step 4: Register the agent (only after verifying the agent is installed)
+sudo /usr/local/com.ivanti.cloud.agent/IvantiAgent/bin/stagentctl register \
+  --baseurl https://agentreg.ivanticloud.com \
+  --enrollmentkey 03ebe323-1e8e-49e5-bd48-0f15bd53d8ad_Yme7nvknhsd8W8recMf5B39NOdkSPZnsqQLoOeU7Cr8jK9IQBfR34jNpNzAcWQ-D-S58UZSkcmIrFVHVv3cwFSG0RZuVGt3h9CvLxJow3leQNaqRPE0ehsRN7fc_yVh
+
 
 ⸻
 
-Let me know once you’re ready for the 06/02 – 06/07 entry. The format will remain consistent for Jira updates unless you specify a change.
+✅ Optional: Shell Script Version
+
+If you want a script, you can use this final version (after downloading and customizing the enrollment key if needed):
+
+#!/bin/bash
+
+set -euo pipefail
+
+DMG="$HOME/Downloads/Ivanti.Neurons.Agent.dmg"
+MOUNT="/tmp/cloudinstall"
+PKG="$MOUNT/Ivanti Neurons Agent.pkg"
+STAGENT="/usr/local/com.ivanti.cloud.agent/IvantiAgent/bin/stagentctl"
+ENROLL_KEY="03ebe323-1e8e-49e5-bd48-0f15bd53d8ad_Yme7nvknhsd8W8recMf5B39NOdkSPZnsqQLoOeU7Cr8jK9IQBfR34jNpNzAcWQ-D-S58UZSkcmIrFVHVv3cwFSG0RZuVGt3h9CvLxJow3leQNaqRPE0ehsRN7fc_yVh"
+
+echo "[*] Mounting DMG..."
+hdiutil attach "$DMG" -mountpoint "$MOUNT" -nobrowse
+
+echo "[*] Installing package..."
+sudo installer -pkg "$PKG" -target /
+
+echo "[*] Unmounting DMG..."
+hdiutil detach "$MOUNT"
+
+echo "[*] Registering agent..."
+sudo "$STAGENT" register --baseurl https://agentreg.ivanticloud.com --enrollmentkey "$ENROLL_KEY"
+
+echo "[✔] Ivanti Agent installed and registered."
+
+Let me know if you want me to generate a downloadable .sh file.
