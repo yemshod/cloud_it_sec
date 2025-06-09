@@ -1,71 +1,70 @@
-From your new screenshot, here are the key issues causing the Ivanti Agent installation to fail again:
+Here is your Jira-ready Weekly Status Report for 06/02 – 06/07, incorporating your reported meetings, training session, ongoing Normalyze PoC activities, Mac hardening validation efforts, Ivanti progression, and coordination with the Tokyo team for Pre-AGC readiness.
 
 ⸻
 
-❌ Errors Observed:
-	1.	Invalid package path:
+Weekly Status Update – [06/02 – 06/07]
 
-installer: Error – the package path specified was invalid: “/Users/waade/Downloads/Ivanti.Neurons.Agent.dmg”.
-
-🔍 The command is trying to install a .dmg file directly as a package, but installer -pkg expects a .pkg file inside a mounted .dmg. You need to mount the .dmg first, then point to the .pkg inside it.
-
-	2.	Agent binary not found:
-
-zsh: no such file or directory: /usr/local/com.ivanti.cloud.agent/IvantiAgent/bin/stagentctl
-
-This error confirms the agent wasn’t installed — because the previous step failed.
+Summary:
+This week’s engagements focused on policy validation across Mac endpoints, progressing the Normalyze PoC with targeted CosmosDB scanning fixes, and responding to additional risk queries from Tokyo. Efforts also advanced the Ivanti endpoint control configuration, while a full-day GCP security training session helped reinforce platform-specific engineering depth.
 
 ⸻
 
-✅ Step-by-Step Fix:
+Breakdown by Day
 
-🔧 Corrected Manual Installation Commands:
+06/02 – Monday
+	•	1 hour – Meetings
+	•	3 hours – Validated and tested enterprise Mac hardening policy enforcement across standard image
+	•	2 hours – Retested Ivanti policies against system activity and user control scenarios
+	•	2 hours – Reviewed open Normalyze PoC logs for MongoDB-related gaps
 
-Run these exact commands, step by step:
+06/03 – Tuesday
+	•	8 hours – GCP Security Training (Google-led, full-day session on policy enforcement, IAM, and services)
+	•	1 hour – Meetings
+	•	1 hour – Documented follow-up notes from training and mapped concepts to ongoing GCP policy assessment
 
-# Step 1: Mount the DMG file
-hdiutil attach ~/Downloads/Ivanti.Neurons.Agent.dmg -mountpoint /tmp/cloudinstall -nobrowse
+06/04 – Wednesday
+	•	3.5 hours – Meetings
+	•	2 hours – Worked with Proofpoint engineering team to test CosmosDB/MongoDB fix and validate expected telemetry
+	•	1.5 hours – Retested Normalyze DLP scenarios for CosmosDB in Azure lab
+	•	1 hour – Policy tuning and group targeting refinement for Mac hardening
 
-# Step 2: Run the installer (must be the .pkg inside the mounted image)
-sudo /usr/sbin/installer -pkg /tmp/cloudinstall/Ivanti\ Neurons\ Agent.pkg -target /
+06/05 – Thursday
+	•	4 hours – Meetings
+	•	2 hours – Finalized response to Tokyo team’s follow-up questions on Normalyze risk review (Pre-AGC phase)
+	•	1.5 hours – Performed Ivanti event logging trace to correlate endpoint behavior with console visibility
+	•	0.5 hours – Confluence notes update and ticket activity logging
 
-# Step 3: Detach the DMG
-hdiutil detach /tmp/cloudinstall
-
-# Step 4: Register the agent (only after verifying the agent is installed)
-sudo /usr/local/com.ivanti.cloud.agent/IvantiAgent/bin/stagentctl register \
-  --baseurl https://agentreg.ivanticloud.com \
-  --enrollmentkey 03ebe323-1e8e-49e5-bd48-0f15bd53d8ad_Yme7nvknhsd8W8recMf5B39NOdkSPZnsqQLoOeU7Cr8jK9IQBfR34jNpNzAcWQ-D-S58UZSkcmIrFVHVv3cwFSG0RZuVGt3h9CvLxJow3leQNaqRPE0ehsRN7fc_yVh
-
+06/06 – Friday
+	•	5 hours – Meetings
+	•	2 hours – Revalidated Mac hardening enforcement on new OS versions; captured exceptions and overrides
+	•	1.5 hours – Final PoC validation of CosmosDB case post-vendor fix; documented and submitted status
+	•	1 hour – Reviewed Ivanti enforcement levels and classification categories for upcoming tuning
 
 ⸻
 
-✅ Optional: Shell Script Version
+Key Project Highlights
 
-If you want a script, you can use this final version (after downloading and customizing the enrollment key if needed):
+Normalyze DLP PoC (IS-276 / IS-1085):
+	•	Engaged directly with Proofpoint to troubleshoot CosmosDB/MongoDB scanning failures; vendor pushed updated telemetry fix
+	•	Re-tested CosmosDB-related use cases successfully and documented output alignment
+	•	Completed responses to additional questions from Tokyo risk team in preparation for AGC approval
+	•	PoC tracking updated to reflect CosmosDB test success and issue resolution
 
-#!/bin/bash
+Mac Hardening Validation (Security Engineering):
+	•	Conducted cross-version testing of hardening baselines on corporate macOS endpoints
+	•	Verified enforcement policies, exception handling, and user prompt behaviors
+	•	Captured remaining policy tuning needs and aligned with internal compliance standards
 
-set -euo pipefail
+Ivanti Application Control (IS-2759 / IS-2760):
+	•	Performed additional tuning and validation of policies across installed agents
+	•	Captured event traces and confirmed proper policy push from Ivanti Neurons Console
+	•	Advanced policy classification planning for future phased rollout
 
-DMG="$HOME/Downloads/Ivanti.Neurons.Agent.dmg"
-MOUNT="/tmp/cloudinstall"
-PKG="$MOUNT/Ivanti Neurons Agent.pkg"
-STAGENT="/usr/local/com.ivanti.cloud.agent/IvantiAgent/bin/stagentctl"
-ENROLL_KEY="03ebe323-1e8e-49e5-bd48-0f15bd53d8ad_Yme7nvknhsd8W8recMf5B39NOdkSPZnsqQLoOeU7Cr8jK9IQBfR34jNpNzAcWQ-D-S58UZSkcmIrFVHVv3cwFSG0RZuVGt3h9CvLxJow3leQNaqRPE0ehsRN7fc_yVh"
+GCP Security Training (Professional Development):
+	•	Completed full-day instructor-led training hosted by Google
+	•	Deepened understanding of GCP IAM, policy frameworks, and security boundaries
+	•	Documented relevant insights for future GCP org policy governance alignment
 
-echo "[*] Mounting DMG..."
-hdiutil attach "$DMG" -mountpoint "$MOUNT" -nobrowse
+⸻
 
-echo "[*] Installing package..."
-sudo installer -pkg "$PKG" -target /
-
-echo "[*] Unmounting DMG..."
-hdiutil detach "$MOUNT"
-
-echo "[*] Registering agent..."
-sudo "$STAGENT" register --baseurl https://agentreg.ivanticloud.com --enrollmentkey "$ENROLL_KEY"
-
-echo "[✔] Ivanti Agent installed and registered."
-
-Let me know if you want me to generate a downloadable .sh file.
+Let me know when you’re ready with your 06/10 – 06/14 data. I’ll keep the same reporting format.
