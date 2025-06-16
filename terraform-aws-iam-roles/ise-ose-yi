@@ -1,1 +1,84 @@
-here o
+Here is your **Jira-ready Weekly Status Report for 06/09 – 06/13**, integrating your meeting hours, collaborative engineering tasks, Normalyze PoC work, Ivanti validation efforts, Mac hardening, and continued GCP lab completion.
+
+---
+
+### **Weekly Status Update – \[06/09 – 06/13]**
+
+**Summary:**
+This week involved active collaboration with cross-functional teams to troubleshoot a CI/CD pipeline issue, continued coordination and validation for Normalyze CES assessment and PoC, and deepening endpoint security configuration efforts around Mac hardening and Ivanti deployment. GCP training from the prior week was reinforced with hands-on lab completions. Several tasks required extended engagement beyond standard working hours to ensure continuity of security posture assurance and platform integration success.
+
+---
+
+#### **Breakdown by Day**
+
+**06/09 – Monday**
+
+* 2 hours – Meetings
+* 2.5 hours – Troubleshot CI/CD pipeline failure with platform teams; root cause traced to blocked domain
+* 2 hours – Submitted ServiceNow CHG for firewall update to whitelist required domains
+* 1.5 hours – Validated policy triggers in Normalyze PoC scenarios (Cloud DLP, Tag-based use case)
+* 1 hour – GCP lab work: IAM policy simulation and service identity design
+
+**06/10 – Tuesday**
+
+* 3.5 hours – Meetings
+* 3 hours – Worked on CES Assessment submission for Normalyze; reviewed approval pathway and draft response
+* 2 hours – Collaborated with vendor, Tokyo, and Cloud Engineering team to clarify remaining risk items
+* 1.5 hours – Completed GCP lab: VPC configuration and Shared VPC enforcement
+
+**06/11 – Wednesday**
+
+* 2.5 hours – Meetings
+* 2.5 hours – Ivanti agent testing on managed Windows devices; observed app control behaviors
+* 2 hours – Interviewed engineering team on current software distribution methods (Jamf, Intune)
+* 1 hour – GCP lab: Cloud Audit Logs and alerting scenarios
+
+**06/12 – Thursday**
+
+* 3 hours – Meetings
+* 3 hours – Mac hardening validation: investigated security agent paths, service persistence, and logging config
+* 2 hours – Reviewed and audited approved application list from GRCelite vs installed Jamf packages
+* 1 hour – GCP lab: Cloud Security Command Center (SCC) policy review
+
+**06/13 – Friday**
+
+* 3 hours – Meetings
+* 2 hours – Continued PoC tests for Normalyze; verified expected alert behavior on storage egress rules
+* 2 hours – Reviewed CES risk evaluation questions and submitted follow-up response to Tokyo
+* 1 hour – Ivanti policy classification discussion and draft baseline control definition
+
+---
+
+#### **Key Project Highlights**
+
+**Normalyze DLP PoC & CES Assessment (IS-276 / IS-1085):**
+
+* Finalized CES Assessment package and submitted responses to both Tokyo and Cloud Engineering stakeholders
+* Continued PoC testing on tagging, policy violations, and egress conditions
+* Vendor collaboration ongoing to ensure telemetry behavior aligns with expected results in Azure
+
+**CI/CD Firewall Remediation & Change Request (Ad-hoc):**
+
+* Partnered with platform team to troubleshoot CI/CD pipeline failure caused by domain resolution block
+* Created and submitted SNOW Change Request to update firewall rule set for outbound whitelisting
+
+**Ivanti Application Control (IS-2759 / IS-2760):**
+
+* Deployed and tested Ivanti agents on managed Windows devices
+* Mapped Manubank’s application deployment tooling and policy layering
+* Continued classification analysis and policy behavior observation in test environments
+
+**Mac Hardening Engineering (Security Baseline Enforcement):**
+
+* Performed hardening validation against known security agent directories and persistence paths
+* Audited Jamf inventory and compared against GRCelite-approved software list
+* Documented recommendations for configuration enforcement and control gaps
+
+**GCP Security Training Labs (Follow-up):**
+
+* Completed 4 remaining labs from prior week’s instructor-led training
+* Covered VPC and IAM configuration, audit logging, SCC integration, and alert design
+
+---
+
+Let me know when you're ready for **06/16 – 06/21**. I’ll continue formatting weekly reports in this style.
