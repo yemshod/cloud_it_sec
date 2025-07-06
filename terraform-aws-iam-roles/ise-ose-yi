@@ -1,72 +1,76 @@
+Here is your **Jira-ready Weekly Status Report for 06/30 – 07/04**, incorporating all documented meetings, engineering tasks, PoC coordination, and the July 4th federal holiday observance.
 
+---
 
-### **Weekly Status Update – \[06/16 – 06/20]**
+### **Weekly Status Update – \[06/30 – 07/04]**
 
 **Summary:**
-This week included focused engineering time on Ivanti security policy design and test readiness, continued refinement of Normalyze PoC outputs, and team-based review of inactive GCP organization policies. On the endpoint side, Mac security hardening validations were finalized for the completed baseline, with next steps coordinated for production deployment. Juneteenth was observed as a U.S. federal holiday.
+This week focused on progressing Normalyze onboarding enablement across Azure and GCP, strengthening Ivanti deployment workflows across both Windows and macOS, and finalizing GCP Org Policy audit efforts. Additional time was dedicated to Mac hardening deployment readiness. July 4th was observed as a U.S. federal holiday.
 
 ---
 
 #### **Breakdown by Day**
 
-**06/16 – Monday**
+**06/30 – Monday**
 
-* 1 hour – Meetings
-* 2 hours – Reviewed Ivanti Application Control policy in audit mode; began planning test scenarios for PowerShell restriction
-* 2 hours – Prepped Windows test devices for Ivanti agent validation; confirmed developer role requirements
-* 1 hour – Normalyze PoC: logged false-positive from Azure Storage classification policy
+* 1 hour – Meeting
+* 2 hours – Created IAM support ticket for SSO registration to enable Normalyze integration (IS-4228)
+* 2 hours – Drafted access request for onboarding script execution across Azure dev subscriptions
 
-**06/17 – Tuesday**
+**07/01 – Tuesday**
 
-* 2 hours – Meetings
-* 2 hours – Worked with IAM to define structure for PowerShell exemption groups in AD and Azure Access Packages
-* 1.5 hours – Drafted CHG to whitelist Ivanti-required URLs for outbound functionality and agent sync
-* 1.5 hours – Reviewed and logged Normalyze policy gaps with vendor (agent-based detection inconsistencies)
-* 1 hour – GCP automation: validated internal documentation around Org Policy remediation triggers
+* 3 hours – Meetings
+* 2 hours – Collaborated with IAM team to request access to SSO documentation for tenant configuration
+* 2 hours – Drafted GCP dev access request to replicate PoC scenarios aligned with Azure environments
+* 1 hour – Reviewed and validated Ivanti agent behavior post-install on two Mac devices
 
-**06/18 – Wednesday**
-
-* 2.5 hours – Meetings
-* 2 hours – Final review of inactive GCP Org Policies with Cloud Security team; identified retired/test items
-* 1.5 hours – Completed testing of Mac hardening baseline items; aligned results with prior checklist
-* 1 hour – Ivanti policy planning: created draft enforcement map for executable elevation logic
-
-**06/19 – Thursday**
-
-* **Juneteenth Holiday – Federal Observance**
-
-**06/20 – Friday**
+**07/02 – Wednesday**
 
 * 4 hours – Meetings
-* 1.5 hours – Normalyze: tested DLP policy mapping for Azure blob storage and documented escalation cases
-* 1.5 hours – Updated Ivanti ticket with agent enforcement results and submitted proposed policy structure
-* 1 hour – Synced with Larry on production deployment prep for Mac security configurations
+* 2 hours – Completed rule testing for Ivanti App Control (audit mode); documented working behaviors
+* 1.5 hours – Created installation documentation for Ivanti agents (Windows/macOS)
+* 0.5 hours – Gave recommendations to Cloud Infra team from completed GCP Org Policy review
+
+**07/03 – Thursday**
+
+* 1.5 hours – Meetings
+* 1.5 hours – Submitted request (48345) for creation of AD Group and Access Package for Ivanti Dev and PowerShell Exception roles
+* 1 hour – Opened network ticket to whitelist Ivanti service domains across all endpoints
+* 1 hour – Synced with developers on scheduling agent installation for remaining systems
+
+**07/04 – Friday**
+
+* **July 4th Holiday – U.S. Federal Observance**
 
 ---
 
 #### **Key Project Highlights**
 
-**Ivanti Application Control (IS-2759 / IS-2760):**
-
-* Reviewed audit-mode policy and planned transition to enforcement with group-based exceptions (e.g., PowerShell)
-* Confirmed device readiness for live testing and coordinated exemption design with IAM
-* Drafted Change Request to allow outbound traffic to required Ivanti domains
-* Submitted ticket to IAM to create AD groups for policy role targeting
-
 **Normalyze DLP PoC (IS-276 / IS-1085):**
 
-* Continued active testing of DLP policies across Azure services
-* Identified and logged several telemetry and detection gaps with vendor for action
-* Observed classification misalignment in storage policies; documented escalation paths
+* Submitted IAM request for SSO registration and access to documentation
+* Coordinated with vendor on execution permissions across Azure dev environments
+* Access request submitted to begin GCP onboarding validation in parallel with Azure
+* Continued correspondence with vendor on feature/test coverage status
+
+**Ivanti Operations Resource Requirement (IS-3201):**
+
+* Successfully installed agents on two Mac devices for audit validation
+* Tested early rule enforcement logic with audit mode on Windows endpoints
+* Drafted install steps for both platforms; began coordination for broader testing
+* Submitted AD group creation request for Dev and PowerShell Exception
+* Submitted firewall CHG request to whitelist required Ivanti domains
 
 **GCP Organization Policy Automation (IS-2575):**
 
-* Completed team-wide review of all inactive policies in scope
-* Marked policy states (legacy, test, deprecated) and noted opportunities for rule reuse or cleanup
+* Completed full review of all active and inactive policies
+* Shared formal recommendations with Infra team to begin ticketing and automation discussions
 
-**Mac Security Hardening (Endpoint Engineering):**
+**Mac Hardening Engineering (Security Baseline Enforcement):**
 
-* Validated previously completed security controls across managed macOS fleet
-* Finalized readiness for production handoff
-* Scheduled working session with deployment lead (Larry) for next-phase push
+* Synced with Larry post-OOO to align pending items for production rollout
+* Next step: Draft CHG and deployment plan for all validated controls into prod
 
+---
+
+Let me know when you’re ready for **07/08 – 07/12**, and I’ll maintain the same structured summary.
