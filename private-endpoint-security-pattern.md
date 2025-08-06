@@ -1,6 +1,7 @@
 # Private Endpoint Security Pattern for ExactTrust
 
-This document outlines the security pattern and requirements for implementing Private Endpoints across Azure and AWS for **ExactTrust**. It is written in Markdown to allow copy/paste into Confluence.
+This pattern describes how **ExactTrust** secures access to cloud services through Private Endpoints in both Azure and AWS.
+It is formatted for easy copy/paste into Confluence runbooks and architecture pages.
 
 ## Overview
 
