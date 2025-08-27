@@ -1,101 +1,522 @@
-Here are the key considerations for configuring Avanti policies and testing the agent functionality:
+Got it — I’ll prepare this in a **Confluence-ready format** as a structured project analysis and proposal for deploying **basic ExtraHop sensors into AWS**, based on the request in your screenshot.
 
-1. Policy Creation:
-- Create a dev policy with inventory scanner and edge intelligence
-- Set LAN and WAN settings to 50
-- Configure reboot experience settings
+Here’s the draft write-up you can drop into Confluence:
 
-2. Agent Installation:
-- Download both the executable and options files
-- Perform a silent install with elevated permissions
-- Install on a test machine initially
+---
 
-3. Testing Approach:
-- Start in audit mode to understand how policies impact the system
-- Monitor event logs and AppSense logs
-- Test with local "Everyone" and "Administrator" groups initially
-- Observe which applications get blocked (e.g., CMD, PowerShell)
+# Deployment Review: ExtraHop Sensors in AWS
 
-4. Group Management:
-- Plan to create role-based groups for granular access control
-- Prepare to use the TCR process for adding new groups
-- Consider different policies for different user roles
+**Author:** \[Your Name]
+**Date:** \[Insert Date]
+**Stakeholders:** Cloud Security, Infrastructure, Keith \[Last Name], Ray Johnston
+**Status:** Initial Review
 
-5. Future Considerations:
-- Plan to add certificate for Azure group access
-- Prepare for potential Mac agent deployment
-- Be ready to adjust policies based on initial testing results
+---
 
-The goal is to gradually build and refine policies while understanding the agent's impact on your environment
+## 1. Background
 
-.
+The Cloud Security team has been asked to perform an initial review of what is required to deploy **basic ExtraHop sensors in AWS**. This request follows the adoption of a new ExtraHop license model that includes these sensors.
+
+The goal of this review is to:
+
+* Understand the **technical requirements** for deployment in AWS.
+* Estimate the **compute uplift** and resourcing impacts.
+* Outline what a **project plan** may look like, including milestones and dependencies.
+* Determine feasibility for **2025** execution, noting it is budgeted for **2026** if not achievable this year.
+
+---
+
+## 2. ExtraHop in AWS – Overview
+
+ExtraHop sensors provide **network detection and response (NDR)** by monitoring traffic in cloud environments. In AWS, they can be deployed to capture **VPC traffic mirroring** or via **SPAN/TAP integrations**.
+
+Key functional goals:
+
+* Visibility into east-west and north-south traffic in AWS workloads.
+* Threat detection, lateral movement analysis, and encrypted traffic inspection (depending on license tier).
+* Integration with existing SIEM/logging (e.g., Splunk, Sentinel).
+
+---
+
+## 3. Deployment Requirements
+
+### 3.1 Infrastructure Prerequisites
+
+* **AWS Accounts/Org Setup:** Identify accounts where ExtraHop sensors will be deployed (Production, Non-Prod).
+* **Networking:**
+
+  * Enable **VPC Traffic Mirroring** in selected VPCs.
+  * Ensure mirrored traffic is routed to ExtraHop sensors via ENIs.
+* **Compute:**
+
+  * ExtraHop sensors are typically deployed as **EC2 instances (BYOL/AMI)**.
+  * Instance sizing based on throughput requirements (e.g., `c5.2xlarge` for medium, `c5.4xlarge` for large).
+* **Storage:**
+
+  * EBS volumes for packet capture and metadata storage.
+  * S3 integration for longer-term data if needed.
+
+### 3.2 Security & IAM
+
+* IAM roles and policies for:
+
+  * EC2 instances running ExtraHop.
+  * Access to S3 buckets (if logs stored).
+  * Integration with Security Hub, GuardDuty, or SIEM.
+
+### 3.3 Licensing
+
+* Confirm entitlement under new ExtraHop licensing model.
+* BYOL AMIs from AWS Marketplace or direct vendor subscription.
+
+### 3.4 Monitoring & Logging
+
+* Forwarding telemetry/logs to Splunk/Sentinel.
+* CloudWatch metrics/alarms for sensor health.
+
+---
+
+## 4. Resourcing Impact
+
+* **Compute Uplift:** Additional EC2 spend depending on sensor size and traffic volume.
+* **Storage Costs:** S3 and EBS utilization.
+* **Operational Overhead:** Ongoing management, updates, and scaling of sensors.
+* **Network Bandwidth:** Traffic mirroring can introduce additional cost.
+
+---
+
+## 5. High-Level Project Plan
+
+| Phase                             | Activities                                               | Stakeholders               | Deliverables         |
+| --------------------------------- | -------------------------------------------------------- | -------------------------- | -------------------- |
+| **Phase 1 – Discovery**           | Inventory VPCs, traffic sources, required coverage areas | CloudSec, Infra, App Teams | Scope document       |
+| **Phase 2 – Architecture Design** | Define network topology, sensor placement, IAM roles     | CloudSec, Network Eng      | Architecture diagram |
+| **Phase 3 – PoC Deployment**      | Deploy ExtraHop sensor in a test AWS account             | CloudSec, Keith            | Working PoC          |
+| **Phase 4 – Evaluation**          | Validate performance, cost, integration with SIEM        | CloudSec, SecOps           | Test report          |
+| **Phase 5 – Rollout Planning**    | Build deployment plan across AWS accounts                | CloudSec, Infra, Ops       | Project plan         |
+| **Phase 6 – Implementation**      | Deploy sensors, configure mirroring, SIEM integration    | CloudSec, Ops              | Operational sensors  |
+| **Phase 7 – Handover/Operations** | Document runbooks, train operations                      | CloudSec, Ops              | Runbooks, dashboards |
+
+---
+
+## 6. Risks & Considerations
+
+* **Compute Cost Growth:** Sensor scaling may drive EC2 costs.
+* **Traffic Mirroring Overhead:** Can impact VPC bandwidth if not scoped properly.
+* **Integration Complexity:** SIEM/Sentinel integration must be tested early.
+* **Resourcing:** Additional headcount or managed service support may be required.
+
+---
+
+## 7. Next Steps
+
+* Conduct **scoping session with Keith and Ray** to validate requirements.
+* Request initial **PoC funding** for AWS deployment in one non-production account.
+* Document **expected architecture** and share for stakeholder approval.
+
+---
+
+✅ **Action:** Prepare architecture diagram and preliminary cost estimate for discussion with stakeholders.
+
+---
+
+Would you like me to also prepare a **Confluence-ready diagram (3D AWS architecture)** showing ExtraHop sensors in AWS (VPC traffic mirroring → EC2 sensor → Splunk/Sentinel) so your doc has both visuals and text?
 
 
-Here are the steps to create agent installation files:
+=============
 
-1. Access Avanti Neurons Console
-- Log into the cloud console
-- Navigate to agent deployment section
+Below is a **Confluence-ready architecture diagram** for deploying **basic ExtraHop sensors in AWS** (Traffic Mirroring → ExtraHop Sensor EC2 → Console/SIEM), plus copy-pasteable diagram-as-code options (Mermaid & PlantUML). I’ve also included concise architecture notes so the visual lands with the right assumptions.
 
-2. Create Agent Policy
-- Go to "Policies" section
-- Create a new policy (e.g., "dev policy")
-- Select inventory scanner and edge intelligence
-- Configure LAN/WAN settings to 50
-- Save the policy
+**Attachment (PNG):**
+[Download the architecture diagram – ExtraHop in AWS](sandbox:/mnt/data/extrahop_aws_architecture.png)
 
-3. Generate Enrollment Key
-- Go to "Enrollment Keys" section
-- Create a new key
-- Name the key (e.g., "dev enrollment")
-- Set number of allowed agents (recommended 20)
-- Set expiration date (suggest 1 year out)
+---
 
-4. Prepare Installation Files
-- Select "Agent Deployment"
-- Choose manual install
-- Select Windows platform
-- Choose silent install option
-- Copy the provided command line script
-- Download executable and options files
-- Ensure both files are in same location
+# Architecture Diagram
 
-5. Optional Certificate Configuration
-- Prepare certificate for Azure group access
-- Will be added to installation script in future stages
+**Figure:** AWS Organization with mirrored workload traffic from Prod/Non-Prod VPCs to ExtraHop Sensor(s) in a Security Account VPC; management/telemetry to ExtraHop Console (ECA) and detections/metrics to SIEM (Splunk/Sentinel). Optional S3 archival shown.
 
-Key Tip: The command line script and downloaded files are critical for silent installation across multiple machines.
+> **How to use in Confluence:** Attach the PNG to your page → *Insert → Files & images* → select the file and set display size = “Large”.
+
+---
+
+## Diagram-as-Code (for Confluence macro blocks)
+
+### Option A — Mermaid (preferred if you have the Mermaid macro)
+
+```mermaid
+flowchart LR
+  %% ==== ORG / ACCOUNTS ====
+  subgraph ORG["AWS Organization: PRI"]
+    direction LR
+
+    subgraph SEC["Security Account (Shared)"]
+      direction TB
+      subgraph SEC_VPC["Sensor VPC (Security)"]
+        direction TB
+        EH1["ExtraHop Sensor (EC2)"]
+        EH2["ExtraHop Sensor (EC2) [optional]"]
+        ECA["ExtraHop Console / ECA"]
+        SIEM["SIEM / Analytics (Splunk / Sentinel)"]
+      end
+    end
+
+    subgraph PROD["Workload Account: Production"]
+      direction TB
+      subgraph PROD_VPC["Prod VPC(s)"]
+        direction LR
+        PAPP["App Tier (EC2/EKS)"]
+        PALB["ALB / NAT / Endpoints"]
+        PDB["DB/Cache (RDS/ElastiCache)"]
+      end
+    end
+
+    subgraph NP["Workload Account: Non-Production"]
+      direction TB
+      subgraph NP_VPC["Non-Prod VPC(s)"]
+        direction LR
+        NAPP["App Tier (EC2/EKS)"]
+        NALB["ALB / NAT / Endpoints"]
+        NDB["DB/Cache (RDS/ElastiCache)"]
+      end
+    end
+  end
+
+  %% ==== TRAFFIC MIRRORING ====
+  PAPP -- "Traffic Mirror (ENI→Target)" --> EH1
+  PALB -- "Traffic Mirror (ENI→Target)" --> EH1
+  PDB  -- "Traffic Mirror (ENI→Target)" --> EH1
+
+  NAPP -- "Traffic Mirror (ENI→Target)" --> EH1
+  NALB -- "Traffic Mirror (ENI→Target)" --> EH1
+  NDB  -- "Traffic Mirror (ENI→Target)" --> EH1
+
+  %% ==== MGMT / TELEMETRY ====
+  EH1 -- "Mgmt/Telemetry" --> ECA
+  EH1 -- "Events/Detections" --> SIEM
+
+  %% Optional archival path (comment if not used)
+  S3["S3 (Optional: Packet/Metadata Archival)"]
+  EH1 -- "Packet/Metadata Export" --> S3
+
+  %% Notes
+  note over PROD_VPC,NP_VPC: Connectivity via TGW or VPC Peering to Sensor VPC
+```
+
+### Option B — PlantUML (if your Confluence supports it)
+
+```plantuml
+@startuml
+skinparam rectangle {
+  BorderColor black
+  BackgroundColor White
+}
+
+rectangle "AWS Organization: PRI" as ORG {
+  node "Security Account (Shared)" as SEC {
+    cloud "Sensor VPC (Security)" as SEC_VPC {
+      rectangle "ExtraHop Sensor (EC2)" as EH1
+      rectangle "ExtraHop Sensor (EC2) [optional]" as EH2
+      database "SIEM / Analytics\n(Splunk / Sentinel)" as SIEM
+      rectangle "ExtraHop Console / ECA" as ECA
+    }
+  }
+
+  node "Workload Account: Production" as PROD {
+    frame "Prod VPC(s)" as PROD_VPC {
+      rectangle "App Tier (EC2/EKS)" as PAPP
+      rectangle "ALB / NAT / Endpoints" as PALB
+      rectangle "DB/Cache (RDS/ElastiCache)" as PDB
+    }
+  }
+
+  node "Workload Account: Non-Production" as NP {
+    frame "Non-Prod VPC(s)" as NP_VPC {
+      rectangle "App Tier (EC2/EKS)" as NAPP
+      rectangle "ALB / NAT / Endpoints" as NALB
+      rectangle "DB/Cache (RDS/ElastiCache)" as NDB
+    }
+  }
+}
+
+PAPP -right-> EH1 : Traffic Mirroring\n(ENI → Mirror Target)
+PALB -right-> EH1 : Traffic Mirroring\n(ENI → Mirror Target)
+PDB  -right-> EH1 : Traffic Mirroring\n(ENI → Mirror Target)
+
+NAPP -up-> EH1  : Traffic Mirroring\n(ENI → Mirror Target)
+NALB -up-> EH1  : Traffic Mirroring\n(ENI → Mirror Target)
+NDB  -up-> EH1  : Traffic Mirroring\n(ENI → Mirror Target)
+
+EH1 -down-> ECA  : Mgmt / Telemetry
+EH1 -down-> SIEM : Events / Detections
+
+cloud "S3 (Optional: Packet/Metadata Archival)" as S3
+EH1 -right-> S3 : Packet / Metadata Export
+
+note right of SEC_VPC
+Connectivity to Sensor VPC via
+  • VPC Peering
+  • or Transit Gateway
+end note
+@enduml
+```
+
+---
+
+## Architecture Notes (to accompany the diagram)
+
+1. **Placement & Connectivity**
+
+   * Sensors are consolidated in a **Security Account** within a dedicated **Sensor VPC**. Workload VPCs (Prod & Non-Prod) connect via **VPC Peering** or **Transit Gateway** to support **VPC Traffic Mirroring** into the Sensor ENIs.
+   * **Mirror targets** are the ENIs of the ExtraHop Sensor EC2 instances; **mirror sessions** are defined per source ENI (instances, ALB targets, EKS nodes).
+
+2. **Sizing & Scale Pattern**
+
+   * Start with one sensor per environment; scale horizontally (additional sensors) if mirrored throughput or CPU exceeds targets.
+   * Choose **compute-optimized** instance families (e.g., C-class) and **EBS gp3** volumes. Maintain a **management ENI** and one or more **capture ENIs** per sensor.
+
+3. **Management / Telemetry**
+
+   * **ExtraHop Console (ECA)** resides in the Security Account (same VPC or a management VPC) to manage sensors and policies.
+   * **SIEM integration** forwards detections/events to Splunk or Microsoft Sentinel (Syslog/HEC/CEF or vendor API connectors).
+
+4. **Optional Data Archival**
+
+   * Sensors can export **PCAP slices/metadata** to **S3** for investigations. Apply S3 lifecycle policies (30–90 days hot → IA → Glacier).
+
+5. **Security Controls**
+
+   * IAM roles for sensors (S3 write, metrics), parameterized security groups (only mgmt ports open from admin CIDRs), and KMS for EBS/S3 encryption.
+   * Logging for **CloudTrail**, **VPC Flow Logs**, and **Traffic Mirroring** configuration changes via **CloudWatch Alarms** and Security Hub findings.
+
+---
+
+If you want, I can fold this diagram and the earlier write-up into a single **Confluence page template** with page properties, status macros, and a short **implementation playbook** section.
 
 
-For Mac agent deployment, here are the key next steps:
+==================
 
-1. Immediate Actions:
-- Contact Avanti directly to understand Mac agent capabilities
-- Schedule a specific meeting with Avanti to discuss Mac OS agent functionality
-- Confirm exact protection and monitoring features for Mac devices
+Here’s the **final Confluence-ready package** for your task — including the structured write-up, plus a **Lucidchart/draw\.io style image** with AWS-style icons and the **account name explicitly labeled as `pri-security-acct`**.
 
-2. Current Limitations:
-- No native app control format for Mac currently
-- Limited understanding of Mac agent's full capabilities
-- Need to verify inventory and control mechanisms
+---
 
-3. Planned Approach:
-- Get detailed documentation from Avanti about Mac agent
-- Determine if Mac agent supports:
-  * Inventory tracking
-  * Device monitoring
-  * Application control
-- Develop a separate testing strategy for Mac deployment
+# Confluence Page: ExtraHop Sensors Deployment in AWS
 
-4. Installation Preparation:
-- Obtain Mac-specific installation files
-- Prepare for potential silent installation process
-- Plan to test agent functionality in controlled environment
+**Author:** \[Your Name]
+**Date:** \[Insert Date]
+**Stakeholders:** Cloud Security, Infrastructure, Keith \[Last Name], Ray Johnston
+**Status:** Initial Review
 
-5. Coordination Needed:
-- Involve IT security team in Mac agent evaluation
-- Align Mac agent deployment with existing security policies
-- Consider potential differences from Windows agent configuration
+---
+
+## 1. Background
+
+The Cloud Security team has been asked to evaluate and document the requirements for deploying **ExtraHop sensors into AWS**, under the new license model.
+This includes:
+
+* Technical prerequisites (networking, compute, IAM).
+* Cost/compute uplift analysis.
+* High-level project phases and risks.
+* Architecture design (centralized sensors in **`pri-security-acct`**).
+
+---
+
+## 2. Architecture Diagram
+
+**Figure: ExtraHop Deployment in AWS (`pri-security-acct`)**
+
+📎 [Download PNG: ExtraHop AWS Architecture (draw.io style)](sandbox:/mnt/data/extrahop_aws_architecture_drawio.png)
+
+---
+
+## 3. Deployment Requirements
+
+**Compute/Network**
+
+* Deploy ExtraHop Sensors as **EC2 instances** in `pri-security-acct` (dedicated Sensor VPC).
+* Enable **VPC Traffic Mirroring** in selected Prod/Non-Prod VPCs, with mirror targets → sensor ENIs.
+* Use **Transit Gateway (TGW)** or **VPC Peering** to route mirrored traffic.
+
+**Security/IAM**
+
+* IAM role for EC2 sensors to access S3 (optional archival).
+* Security groups: limit management access to trusted IPs.
+* KMS encryption for all EBS volumes/S3 buckets.
+
+**Monitoring**
+
+* Forward detections/telemetry to **Splunk/Sentinel**.
+* Metrics/alarms via **CloudWatch**.
+
+---
+
+## 4. High-Level Project Plan
+
+| Phase            | Activities                                          | Deliverables            |
+| ---------------- | --------------------------------------------------- | ----------------------- |
+| Discovery        | Inventory VPCs & traffic sources                    | Scope doc               |
+| Design           | Define architecture & IAM roles                     | Diagram & IaC           |
+| PoC              | Deploy ExtraHop sensor in non-prod                  | Test report             |
+| Evaluation       | Validate cost, performance, SIEM integration        | Findings report         |
+| Rollout Planning | Build phased rollout plan across VPCs               | Implementation playbook |
+| Implementation   | Deploy sensors, configure mirroring, integrate SIEM | Operational sensors     |
+| Handover         | Document runbooks, train Ops                        | Runbooks, dashboards    |
+
+---
+
+## 5. Risks & Considerations
+
+* **Cost Growth** – EC2 instances and mirrored traffic overhead.
+* **Integration Complexity** – SIEM/Sentinel integration needs validation.
+* **Bandwidth Load** – Traffic mirroring can increase VPC egress costs.
+* **Resourcing** – Ongoing monitoring/ops needed.
+
+---
+
+## 6. Next Steps
+
+* Review design with **Keith & Ray**.
+* Estimate cost impact of initial deployment (PoC).
+* Document architecture in Terraform/CloudFormation for repeatable rollout.
+
+---
+
+✅ Deliverable: **This Confluence page + attached architecture diagram** serve as the initial draft for stakeholder review.
+
+---
+
+Would you like me to also create a **Terraform skeleton module** for deploying the ExtraHop sensor EC2 into `pri-security-acct` (AMI, instance size, IAM role, ENIs, SGs), so the doc includes an IaC-ready starting point?
 
 
-The primary focus is gathering comprehensive information about Mac agent capabilities before full deployment.
+========================
+
+Perfect — here’s a **numbered list of the flows in the architecture diagram** (based on the `pri-security-acct` ExtraHop sensor setup). This sequence will help you document it clearly in Confluence as "Traffic/Telemetry Flows".
+
+---
+
+# Flows in ExtraHop AWS Deployment Diagram
+
+**Traffic Mirroring Flows (red arrows)**
+
+1. **Production App Tier → ExtraHop Sensor**
+
+   * ENIs of EC2/EKS nodes mirrored to sensor ENI in `pri-security-acct`.
+2. **Production ALB/NAT/Endpoints → ExtraHop Sensor**
+
+   * Load balancer/NAT traffic mirrored to sensor.
+3. **Production DB/Cache (RDS/ElastiCache) → ExtraHop Sensor**
+
+   * Database/cache traffic mirrored into sensor.
+4. **Non-Production App Tier → ExtraHop Sensor**
+
+   * ENIs of EC2/EKS nodes mirrored to sensor.
+5. **Non-Production ALB/NAT/Endpoints → ExtraHop Sensor**
+
+   * Mirrored traffic for ingress/egress endpoints.
+6. **Non-Production DB/Cache → ExtraHop Sensor**
+
+   * DB/cache flows mirrored.
+
+---
+
+**Management & Telemetry Flows (purple/orange arrows)**
+7\. **ExtraHop Sensor → ExtraHop Console (ECA)**
+
+* Management and configuration telemetry.
+
+8. **ExtraHop Sensor → SIEM (Splunk/Sentinel)**
+
+   * Security events, detections, and metadata forwarded to SIEM.
+
+---
+
+**Optional Data Archival (green arrow)**
+9\. **ExtraHop Sensor → S3 (Optional Archival)**
+
+* Packet slices or metadata exported to S3 for forensic retention.
+
+---
+
+**Connectivity Layer (black note in diagram)**
+10\. **VPC Traffic Mirroring Connectivity → Sensor VPC in `pri-security-acct`**
+
+* Via **VPC Peering** or **Transit Gateway (TGW)** between workload VPCs and the Sensor VPC.
+
+---
+
+👉 Together, these 10 flows show how traffic from workloads is mirrored into the centralized sensors, how telemetry is handled, and how optional archival is stored.
+
+---
+
+Do you want me to **turn these flows into a Confluence “sequence diagram” (Mermaid or PlantUML)** so you can paste it as code and get a visual **flow-by-step diagram** alongside the architecture diagram?
+
+
+==========================
+
+Certainly. Below are relevant **official references** from both **ExtraHop documentation** and **AWS blogs** that directly support key components of the proposed architecture — including traffic mirroring, sensor deployment, scalability, and automation. These can be embedded in your Confluence page as hyperlinks or footnotes to substantiate the design and implementation.
+
+---
+
+### Official References & Technical Documentation
+
+#### **1. ExtraHop – Deploying Sensors in AWS**
+
+* **Deploy an ExtraHop sensor in AWS (v9.9)**
+  Step‑by‑step guidance for deploying a virtual ExtraHop sensor in your AWS environment, including configuration and prerequisites.
+  ([ExtraHop Documentation][1], [ExtraHop Documentation][2])
+
+* **Deploy an ExtraHop sensor in AWS (current version)**
+  A link to the current documentation (PDF) providing similar instructions, ensuring you reference the latest supported version.
+  ([ExtraHop Documentation][3])
+
+#### **2. Configuring Traffic Mirroring**
+
+* **Configure Traffic Mirroring in AWS to send data to a sensor**
+  A training module focused on how to set up AWS Traffic Mirroring to forward traffic to an ExtraHop sensor.
+  ([learn.extrahop.com][4], [ExtraHop Documentation][2])
+
+#### **3. ExtraHop + AWS Integration Patterns**
+
+* **AWS Blog: Using ExtraHop Reveal(x) with Amazon VPC Traffic Mirroring**
+  Walkthrough demonstrating how to integrate ExtraHop Reveal(x) with AWS VPC Traffic Mirroring, including deployment steps via AWS Marketplace.
+  ([Amazon Web Services, Inc.][5])
+
+* **AWS Blog: Network Detection & Response at Scale via AWS Control Tower**
+  Describes architecture for centralized ExtraHop sensor deployment using AWS Control Tower, CloudFormation, and automated onboarding of workload accounts.
+  ([Amazon Web Services, Inc.][6])
+
+#### **4. Automation & Scalability**
+
+* **Automate AWS Traffic Mirroring with CloudFormation**
+  Details using CloudFormation templates (from ExtraHop's GitHub examples) to automate set-up of traffic mirroring sessions.
+  ([ExtraHop Documentation][1])
+
+* **Automate Traffic Mirroring with AWS Lambda**
+  Information on using Lambda functions to dynamically manage mirroring policies — beneficial for scaling or deploying sensors across accounts.
+  ([ExtraHop Documentation][7])
+
+---
+
+### Suggested Reference Integration (Confluence Style)
+
+You can represent these as bullet-pointed citations within your Confluence documentation to reinforce claims or architectural choices:
+
+* **ExtraHop Virtual Sensor Deployment**: Refer to *Deploy an ExtraHop sensor in AWS (v9.9)* for standard best practices on provisioning sensors in AWS via AMI. ([ExtraHop Documentation][2])
+* **Traffic Mirroring Setup**: Use the “Configure Traffic Mirroring for AWS” module as a guide to setting up AWS Mirror Sessions correctly. ([learn.extrahop.com][4])
+* **Vendor Example**: The AWS blog *“How to use ExtraHop Reveal(x) with VPC Traffic Mirroring”* provides a real-world implementation example (ENI setup, sensor provisioning). ([Amazon Web Services, Inc.][5])
+* **Scale via AWS Control Tower**: The *“Network Detection and Response at Scale with ExtraHop and AWS Control Tower”* article illustrates using Control Tower + StackSets for distributed sensor deployment. ([Amazon Web Services, Inc.][6])
+* **Automation Patterns**: For Infrastructure as Code (IaC), the CloudFormation & Lambda automation examples show how to orchestrate mirroring and sensor deployments programmatically. ([ExtraHop Documentation][1])
+
+---
+
+These resources not only validate the technical feasibility of your architecture but also provide a foundation for next steps—like crafting IaC templates or operational runbooks based on industry-standard methods.
+
+Would you like me to draft concise Confluence inline references for each section of the document (e.g., in the “Deployment Requirements” or “High-Level Plan” sections)?
+
+[1]: https://docs.extrahop.com/9.6/lambda-traffic-mirror/?utm_source=chatgpt.com "Automate AWS Traffic Mirroring with CloudFormation"
+[2]: https://docs.extrahop.com/9.9/deploy-eda-aws/deploy-eda-aws.pdf?utm_source=chatgpt.com "Deploy an ExtraHop sensor on AWS"
+[3]: https://docs.extrahop.com/current/deploy-eda-aws/deploy-eda-aws.pdf?utm_source=chatgpt.com "Deploy an ExtraHop sensor on AWS"
+[4]: https://learn.extrahop.com/configure-traffic-mirroring-for-aws?utm_source=chatgpt.com "Configure Traffic Mirroring for AWS"
+[5]: https://aws.amazon.com/blogs/awsmarketplace/how-to-use-extrahop-to-enable-network-traffic-packet-analysis-with-amazon-vpc-traffic-mirroring/?utm_source=chatgpt.com "How to use ExtraHop to enable network traffic packet ..."
+[6]: https://aws.amazon.com/blogs/awsmarketplace/network-detection-response-extrahop-aws-control-tower/?utm_source=chatgpt.com "Network detection and response at scale with ExtraHop ..."
+[7]: https://docs.extrahop.com/9.1/lambda-traffic-mirror/?utm_source=chatgpt.com "Automate traffic mirroring with AWS Lambda"
