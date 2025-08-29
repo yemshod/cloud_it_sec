@@ -520,3 +520,72 @@ Would you like me to draft concise Confluence inline references for each section
 [5]: https://aws.amazon.com/blogs/awsmarketplace/how-to-use-extrahop-to-enable-network-traffic-packet-analysis-with-amazon-vpc-traffic-mirroring/?utm_source=chatgpt.com "How to use ExtraHop to enable network traffic packet ..."
 [6]: https://aws.amazon.com/blogs/awsmarketplace/network-detection-response-extrahop-aws-control-tower/?utm_source=chatgpt.com "Network detection and response at scale with ExtraHop ..."
 [7]: https://docs.extrahop.com/9.1/lambda-traffic-mirror/?utm_source=chatgpt.com "Automate traffic mirroring with AWS Lambda"
+
+
+==============================================
+
+Absolutely — here's a clear and detailed **AWS cost estimate** for your deployment (excluding ExtraHop licensing), based on current pricing in **US East (N. Virginia)**.
+
+You’re onboarding **3 target accounts**; the ExtraHop infrastructure (sensors, traffic mirroring, automation) will reside in your **networking account** (not the target accounts). Costs reflect monthly and annual estimates.
+
+---
+
+### Assumptions
+
+* **EC2 Sensor**: One *c5.large* EC2 instance in the networking account, used continuously (24×7) to host the ExtraHop Cloud Sensor. Pricing reflects On‑Demand standard rate.
+* **Traffic Mirroring**: Assume one ENI per target account (so **3 ENIs** total), each mirrored continuously 24×7.
+* **Data Mirrored**: Estimate **1 TB per month** of mirrored traffic total across all accounts.
+* **Data Transfer**: Mirroring via VPC Peering or Transit Gateway within the same region; inter‑AZ or cross‑account mirrored traffic incurs \$0.01/GB inbound + \$0.01/GB outbound = **\$0.02/GB** total.
+* **Transit Gateway**: Assume use of a TGW with one attachment (hourly), to facilitate mirroring connectivity across accounts.
+
+---
+
+### Pricing References
+
+* **c5.large (EC2, On‑Demand)**: \~\$0.085/hour ≈ **\$62.05/month** (On‑Demand) ([Cost Calculator][1], [CloudZero][2], [Reddit][3])
+* **Traffic Mirroring**: \$0.015/hour per mirrored ENI ([CloudZero][2])
+* **Transit Gateway**: \$0.05/hour per attachment + \$0.02 per GB data processed ([CloudZero][2])
+* **VPC Peering Data Transfer**: \$0.01/GB both directions = \$0.02/GB total ([Amazon Web Services, Inc.][4])
+
+---
+
+### Cost Estimation Table
+
+| Resource                            | Description                                            | Monthly Cost         | Annual Cost        |
+| ----------------------------------- | ------------------------------------------------------ | -------------------- | ------------------ |
+| **EC2 Instance**                    | 1 × c5.large running 24×7 (\~720 hours/month)          | \$62.05              | \$744.60           |
+| **Traffic Mirroring (ENI charges)** | 3 ENIs, each at \$0.015/hour (\~\$10.80/month per ENI) | \$32.40              | \$388.80           |
+| **Data Mirrored Processing**        | 1 TB/month × \$0.015/GB                                | \$15.36 *(≈1024 GB)* | \$184.32           |
+| **Transit Gateway Hourly**          | 1 attachment @ \$0.05/hour                             | \$36.00              | \$432.00           |
+| **Transit Gateway Data Processing** | 1 TB/month × \$0.02/GB (mirroring usage)               | \$20.48 *(≈1024 GB)* | \$245.76           |
+| **VPC Peering Data Transfer**       | 1 TB/month mirrored via peering @ \$0.02/GB            | \$20.48              | \$245.76           |
+| **Total (Estimates)**               |                                                        | **\~\$186.77/month** | **\~\$1,840/year** |
+
+---
+
+### Notes & Explanation
+
+1. **EC2 Cost**: Hosting ExtraHop Sensor requires a compute optimized instance. The *c5.large* is a cost-effective starting point.
+2. **Traffic Mirroring ENI Fees**: Each mirroring session incurs \$0.015/hour per ENI; with 3 target accounts, that's 3 ENIs.
+3. **Data Processing (Mirroring)**: AWS charges per GB of mirrored traffic processed by the traffic mirror service.
+4. **Transit Gateway Costs**: A single TGW attachment facilitates cross-account mirroring; the TGW charges both hourly and per GB of data processed.
+5. **Data Transfer Peering Costs**: If traffic traverses between VPCs in different AZs or accounts, VPC peering data transfer at \$0.02/GB applies.
+6. **Overlap**: Note that mirrored traffic volume will incur either TGW or peering transfer costs; the table includes both separately—you may only incur one depending on architecture, so consider whichever applies.
+
+---
+
+### Summary Table
+
+| **Monthly Total** | **Annual Total** |
+| ----------------- | ---------------- |
+| \~\$186.77        | \~\$1,840        |
+
+---
+
+Let me know if you'd like a breakdown using **Spot pricing**, **Reserved Instances**, or **Savings Plans** to show potential cost optimization strategies!
+
+[1]: https://costcalc.cloudoptimo.com/aws-pricing-calculator/ec2/c5.large?utm_source=chatgpt.com "c5.large Pricing and Specs: AWS EC2"
+[2]: https://www.cloudzero.com/blog/amazon-vpc-pricing/?utm_source=chatgpt.com "Amazon VPC Pricing: Cost Factors And Savings Strategies"
+[3]: https://www.reddit.com/r/aws/comments/1i878zv/aws_networking_costs_explained_once_and_for_all/?utm_source=chatgpt.com "AWS Networking Costs Explained (once and for all)"
+[4]: https://aws.amazon.com/vpc/pricing/?utm_source=chatgpt.com "Amazon VPC Pricing"
+
