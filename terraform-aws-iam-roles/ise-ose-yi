@@ -1,1 +1,91 @@
-ise ose yi
+Below is a **cost model for the GWLB-based traffic-mirroring design** you shared, sized for **3 AWS accounts × 2 VPCs each = 6 source VPCs**, feeding a **central GWLB in a monitoring (networking) account** and **two ExtraHop packet sensors (EC2) behind the GWLB**. This excludes any ExtraHop licensing.
+
+I’ve used current public pricing references and made explicit, tunable assumptions so you can adjust later.
+
+---
+
+# Assumptions (tunable)
+
+* **Region:** us-east-1 (N. Virginia).
+* **Source VPCs:** 6 (Primary/DR in each of 3 accounts).
+* **AZ coverage for endpoints:** 2 AZs per VPC ⇒ **12 GWLBE endpoints**.
+* **Mirrored ENIs per VPC:** 4 (e.g., App nodes, ALB targets, EKS nodes, DB tier) ⇒ **24 mirrored ENIs** total.
+* **Mirrored volume (total across all VPCs):** **\~1.2 TB/month** (≈ 1,229 GB).
+* **Sensors (EC2):** 2 × **c5.xlarge** on-demand, 24×7 (you can right-size later).
+* **GWLB:** 1 GWLB spanning 2 AZs in monitoring account.
+* **Data path:** GWLBE (PrivateLink) → GWLB → sensor targets in same region.
+
+---
+
+# Unit prices used (key sources)
+
+* **EC2 c5.xlarge on-demand** ≈ **\$0.17/hr** in us-east-1. ([Vantage][1])
+* **VPC Traffic Mirroring:** **\$0.015/hr per mirrored ENI** **+ \$0.015/GB** processed. ([Amazon Web Services, Inc.][2])
+* **Gateway Load Balancer (GWLB):** billed **per GWLB-hour + per GLCU-hour** (capacity units). AWS examples show typical totals; here I model **\$0.0168/GWLB-hr** and **\$0.004/GLCU-hr** for bytes-driven usage (see ELB pricing examples and public write-ups; regional rates vary). ([Amazon Web Services, Inc.][3])
+* **Gateway Load Balancer Endpoint (GWLBE / PrivateLink):** **\$0.01/endpoint-hr + \$0.0035/GB** data processed. ([CloudFix][4])
+
+> 📝 GWLB/GWLBE pricing is officially stated as “per hour + per (G)LCU or per-GB”. The dollar figures above reflect current example values and widely cited us-east-1 rates; always verify in the **AWS ELB** and **PrivateLink** pricing pages for your region. ([Amazon Web Services, Inc.][3])
+
+---
+
+# Cost Estimate (AWS only)
+
+| Resource / Description                                                                            |  Monthly Cost (USD) |     Annual Cost (USD) |
+| ------------------------------------------------------------------------------------------------- | ------------------: | --------------------: |
+| **EC2 – ExtraHop sensors**: 2 × c5.xlarge, 730 hr/mo × \$0.17/hr                                  |        **\$248.20** |        **\$2,978.40** |
+| **Traffic Mirroring – ENI hourly**: 24 ENIs × 730 hr × \$0.015/hr                                 |        **\$262.80** |        **\$3,153.60** |
+| **Traffic Mirroring – data processed**: 1,229 GB × \$0.015/GB                                     |         **\$18.44** |          **\$221.22** |
+| **GWLBE – hourly**: 12 endpoints × 730 hr × \$0.01/hr                                             |         **\$87.60** |        **\$1,051.20** |
+| **GWLBE – data processed**: 1,229 GB × \$0.0035/GB                                                |          **\$4.30** |           **\$51.62** |
+| **GWLB – hourly**: 730 hr × \$0.0168/hr                                                           |         **\$12.26** |          **\$147.17** |
+| **GWLB – capacity (GLCU) bytes dimension**: (1,229 GB / 730 hr ≈ 1.68 GLCU-hr) × \$0.004 × 730 hr |          **\$4.91** |           **\$58.87** |
+| **Estimated Total**                                                                               | **\~\$638.51 / mo** | **\~\$7,662.08 / yr** |
+
+---
+
+## What drives this cost most?
+
+1. **Mirrored ENI-hours** – If you mirror many ENIs per VPC, this dominates. Reducing mirrored sources (e.g., mirror only critical subnets or EKS worker nodes) saves quickly. ([CloudZero][5])
+2. **EC2 sensor sizing/count** – Right-sizing or Savings Plans can materially reduce the \$248/mo line. ([Vantage][1])
+3. **Endpoint footprint** – Two AZs per VPC gives resilience but doubles endpoint-hours. If a VPC is single-AZ, you can halve GWLBE hourly. ([Amazon Web Services, Inc.][6])
+
+---
+
+## Sensitivity / “what-if” knobs (useful for leadership slides)
+
+* **Change mirrored volume:** Every **+1 TB/mo** adds about **+\$15 (traffic mirroring)** and **+\$3.5 (GWLBE)**; GWLB GLCU adds a few more dollars depending on bytes/flow mix. ([CloudZero][5])
+* **Mirrored ENIs:** Each additional mirrored ENI adds **\$10.95/mo** (0.015×730). ([CloudZero][5])
+* **Fewer endpoints:** Removing one GWLBE saves **\$7.30/mo** (endpoint-hour) plus its share of per-GB. ([Amazon Web Services, Inc.][6])
+* **Sensor instance type:** Dropping to **c5.large** (\~\$0.085/hr) halves EC2 to \~**\$124/mo**; moving to **c5.2xlarge** doubles it. ([Amazon Web Services, Inc.][7])
+
+---
+
+## Notes & caveats (read before you share)
+
+* **Exact GWLB/GLCU math**: GWLB bills on the max of dimensions (flows/sec, active flows, processed bytes). I used a **bytes-dominant** case to keep it simple; if your traffic profile has many short flows, GLCU may rise. Validate with CloudWatch ELB metrics during PoC. ([Amazon Web Services, Inc.][3])
+* **Data transfer**: Intra-region PrivateLink/GWLBE pricing already covers endpoint processing. If traffic crosses AZs or attaches via TGW instead, add those lines separately (TGW: \$0.05/attachment-hr + \$0.02/GB). ([AWS Static][8])
+* **Region variance**: Rates differ by region; this model uses commonly cited us-east-1 values and AWS examples. Always re-check the **ELB** and **PrivateLink** pricing pages before finalizing. ([Amazon Web Services, Inc.][3])
+
+---
+
+## References
+
+* **VPC Traffic Mirroring pricing** – hourly per ENI + per-GB processed. ([Amazon Web Services, Inc.][2])
+* **Elastic Load Balancing pricing (GWLB + GLCU model & examples).** ([Amazon Web Services, Inc.][3])
+* **Gateway Load Balancer Endpoint / PrivateLink pricing.** ([Amazon Web Services, Inc.][6])
+* **EC2 c5.xlarge price reference.** ([Vantage][1])
+
+---
+
+### Want a version for Confluence?
+
+I can paste this into a Confluence-ready table with a **parameters box** (mirrored-ENIs, GB/month, endpoints, sensor type) and a short **Cost Formula** section so you can recalc live in the doc.
+
+[1]: https://instances.vantage.sh/aws/ec2/c5.xlarge?utm_source=chatgpt.com "c5.xlarge pricing and specs - Amazon EC2 Instance Comparison"
+[2]: https://aws.amazon.com/blogs/aws/new-vpc-traffic-mirroring/?utm_source=chatgpt.com "New – VPC Traffic Mirroring – Capture & Inspect Network ..."
+[3]: https://aws.amazon.com/elasticloadbalancing/pricing/ "Elastic Load Balancing pricing"
+[4]: https://cloudfix.com/blog/eliminating-idle-vpc-endpoints-achieve-aws-cost-savings/?utm_source=chatgpt.com "Clean Up Your Idle VPC Endpoints"
+[5]: https://www.cloudzero.com/blog/amazon-vpc-pricing/?utm_source=chatgpt.com "Amazon VPC Pricing: Cost Factors And Savings Strategies"
+[6]: https://aws.amazon.com/privatelink/pricing/?utm_source=chatgpt.com "AWS PrivateLink Pricing"
+[7]: https://aws.amazon.com/ec2/pricing/on-demand/?utm_source=chatgpt.com "EC2 On-Demand Instance Pricing"
+[8]: https://d1.awsstatic.com/events/Summits/reinvent2023/NET207-R_Network-cost-optimization-on-AWS-REPEAT-1.pdf?utm_source=chatgpt.com "Network cost optimization on AWS - awsstatic.com"
