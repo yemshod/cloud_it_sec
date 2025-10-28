@@ -1,439 +1,148 @@
-I have my own AWS account called AD and an external vendor AWS account called CT.
+Interview Question: SQL Injection Detection & Prevention (Manual Code Review)
+Question: “If you’re reviewing code manually, what would you look for to identify a SQL Injection (SQLi) vulnerability? And what are some practical ways you’d recommend preventing it in a real-world application?”
 
-I want to pickup some object from s3 bucket in CT’s account and drop in my own bucket in account AD and then delete the object in CT bucket.
+Why This Question Works
+	•	Technical Depth: Probes database interaction security, a top OWASP risk, especially relevant for HealthStream’s patient data apps.
+	•	Real-World Relevance: SQLi can lead to PHI breaches, tying into HIPAA compliance.
+	•	Practicality: Assesses manual review skills and secure coding mindset.
+	•	Personality Fit: Gauges teaching ability and precision under scrutiny.
 
-What are some very secure solutions for this
+Expected Strong Answer (What You Should Hear)
+Part 1: What to Look for in Manual Code Review (Red Flags)
+“In manual code review, I’d trace user input to SQL queries—focusing on dynamic query construction. SQLi happens when unsanitized input alters SQL logic. Key patterns:”
+Red Flag
+Example (Vulnerable Code)
+Why It’s Dangerous
+1. String Concatenation in Queries
+query = "SELECT * FROM users WHERE id = " + userId;
+Input like 1 OR 1=1 dumps all records
+2. Direct Parameter Insertion
+db.execute("SELECT * FROM patients WHERE name = '" + name + "'")
+Allows ' OR '1'='1 to bypass auth
+3. No Input Validation on Params
+stmt = conn.prepare("SELECT * FROM records WHERE id = ?"); stmt.setString(1, id); (if no type checks)
+Blind SQLi via type confusion (e.g., int as string)
+4. Dynamic Table/Column Names
+query = "SELECT * FROM " + tableName + " WHERE col = " + value;
+Input like users; DROP TABLE patients -- executes arbitrary SQL
+5. ORM Misuse (e.g., Raw SQL in Entity Framework)
+context.Database.ExecuteSqlRaw("UPDATE users SET pass = {0}", rawPassword);
+Bypasses ORM protections if inputs aren’t parameterized
+6. Stored Procedures Without Params
+EXEC GetUser @id = '" + id + "'
+Concatenated params enable injection in procs
+“I’d also scan for missing parameterization, inconsistent escaping, or union-based payloads in logs. Context matters: watch for second-order SQLi where input is stored then queried later.”
 
+Part 2: Prevention Strategies (Defense-in-Depth)
+“Prevention is about parameterized queries and prepared statements—never trust input. Here’s a layered approach:”
+Layer
+Recommendation
+Implementation Example
+1. Parameterized Queries (Primary Fix)
+Use placeholders for all inputs
+Java: PreparedStatement pst = conn.prepare("SELECT * FROM users WHERE id = ?"); pst.setInt(1, userId);
+Python: cursor.execute("SELECT * FROM users WHERE id = %s", (userId,))
+2. Stored Procedures with Params
+Bind inputs safely in DB
+SQL: CREATE PROC GetUser @id INT AS SELECT * FROM users WHERE id = @id;
+3. Input Validation + Sanitization
+Whitelist expected formats
+Reject non-integers for IDs; use regex for names (e.g., no -- or /*)
+4. ORM Best Practices
+Avoid raw SQL; use query builders
+Entity Framework: context.Users.Where(u => u.Id == userId).ToList();
+5. Web Application Firewall (WAF)
+Block common payloads
+AWS WAF rule: Block UNION SELECT, 1=1 -- with high confidence
+6. Least Privilege DB Accounts
+Limit user perms
+App DB user: SELECT/INSERT only, no DROP/ALTER
+7. Invicti/Snyk Scans in CI/CD
+Automate detection
+Fail builds on SQLi findings (OWASP ZAP integration)
+“Add error handling to suppress SQL errors (e.g., generic ‘Query failed’) and logging without exposing schema. For HealthStream, ensure HIPAA-aligned auditing of failed queries.”
 
-I want solution #1. But want to use a lambda function to be doing on a schedule bases … to run every 5 hours and to check new objects that have been put into the buckets within that timeframe, copy them to the other bucket and when confirmed it’s there, then delete them from CT account.
+Bonus: Pro-Level Insight (Standout Candidates Say This)
+“I’d differentiate first-order (immediate) vs. second-order SQLi (stored input). Test for blind/time-based variants with tools like sqlmap post-review. Align with OWASP Top 10 A03: Injection.”
 
-Give me the steps for solution 1 and the lambda code in python
+Evaluation Rubric (What You’re Scoring)
+Criteria
+Strong (5)
+Weak (1–2)
+Pattern Recognition
+Identifies 4+ code smells (e.g., concatenation) with examples
+Says “look for quotes” vaguely
+Context Awareness
+Covers dynamic queries, ORMs, stored procs
+Ignores parameterization nuances
+Defense-in-Depth
+Emphasizes params + WAF + validation
+Relies solely on “sanitize input”
+Tooling & Process
+Mentions Invicti, CI/CD, OWASP
+No automation or compliance tie-in
+Clarity & Confidence
+Explains with code snippets
+Hesitant or overly generic
 
-Put this solution in a terraform. Exclude the creation of the role part as the role has been created and named: ad-and-ct-cross-acct-role.
-
-Make the terraform to zip and deploy the lambda code from same directory. Set timeout at 15mins
-Trigger event should be every 5 hours.
-
-Make it to send SNS notification whenever it runs on numbers of objects copied and numbers of objects deleted. Or errors if it failed. 
-
-Let it create an SNS topic for this and subscribe this email to it: exast@exasrt.com
-
-
-
-
-Setup Steps for Solution 1 with Lambda Automation
-This builds on the cross-account IAM role assumption from Solution 1. The Lambda function will run in your AD account, assume the role in CT to access their bucket, list and filter objects by LastModified timestamp, copy them (via download/upload), verify presence in AD, and delete from CT. It’s scheduled via Amazon EventBridge (formerly CloudWatch Events).
-One-Time Configuration
-	1	In CT’s Account (Vendor Sets This Up):
-	◦	Create the IAM role (ADAccessRole) with the trust policy allowing your AD account to assume it (as in original Solution 1). Include an optional ExternalId for security.
-	◦	Attach an IAM policy to the role with permissions for s3:ListBucket, s3:GetObject, and s3:DeleteObject on the CT bucket. Updated example policy JSON (added ListBucket for scanning): {
-	◦	  "Version": "2012-10-17",
-	◦	  "Statement": [
-	◦	    {
-	◦	      "Effect": "Allow",
-	◦	      "Action": "s3:ListBucket",
-	◦	      "Resource": "arn:aws:s3:::"
-	◦	    },
-	◦	    {
-	◦	      "Effect": "Allow",
-	◦	      "Action": [
-	◦	        "s3:GetObject",
-	◦	        "s3:DeleteObject"
-	◦	      ],
-	◦	      "Resource": "arn:aws:s3:::/*"
-	◦	    }
-	◦	  ]
-	◦	}
-	◦	 Replace with the vendor’s bucket name. Limit to specific prefixes if needed for least privilege.
-	2	In AD’s Account (Your Setup):
-	◦	Create an IAM role for Lambda (LambdaExecutionRole) with permissions to assume the CT role, upload to your AD bucket, and log to CloudWatch. Example policy JSON: {
-	◦	  "Version": "2012-10-17",
-	◦	  "Statement": [
-	◦	    {
-	◦	      "Effect": "Allow",
-	◦	      "Action": "sts:AssumeRole",
-	◦	      "Resource": "arn:aws:iam:::role/ADAccessRole"
-	◦	    },
-	◦	    {
-	◦	      "Effect": "Allow",
-	◦	      "Action": [
-	◦	        "s3:PutObject",
-	◦	        "s3:HeadObject"  // For verification
-	◦	      ],
-	◦	      "Resource": "arn:aws:s3:::/*"
-	◦	    },
-	◦	    {
-	◦	      "Effect": "Allow",
-	◦	      "Action": [
-	◦	        "logs:CreateLogGroup",
-	◦	        "logs:CreateLogStream",
-	◦	        "logs:PutLogEvents"
-	◦	      ],
-	◦	      "Resource": "arn:aws:logs:*:*:*"
-	◦	    }
-	◦	  ]
-	◦	}
-	◦	 Replace placeholders. Attach the AWS managed policy AWSLambdaBasicExecutionRole if not including logs above.
-	◦	Create the Lambda function:
-	▪	Go to AWS Lambda console > Create function.
-	▪	Runtime: Python 3.12 (or latest).
-	▪	Role: Select LambdaExecutionRole.
-	▪	Paste the Python code (provided below) into the code editor.
-	▪	Add environment variables (under Configuration > Environment variables):
-	▪	CT_BUCKET_NAME: Vendor’s bucket name.
-	▪	AD_BUCKET_NAME: Your bucket name.
-	▪	ROLE_ARN: ARN of CT’s ADAccessRole (e.g., arn:aws:iam:::role/ADAccessRole).
-	▪	PREFIX: Optional prefix in CT bucket to scan (e.g., folder/); leave blank for root.
-	▪	EXTERNAL_ID: If using in trust policy.
-	▪	Set timeout: 5-15 minutes, depending on object count/size.
-	▪	Memory: 128 MB default; increase if handling large objects.
-	◦	Set up scheduling with EventBridge:
-	▪	Go to Amazon EventBridge console > Rules > Create rule.
-	▪	Event source: Schedule.
-	▪	Cron expression: 0 */5 * * ? * (every 5 hours, on the hour).
-	▪	Target: Your Lambda function.
-	▪	Create the rule.
-	3	Additional Security and Best Practices:
-	◦	Use least privilege: Limit policies to specific resources.
-	◦	Encryption: If objects are SSE-KMS encrypted in CT, add KMS decrypt/encrypt permissions to the assumed role and Lambda role.
-	◦	Monitoring: Enable CloudTrail for auditing; use CloudWatch Logs for Lambda output.
-	◦	Error Handling: The code includes basic try-except; expand for notifications (e.g., via SNS).
-	◦	Testing: Invoke Lambda manually with test events; start with small objects.
-	◦	Cost: Minimal for infrequent runs; monitor S3 GET/PUT requests.
-Once set up, the Lambda will automatically run every 5 hours, scanning for objects modified in the last 5 hours (adjustable in code).
-Lambda Python Code
-import boto3
-import os
-from datetime import datetime, timedelta, timezone
-import logging
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-def lambda_handler(event, context):
-    # Environment variables
-    ct_bucket = os.environ['CT_BUCKET_NAME']
-    ad_bucket = os.environ['AD_BUCKET_NAME']
-    role_arn = os.environ['ROLE_ARN']
-    prefix = os.environ.get('PREFIX', '')
-    external_id = os.environ.get('EXTERNAL_ID', None)
-    
-    # Timeframe: Last 5 hours
-    timeframe = timedelta(hours=5)
-    cutoff_time = datetime.now(timezone.utc) - timeframe
-    
-    # Assume role in CT account
-    sts_client = boto3.client('sts')
-    assume_params = {
-        'RoleArn': role_arn,
-        'RoleSessionName': 'LambdaMoveSession'
-    }
-    if external_id:
-        assume_params['ExternalId'] = external_id
-    
-    try:
-        assumed_role = sts_client.assume_role(**assume_params)
-        credentials = assumed_role['Credentials']
-        # Create S3 client with temporary credentials for CT operations
-        ct_s3 = boto3.client(
-            's3',
-            aws_access_key_id=credentials['AccessKeyId'],
-            aws_secret_access_key=credentials['SecretAccessKey'],
-            aws_session_token=credentials['SessionToken']
-        )
-        # AD S3 client uses default credentials
-        ad_s3 = boto3.client('s3')
-        
-        # List objects in CT bucket, paginated
-        paginator = ct_s3.get_paginator('list_objects_v2')
-        page_iterator = paginator.paginate(Bucket=ct_bucket, Prefix=prefix)
-        
-        moved_objects = []
-        for page in page_iterator:
-            if 'Contents' in page:
-                for obj in page['Contents']:
-                    if obj['LastModified'] > cutoff_time:
-                        key = obj['Key']
-                        logger.info(f"Processing object: {key}")
-                        
-                        # Download object to memory
-                        try:
-                            response = ct_s3.get_object(Bucket=ct_bucket, Key=key)
-                            data = response['Body'].read()
-                            
-                            # Upload to AD bucket
-                            ad_s3.put_object(Bucket=ad_bucket, Key=key, Body=data)
-                            
-                            # Verify in AD (head_object raises if not found)
-                            ad_s3.head_object(Bucket=ad_bucket, Key=key)
-                            logger.info(f"Copied {key} to AD bucket")
-                            
-                            # Delete from CT
-                            ct_s3.delete_object(Bucket=ct_bucket, Key=key)
-                            logger.info(f"Deleted {key} from CT bucket")
-                            
-                            moved_objects.append(key)
-                        except Exception as e:
-                            logger.error(f"Error processing {key}: {str(e)}")
-                            # Continue to next object; add SNS alert if needed
-        
-        return {
-            'statusCode': 200,
-            'body': f"Moved {len(moved_objects)} objects: {moved_objects}"
-        }
-    except Exception as e:
-        logger.error(f"Error assuming role or processing: {str(e)}")
-        raise e
+Final Verdict
+	•	Move to Tech Screen if they nail parameterization as the core fix and list 3+ layers.
+	•	Drop if they suggest “escape quotes” without params or miss DB privilege limits.
+This question complements XSS review, testing holistic injection defenses for your AppSec role.
 
 
+------
 
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-    archive = {
-      source  = "hashicorp/archive"
-      version = "~> 2.4"
-    }
-  }
-}
+Here’s XSS and SQLi explained in simple, non-technical terms — perfect for explaining to junior devs, stakeholders, or even non-tech folks:
 
-provider "aws" {
-  region = var.aws_region  # e.g., "us-east-1"
-}
+XSS (Cross-Site Scripting)
+Simple Definition:
+“XSS is when an attacker tricks your website into running their JavaScript code in your users’ browsers.”
+Real-Life Analogy: Imagine a public comment box on a hospital patient portal.
+	•	A hacker types: 
+	•	The website shows this comment without cleaning it
+	•	Every visitor’s browser runs the hacker’s code → steals login cookies → hacker logs in as them.
+3 Types (Keep It Simple):
+Type
+What Happens
+Stored
+Bad code saved in DB (e.g., comment) → affects everyone
+Reflected
+Bad code in URL (e.g., search) → affects only that user
+DOM-based
+Bad code runs in browser JavaScript
+Prevention (1-Line Fix):
+Never trust user input. Always escape it before showing on screen.
 
-# Variables for customization
-variable "aws_region" {
-  description = "AWS region"
-  type        = string
-}
+SQL Injection (SQLi)
+Simple Definition:
+“SQLi is when an attacker tricks your app into running their SQL commands in your database.”
+Real-Life Analogy: Login form asks: "Enter your Patient ID:"
+	•	Hacker types: 123 OR 1=1 --
+	•	App builds query: SELECT * FROM patients WHERE id = '123 OR 1=1 --'
+	•	
+	•	Database says: “True!” → logs hacker in as everyone
+Result?
+	•	See all patient records
+	•	Delete data
+	•	Steal PHI (HIPAA violation)
+Prevention (1-Line Fix):
+Never build SQL by gluing strings. Use parameterized queries (placeholders).
 
-variable "lambda_function_name" {
-  description = "Name of the Lambda function"
-  type        = string
-  default     = "s3-object-mover"
-}
+Side-by-Side Summary (1 Sentence Each)
+Vulnerability
+Attacker Injects
+Into
+Result
+XSS
+JavaScript
+Web page (browser)
+Runs in user’s browser → steals sessions
+SQLi
+SQL commands
+Database query
+Runs in database → leaks or deletes data
 
-variable "ct_bucket_name" {
-  description = "Vendor's S3 bucket name (CT)"
-  type        = string
-}
-
-variable "ad_bucket_name" {
-  description = "Your S3 bucket name (AD)"
-  type        = string
-}
-
-variable "ct_role_arn" {
-  description = "ARN of the IAM role in CT account to assume"
-  type        = string
-}
-
-variable "prefix" {
-  description = "Optional prefix in CT bucket to scan"
-  type        = string
-  default     = ""
-}
-
-variable "external_id" {
-  description = "Optional ExternalId for assuming the CT role"
-  type        = string
-  default     = ""
-}
-
-variable "sns_email" {
-  description = "Email to subscribe to SNS topic"
-  type        = string
-  default     = "exast@exasrt.com"
-}
-
-# Zip the Lambda code (assumes lambda_function.py is in the same directory)
-data "archive_file" "lambda_zip" {
-  type        = "zip"
-  source_file = "${path.module}/lambda_function.py"
-  output_path = "${path.module}/lambda_function.zip"
-}
-
-# Lambda Function
-resource "aws_lambda_function" "s3_mover" {
-  function_name    = var.lambda_function_name
-  role             = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/ad-and-ct-cross-acct-role"  # Reference existing role
-  handler          = "lambda_function.lambda_handler"
-  runtime          = "python3.12"
-  filename         = data.archive_file.lambda_zip.output_path
-  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
-  timeout          = 900  # 15 minutes
-
-  environment {
-    variables = {
-      CT_BUCKET_NAME = var.ct_bucket_name
-      AD_BUCKET_NAME = var.ad_bucket_name
-      ROLE_ARN       = var.ct_role_arn
-      PREFIX         = var.prefix
-      EXTERNAL_ID    = var.external_id
-      SNS_TOPIC_ARN  = aws_sns_topic.lambda_notifications.arn
-    }
-  }
-}
-
-# Get current account ID for ARN construction
-data "aws_caller_identity" "current" {}
-
-# IAM Policy for Lambda to publish to SNS (attach to existing role)
-resource "aws_iam_policy" "lambda_sns_policy" {
-  name        = "lambda-sns-publish-policy"
-  description = "Allows Lambda to publish to SNS"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = "sns:Publish"
-        Resource = aws_sns_topic.lambda_notifications.arn
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "attach_sns_policy" {
-  role       = "ad-and-ct-cross-acct-role"  # Existing role name
-  policy_arn = aws_iam_policy.lambda_sns_policy.arn
-}
-
-# EventBridge Rule for scheduling every 5 hours
-resource "aws_cloudwatch_event_rule" "lambda_schedule" {
-  name                = "lambda-every-5-hours"
-  description         = "Triggers Lambda every 5 hours"
-  schedule_expression = "cron(0 */5 * * ? *)"
-}
-
-resource "aws_cloudwatch_event_target" "lambda_target" {
-  rule      = aws_cloudwatch_event_rule.lambda_schedule.name
-  target_id = "lambdaTarget"
-  arn       = aws_lambda_function.s3_mover.arn
-}
-
-# Permission for EventBridge to invoke Lambda
-resource "aws_lambda_permission" "allow_eventbridge" {
-  statement_id  = "AllowExecutionFromEventBridge"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.s3_mover.function_name
-  principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.lambda_schedule.arn
-}
-
-# SNS Topic for notifications
-resource "aws_sns_topic" "lambda_notifications" {
-  name = "lambda-s3-mover-notifications"
-}
-
-# SNS Subscription (email)
-resource "aws_sns_topic_subscription" "email_subscription" {
-  topic_arn = aws_sns_topic.lambda_notifications.arn
-  protocol  = "email"
-  endpoint  = var.sns_email
-}
-Lambda Code (Save as `lambda_function.py` in the same directory as the Terraform file)
-import boto3
-import os
-from datetime import datetime, timedelta, timezone
-import logging
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-def lambda_handler(event, context):
-    # Environment variables
-    ct_bucket = os.environ['CT_BUCKET_NAME']
-    ad_bucket = os.environ['AD_BUCKET_NAME']
-    role_arn = os.environ['ROLE_ARN']
-    prefix = os.environ.get('PREFIX', '')
-    external_id = os.environ.get('EXTERNAL_ID', None)
-    sns_topic_arn = os.environ['SNS_TOPIC_ARN']
-    
-    # Timeframe: Last 5 hours
-    timeframe = timedelta(hours=5)
-    cutoff_time = datetime.now(timezone.utc) - timeframe
-    
-    sns_client = boto3.client('sns')
-    moved_count = 0
-    deleted_count = 0
-    errors = []
-    
-    try:
-        # Assume role in CT account
-        sts_client = boto3.client('sts')
-        assume_params = {
-            'RoleArn': role_arn,
-            'RoleSessionName': 'LambdaMoveSession'
-        }
-        if external_id:
-            assume_params['ExternalId'] = external_id
-        
-        assumed_role = sts_client.assume_role(**assume_params)
-        credentials = assumed_role['Credentials']
-        
-        # Create S3 client with temporary credentials for CT operations
-        ct_s3 = boto3.client(
-            's3',
-            aws_access_key_id=credentials['AccessKeyId'],
-            aws_secret_access_key=credentials['SecretAccessKey'],
-            aws_session_token=credentials['SessionToken']
-        )
-        
-        # AD S3 client uses default credentials
-        ad_s3 = boto3.client('s3')
-        
-        # List objects in CT bucket, paginated
-        paginator = ct_s3.get_paginator('list_objects_v2')
-        page_iterator = paginator.paginate(Bucket=ct_bucket, Prefix=prefix)
-        
-        for page in page_iterator:
-            if 'Contents' in page:
-                for obj in page['Contents']:
-                    if obj['LastModified'] > cutoff_time:
-                        key = obj['Key']
-                        logger.info(f"Processing object: {key}")
-                        
-                        try:
-                            # Download object to memory
-                            response = ct_s3.get_object(Bucket=ct_bucket, Key=key)
-                            data = response['Body'].read()
-                            
-                            # Upload to AD bucket
-                            ad_s3.put_object(Bucket=ad_bucket, Key=key, Body=data)
-                            
-                            # Verify in AD (head_object raises if not found)
-                            ad_s3.head_object(Bucket=ad_bucket, Key=key)
-                            logger.info(f"Copied {key} to AD bucket")
-                            moved_count += 1
-                            
-                            # Delete from CT
-                            ct_s3.delete_object(Bucket=ct_bucket, Key=key)
-                            logger.info(f"Deleted {key} from CT bucket")
-                            deleted_count += 1
-                            
-                        except Exception as e:
-                            error_msg = f"Error processing {key}: {str(e)}"
-                            logger.error(error_msg)
-                            errors.append(error_msg)
-        
-        # Send SNS notification
-        message = f"Lambda execution summary:\nMoved objects: {moved_count}\nDeleted objects: {deleted_count}"
-        if errors:
-            message += f"\nErrors:\n" + "\n".join(errors)
-        sns_client.publish(TopicArn=sns_topic_arn, Message=message, Subject="S3 Object Mover Report")
-        
-        return {
-            'statusCode': 200,
-            'body': message
-        }
-    
-    except Exception as e:
-        error_msg = f"Critical error: {str(e)}"
-        logger.error(error_msg)
-        sns_client.publish(TopicArn=sns_topic_arn, Message=error_msg, Subject="S3 Object Mover Error")
-        raise e
+Bottom Line for HealthStream:
+XSS = Browser Attack → Steals user sessions SQLi = Database Attack → Steals patient data
+Both are preventable with proper input handling — and must be blocked to protect PHI and avoid breaches.
