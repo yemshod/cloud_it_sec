@@ -93,56 +93,41 @@ This question complements XSS review, testing holistic injection defenses for yo
 
 ------
 
-Here’s XSS and SQLi explained in simple, non-technical terms — perfect for explaining to junior devs, stakeholders, or even non-tech folks:
+Interview Question: XSS Detection & Prevention (Manual Code Review)
+Question: “If you’re reviewing code manually, what would you look for to identify a Cross-Site Scripting (XSS) vulnerability? And what are some practical ways you’d recommend preventing it in a real-world application?”
 
-XSS (Cross-Site Scripting)
-Simple Definition:
-“XSS is when an attacker tricks your website into running their JavaScript code in your users’ browsers.”
-Real-Life Analogy: Imagine a public comment box on a hospital patient portal.
-	•	A hacker types: 
-	•	The website shows this comment without cleaning it
-	•	Every visitor’s browser runs the hacker’s code → steals login cookies → hacker logs in as them.
-3 Types (Keep It Simple):
-Type
-What Happens
-Stored
-Bad code saved in DB (e.g., comment) → affects everyone
-Reflected
-Bad code in URL (e.g., search) → affects only that user
-DOM-based
-Bad code runs in browser JavaScript
-Prevention (1-Line Fix):
-Never trust user input. Always escape it before showing on screen.
+Why This Question Works
+	•	Technical Depth: Tests hands-on AppSec knowledge without needing tools.
+	•	Real-World Relevance: XSS is a top OWASP risk and common in web apps like HealthStream’s patient portal.
+	•	Practicality: Forces the candidate to think like a reviewer and a defender.
+	•	Personality Fit: Reveals clarity, precision, and teaching ability.
 
-SQL Injection (SQLi)
-Simple Definition:
-“SQLi is when an attacker tricks your app into running their SQL commands in your database.”
-Real-Life Analogy: Login form asks: "Enter your Patient ID:"
-	•	Hacker types: 123 OR 1=1 --
-	•	App builds query: SELECT * FROM patients WHERE id = '123 OR 1=1 --'
-	•	
-	•	Database says: “True!” → logs hacker in as everyone
-Result?
-	•	See all patient records
-	•	Delete data
-	•	Steal PHI (HIPAA violation)
-Prevention (1-Line Fix):
-Never build SQL by gluing strings. Use parameterized queries (placeholders).
+Expected Strong Answer (What You Should Hear)
+Part 1: What to Look for in Manual Code Review (Red Flags)
+“When manually reviewing code for XSS, I focus on where user input meets output—especially in HTML, JavaScript, or JSON contexts. Here are the key patterns I look for:”
+Red Flag
+Example (Vulnerable Code)
+Why It’s Dangerous
+1. Direct innerHTML or document.write()
+element.innerHTML = userInput;
+Injects raw HTML/JS into DOM
+2. Unescaped dynamic values in HTML
+Hello, <%= username %>
+Allows
+Bypasses HTML escaping
+5. JSON responses used in
+Turns JSON into executable JS
+6. DOM-based XSS via location.hash, document.URL
+document.getElementById('output').innerHTML = location.hash;
+Client-side injection
+“I’d also check if input validation is missing or output encoding is inconsistent—especially across different contexts (HTML, JS, attributes, CSS).”
 
-Side-by-Side Summary (1 Sentence Each)
-Vulnerability
-Attacker Injects
-Into
-Result
-XSS
-JavaScript
-Web page (browser)
-Runs in user’s browser → steals sessions
-SQLi
-SQL commands
-Database query
-Runs in database → leaks or deletes data
-
-Bottom Line for HealthStream:
-XSS = Browser Attack → Steals user sessions SQLi = Database Attack → Steals patient data
-Both are preventable with proper input handling — and must be blocked to protect PHI and avoid breaches.
+Part 2: Prevention Strategies (Defense-in-Depth)
+“XSS prevention follows ‘never trust input, always escape output’. Here’s how I’d secure it:”
+Layer
+Recommendation
+Implementation Example
+1. Output Encoding (Primary Fix)
+Use context-aware escaping
+htmlEscape(userInput) in HTML
+jsEscape() in
