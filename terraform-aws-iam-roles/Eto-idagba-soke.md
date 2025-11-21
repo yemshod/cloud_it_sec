@@ -382,3 +382,322 @@ If you want, I can also generate:
 ✅ A career leveling chart comparing to industry benchmarks (e.g., Google L3–L7, AWS SDE1–Principal Security Engineer)
 
 Just tell me what you’d like next.
+
+
+===========
+
+Below is a fully expanded, enterprise-grade Security Career Path Framework that integrates all five disciplines in your organization:
+
+AppSec | Cloud Security | SOC | Vulnerability Management | Continuous Monitoring
+
+This version treats each level (Intern → Architect) consistently across the entire security organization, while adding domain-specific expectations per discipline.
+
+The structure is Confluence-ready, formal, and aligned with high-maturity security engineering programs.
+
+⸻
+
+Unified Security Career Path Framework
+
+For AppSec, Cloud Security, SOC, Vulnerability Management & Continuous Monitoring
+
+⸻
+
+1. Unified Role Definitions (All Teams)
+
+Each role below includes core universal expectations, followed by discipline-specific responsibilities for your five teams.
+
+⸻
+
+Intern / Security Intern
+
+Universal Role Purpose:
+Enter the security domain through foundational tasks, learning the organization’s tools, processes, and methodologies.
+
+Universal Responsibilities
+	•	Support basic operational tasks under supervision.
+	•	Assist with documentation, logs collection, or ticket updates.
+	•	Participate in team knowledge sessions and process walkthroughs.
+
+Discipline-Specific Responsibilities
+
+Team	Expected Tasks
+AppSec	Assist with basic SAST/DAST scans, documentation.
+Cloud Security	Shadow cloud reviews, learn IAM basics, observe IaC processes.
+SOC	Learn SIEM dashboards, help triage low-risk alerts.
+Vuln Mgmt	Help process scanning outputs, verify hosts, update asset list.
+ConMon	Observe monitoring dashboards and assist in data collection.
+
+
+⸻
+
+Junior Analyst
+
+Universal Role Purpose:
+Perform structured security tasks following documented procedures.
+
+Universal Responsibilities
+	•	Execute routine tasks with oversight.
+	•	Follow playbooks and escalate appropriately.
+	•	Maintain accurate documentation and updates.
+
+Discipline-Specific Responsibilities
+
+Team	Expected Tasks
+AppSec	Run SAST/DAST scans; validate false positives; update threat models.
+Cloud Security	Review compliance findings; verify IAM changes; assist in cloud guardrail reviews.
+SOC	Triage L1 alerts; escalate suspicious events; monitor dashboards.
+Vuln Mgmt	Execute scheduled scans; validate findings; track remediation SLAs.
+ConMon	Monitor uptime/security metrics; run health checks; document anomalies.
+
+
+⸻
+
+Security Analyst
+
+Universal Role Purpose:
+Independently operate within a security discipline and support cross-team efforts.
+
+Universal Responsibilities
+	•	Investigate, document, and resolve standard security issues.
+	•	Own moderate operational tasks end-to-end.
+	•	Provide technical insights and maintain tooling accuracy.
+
+Discipline-Specific Responsibilities
+
+Team	Expected Tasks
+AppSec	Conduct code reviews, threat modeling, dependency checks; coordinate with dev teams.
+Cloud Security	Review architectures, analyze IAM issues, validate cloud misconfigurations.
+SOC	Lead L1/L2 investigations; tune alerts; collaborate with IR responders.
+Vuln Mgmt	Prioritize vulnerabilities; manage remediation cycles; present reports.
+ConMon	Maintain monitoring baselines; investigate drift; track KPIs across logs/telemetry.
+
+
+⸻
+
+Security Engineer
+
+Universal Role Purpose:
+Engineer and optimize security controls, automation, and tooling.
+
+Universal Responsibilities
+	•	Design and implement security enhancements.
+	•	Develop IaC, automations, and integrations.
+	•	Collaborate with engineering teams to embed security by design.
+	•	Own medium-complexity project deliverables.
+
+Discipline-Specific Responsibilities
+
+Team	Expected Tasks
+AppSec	Build CI/CD security controls, integrate SAST/SCA tools, design secure coding patterns.
+Cloud Security	Develop cloud guardrails, IAM patterns, Terraform modules, logging architectures.
+SOC	Engineer detections, build correlation rules, develop SOAR playbooks.
+Vuln Mgmt	Automate scanning workflows, risk scoring models, and report pipelines.
+ConMon	Engineer monitoring dashboards, baseline drift detection, anomaly detection logic.
+
+
+⸻
+
+Senior Security Engineer
+
+Universal Role Purpose:
+Act as a technical leader responsible for complex initiatives, mentorship, and cross-domain influence.
+
+Universal Responsibilities
+	•	Architect and deploy large-scale or enterprise-wide solutions.
+	•	Mentor analysts and engineers; drive process maturity.
+	•	Provide deep technical expertise during incidents and major projects.
+	•	Lead technical design sessions across teams.
+
+Discipline-Specific Responsibilities
+
+Team	Expected Tasks
+AppSec	Lead secure design reviews; build enterprise secure coding libraries; partner with engineering leads.
+Cloud Security	Architect multi-account guardrails, KMS strategy, zero trust, logging pipelines, and IR readiness.
+SOC	Build advanced detections, design threat hunting frameworks, lead SIEM modernization.
+Vuln Mgmt	Build enterprise VM program; integrate CMDB, risk scoring, and automation at scale.
+ConMon	Define monitoring frameworks, SLIs/SLOs, and implement cross-cloud baselines.
+
+
+⸻
+
+Security Architect
+
+Universal Role Purpose:
+Set strategic security direction, define architecture patterns, lead enterprise guardrails, and influence senior leadership.
+
+Universal Responsibilities
+	•	Establish enterprise reference architectures.
+	•	Conduct threat modeling at system and organizational scale.
+	•	Define standards, governance, and control frameworks.
+	•	Advise executives and cross-functional leaders.
+	•	Foster a culture of secure design and engineering excellence.
+
+Discipline-Specific Responsibilities
+
+Team	Expected Tasks
+AppSec	Define enterprise AppSec strategy; create secure SDLC frameworks; govern dev security tooling roadmap.
+Cloud Security	Own cloud security architecture across AWS/Azure/GCP; design identity frameworks, security landing zones.
+SOC	Architect SIEM/SOAR strategy; define detection engineering lifecycle and IR architecture.
+Vuln Mgmt	Architect enterprise vulnerability management governance, scoring model, and integrations.
+ConMon	Architect real-time monitoring ecosystem, telemetry ingestion, and continuous assurance frameworks.
+
+
+⸻
+
+2. Progression Criteria (Unified Across All Five Teams)
+
+⸻
+
+Objective, Measurable Advancement Requirements
+
+A. Technical Capability Growth
+	•	Demonstrated proficiency with tools, languages, and security domains relevant to role.
+	•	Ability to solve increasingly complex problems with autonomy.
+
+B. Execution & Reliability
+	•	Consistently delivers high-quality work.
+	•	Drives tasks to closure without escalation.
+	•	Shows repeatable ownership of tasks at or above current level.
+
+C. Scope of Influence
+	•	Expands influence from self → team → cross-team → organization.
+	•	Mentors others; participates in documentation and knowledge sharing.
+
+D. Leadership & Initiative
+	•	Leads small projects (Analyst → Engineer).
+	•	Leads multi-team projects (Engineer → Senior).
+	•	Owns architectural direction (Senior → Architect).
+
+E. Acting in Capacity Before Promotion
+	•	Individual must demonstrate sustained performance at next level for 2–3 months minimum.
+
+⸻
+
+3. Skill Development Pathways
+
+⸻
+
+Core Technical Skills by Discipline
+
+Team	Expected Technical Skill Areas
+AppSec	SAST, DAST, SCA, secure coding, threat modeling, SDLC, API security, dependency security
+Cloud Security	AWS/Azure/GCP security, IAM, network architecture, Terraform/IaC, KMS, logging
+SOC	SIEM, SOAR, detections, threat intel, IR, log analysis, EDR, network security
+Vuln Mgmt	Scanners (Tenable/Qualys), exploit analysis, asset management, risk scoring, patch cycles
+ConMon	Observability tools, metrics baselining, log correlation, cloud monitors, anomaly detection
+
+
+⸻
+
+Training & Certification Recommendations
+
+Entry-Level
+	•	Security+, AWS/Azure/GCP Fundamentals
+	•	SANS SEC275, SEC301
+	•	Splunk User
+	•	Application/Cloud basics
+
+Mid-Level
+	•	AWS Security Specialty
+	•	Azure Security Engineer
+	•	GCP Security Engineer
+	•	GIAC GCLD/GCSA
+	•	HashiCorp Terraform Associate
+	•	OSCP for AppSec path
+
+Senior/Architect
+	•	CISSP / CCSP
+	•	AWS SA Professional
+	•	GIAC Cloud Architect (GCA)
+	•	TOGAF or SABSA
+	•	Offensive certifications for AppSec Architects
+	•	SIEM/SOAR engineering certs for SOC team
+
+⸻
+
+Knowledge Transfer Programs
+	•	Internal Tech Talks
+	•	Architecture Walkthroughs
+	•	AppSec-to-Cloud cross rotations
+	•	SOC/ConMon collaboration drills
+	•	Vulnerability & Cloud remediation workshops
+	•	“Build-an-IaC-Module” sessions
+
+⸻
+
+4. Performance Expectations (All Teams)
+
+⸻
+
+Performance Indicators
+
+1. Project Completion
+	•	Delivered per scope, schedule, and quality expectations.
+
+2. Information Accuracy
+	•	Findings must be validated, reproducible, and defensible.
+
+3. Communication
+	•	Clear, factual, audience-tailored communication (Slack, email, tickets, docs).
+
+4. Collaboration
+	•	Works transparently, supports teammates, participates in reviews.
+
+5. Initiative & Problem-Solving
+	•	Identifies gaps without waiting for direction.
+	•	Proposes feasible, scalable solutions.
+
+⸻
+
+Accountability Mechanisms
+	•	Quarterly performance reviews.
+	•	Multi-perspective feedback cycles.
+	•	Documentation of deliverables and metrics.
+	•	Clear remediation and performance improvement pathways.
+
+⸻
+
+5. Mentorship & Growth Framework
+
+⸻
+
+Structured Mentorship Cadence
+	•	Junior roles paired with Senior/Architects.
+	•	Bi-weekly growth-focused sessions.
+	•	“Learn by leading” opportunities.
+
+Confidence & Leadership Development
+	•	Encourage junior members to lead small meetings.
+	•	Assign early ownership tasks (e.g., writing SOPs, tuning detections).
+	•	Let engineers present to cross-functional teams for visibility.
+
+⸻
+
+6. Flexibility & Review Mechanisms
+
+⸻
+
+Annual Review
+	•	Validate relevance of responsibilities, skills, and expectations.
+	•	Adjust based on evolving cloud and security technologies.
+
+Individual Path Flexibility
+	•	Recognize specialization (e.g., detection engineer → threat hunter → SOC architect).
+	•	Allow exceptional promotions based on demonstrated capability.
+	•	Provide off-ramps for individuals wanting cross-discipline shifts.
+
+Supportive, Not Punitive
+	•	The framework exists to grow, not restrict.
+	•	Every individual receives guidance on how to advance.
+
+⸻
+
+If you want next:
+
+📌 Role-Based Skill Matrix Spreadsheet (Confluence + Excel ready)
+📌 Promotion Rubric (Scorecard) for each level
+📌 Team-specific Roadmaps (AppSec, Cloud, SOC, VM, ConMon)
+📌 A polished PDF of this Career Framework
+📌 Org charts showing lateral/vertical growth paths
+
+Tell me what you want added.
