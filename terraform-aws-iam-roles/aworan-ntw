@@ -1,86 +1,15 @@
-Below is how I interpret the flow in your diagram (in sequential sentence-order). After that, I provide you with useful documentation and a recommended installation guide for the ExtraHop + AWS setup.
-
----
-
-## Flow Description (Sentence Order)
-
-1. Inside **Account A**, an **EC2 instance** (in a VPC) is running application traffic.
-2. Traffic Mirroring is configured on that EC2 (or its ENI) so that a copy of its network traffic is forwarded.
-3. The mirrored traffic is sent to a **VPC Gateway Load Balancer (GWLB) Endpoint** in that same VPC (or maybe a shared services VPC).
-4. Similarly (in another VPC under Account A), an **RDS instance** is configured so that traffic mirroring captures its network traffic as well.
-5. That mirrored traffic from RDS is also forwarded to a VPC GWLB Endpoint.
-6. In **Account B**, another EC2 (in its own VPC) is mirrored, and its mirrored traffic is sent to a GWLB Endpoint in that account or cross-account.
-7. All the GWLB Endpoints (from Account A VPCs and Account B) terminate into a central “monitoring account” or central VPC setup.
-8. In the monitoring account, there is a **Load Balancer / Gateway Load Balancer (GWLB or LB)** that fronts a pool of monitoring appliances (sensors).
-9. Traffic is balanced across one or more **ExtraHop Packet Sensors (Ultra or Premium)** that receive the mirrored traffic for inspection, detection, and analysis.
-
-In short: EC2 and RDS traffic in different VPCs/accounts is mirrored → sent to local GWLB endpoints → forwarded to a central load balancer in monitoring account → distributed to ExtraHop packet sensors for full packet inspection.
-
----
-
-## Reference Documentation / Installation Steps
-
-Here are some useful, authoritative documents and guides that cover the deployment, configuration, and integration of ExtraHop sensors in AWS, and traffic mirroring:
-
-* **Deploy an ExtraHop sensor in AWS (ExtraHop docs)** — detailed step-by-step instructions. ([docs.extrahop.com][1])
-* **How to use ExtraHop to enable network traffic packet analysis with Amazon VPC Traffic Mirroring** (AWS blog) — conceptual + deployment walkthrough. ([Amazon Web Services, Inc.][2])
-* **Automate AWS Traffic Mirroring with CloudFormation (ExtraHop)** — code + architecture for automation via Lambda/CloudFormation. ([docs.extrahop.com][3])
-
-### Condensed Installation / Deployment Procedure (based on ExtraHop + AWS guidance)
-
-Below is a refined, more technical version of the steps you’d follow (you’ll need to adapt network/account specifics):
-
-1. **Obtain ExtraHop sensor AMI / license**
-
-   * Request access to the ExtraHop sensor AMI (ExtraHop binds your AWS account) ([docs.extrahop.com][4])
-   * Obtain the product key / licensing material. ([docs.extrahop.com][4])
-
-2. **Launch ExtraHop sensor instance(s)**
-
-   * In the target VPC (or monitoring account VPC), launch EC2 from the ExtraHop sensor AMI. ([docs.extrahop.com][4])
-   * Choose instance sizes appropriate for your sensor (depending on throughput, modules) ([docs.extrahop.com][5])
-   * Optionally add extra network interfaces (on different subnets) if needed for multiple traffic feeds. ([docs.extrahop.com][6])
-   * Add storage volumes (root + potentially packet capture disk) per requirement. ([docs.extrahop.com][4])
-   * Configure security groups: inbound rules for SSH (22), HTTP/HTTPS (80/443) for management, outbound connectivity to ExtraHop Cloud services, DNS, etc. ([docs.extrahop.com][5])
-
-3. **Create Traffic Mirroring Resources in AWS**
-
-   * **Traffic Mirror Target**: create a target which is either the ENI of the ExtraHop sensor or the Gateway Load Balancer endpoint (if you're chaining via GWLB). ([docs.extrahop.com][6])
-   * **Traffic Mirror Filter**: define rules that decide which traffic should be mirrored (e.g. inbound/outbound, IP ranges, protocols). ([docs.extrahop.com][5])
-   * **Traffic Mirror Session**: for each source ENI (EC2, RDS), create a session pointing to the mirror target and using the filter. ([docs.extrahop.com][5])
-
-     * Be mindful of AWS limits (e.g. default of 10 sessions) — you may need to request increases or use dedicated hosts. ([docs.extrahop.com][4])
-     * Tune packet length / MTU settings to avoid fragmentation or truncation. ([docs.extrahop.com][5])
-
-4. **(If using GWLB chaining) Forward mirror traffic via Gateway Load Balancer**
-
-   * If your architecture inserts a GWLB between traffic sources and sensors, you deploy GWLB endpoints in each VPC/account.
-   * Mirror traffic is sent into those GWLB endpoints, which forward to the central GWLB and then load balance into sensor pool.
-   * Configure GWLB routing, endpoint associations, and inter-VPC connectivity as needed.
-
-5. **Sensor Configuration & Registration**
-
-   * Once the sensor instance is up, access it via its management interface (browser / SSH). The initial login is often `setup` with the EC2 instance ID (or part thereof). ([docs.extrahop.com][4])
-   * Accept license agreement, input the product key, change default passwords. ([docs.extrahop.com][4])
-   * Configure sensor-specific settings: connect to ExtraHop Cloud services, set up console/cluster, enable modules (NDR, IDS, etc.) ([docs.extrahop.com][5])
-   * Validate that mirrored traffic is arriving and being decoded/parsed by the sensor.
-
-6. **Post-Deployment Verification & Checklist**
-
-   * Validate mirrored flows (source → mirror session → sensor)
-   * Ensure no packet loss/truncation (adjust MTU, filter rules)
-   * Monitor sensor resource usage (CPU, network, memory)
-   * For large throughput, split traffic across multiple interfaces or multiple sensors. ([docs.extrahop.com][6])
-   * Automate mirroring for new resources (via tags + Lambda / CloudFormation) if desired. ([docs.extrahop.com][3])
-   * Review security (SGs, IAM, encryption) and access controls.
-
----
-
-If you like, I can prepare a fully customized deployment playbook (with AWS CLI / Terraform steps) tailored for your environment (multi-account, multi-VPC). Would you prefer I build that for you now?
-
-[1]: https://docs.extrahop.com/9.5/deploy-eda-aws/?utm_source=chatgpt.com "Deploy an ExtraHop sensor in AWS"
-[2]: https://aws.amazon.com/blogs/awsmarketplace/how-to-use-extrahop-to-enable-network-traffic-packet-analysis-with-amazon-vpc-traffic-mirroring/?utm_source=chatgpt.com "How to use ExtraHop to enable network traffic packet analysis ... - AWS"
-[3]: https://docs.extrahop.com/current/lambda-traffic-mirror/?utm_source=chatgpt.com "Automate AWS Traffic Mirroring with CloudFormation | ExtraHop"
-[4]: https://docs.extrahop.com/9.0/deploy-eda-aws/?utm_source=chatgpt.com "Deploy an ExtraHop sensor in AWS"
-[5]: https://docs.extrahop.com/9.8/deploy-eda-aws/?utm_source=chatgpt.com "Deploy an ExtraHop sensor on AWS"
-[6]: https://docs.extrahop.com/9.9/deploy-eda-aws/deploy-eda-aws.pdf?utm_source=chatgpt.com "Deploy an ExtraHop sensor on AWS"
+| Section | Description                                      | Importance Level | Notes                                                         |
+|---------|--------------------------------------------------|------------------|---------------------------------------------------------------|
+| R1      | Asset Coverage and Inventory Correlation         | Critical         | Foundation for detection, filtering, grouping.               |
+| R2      | Vulnerability Coverage and Inventory Correlation | Critical         | Ensures visibility into exploitable weaknesses.              |
+| R3      | Simplified and Accurate Fix Recommendation       | Medium/High      | Drives remediation efficiency.                               |
+| R4      | Connectors and Integrations                      | Critical         | Direct impact on timeliness and breadth of coverage.         |
+| R5      | Prioritization and Risk Analysis                 | High             | Necessary for reducing noise and improving decision-making.  |
+| R6      | Ticketing                                        | Critical         | Core to automating remediation workflows.                    |
+| R7      | Reporting and Custom Data Exports                | Medium           | Needed for governance, audits, and communication.            |
+| R8      | Role-Based Access Control (RBAC)                 | Medium           | Useful for delegation and compliance.                        |
+| R9      | Health Monitoring & Operational Visibility       | Medium           | Helps in troubleshooting and platform trust.                 |
+| R10     | Integration and Extensibility                    | Medium           | Important but often simpler (API presence).                  |
+| R11     | Support & Documentation                          | Medium/Low       | Affects onboarding and troubleshooting time.                 |
+| R12     | User Interface and User Experience               | Medium/Low       | Impacts daily usability and adoption.                        |
+| Final Score |                                              | —                | —                                                             |
