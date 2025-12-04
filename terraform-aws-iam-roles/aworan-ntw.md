@@ -353,3 +353,92 @@ Provide:
 	•	Approval or rejection recommendation
 
 ⸻
+
+
+
+This is an excellent approach for HealthStream to standardize the security review of its AI/LLM-related projects.
+By mapping the OWASP Top 10 for LLM Applications to the STRIDE threat model categories, your Security Architecture team gains a reusable, structured, and impact-focused checklist for identifying threats.
+🗺️ STRIDE Threat Model Checklist for LLM Applications
+This table maps each of the OWASP Top 10 LLM risks to the most relevant STRIDE categories. This forms the basis of your Security Architecture review checklist.
+OWASP Top 10 LLM Risk (LLM#)
+STRIDE Category
+Sec Arch Review Checklist / Evaluation Pattern
+LLM01: Prompt Injection
+Spoofing, Tampering, Elevation of Privilege, Information Disclosure
+Input/Output Validation: Are user inputs strictly separated from system/model instructions? Are both direct and indirect (e.g., retrieved documents) prompts sanitized/validated?
+LLM02: Insecure Output Handling
+Tampering, Information Disclosure, Elevation of Privilege
+Output Sanitization: Is LLM output strictly sanitized and securely handled (e.g., HTML-encoded before display, validated before execution)? Is the application protected against XSS, SQLi, etc., from LLM outputs?
+LLM03: Training Data Poisoning
+Tampering, Repudiation, Information Disclosure
+Data Pipeline Integrity: Are training/fine-tuning data sources trusted and validated? Are robust change-control and audit logs maintained for all data modifications?
+LLM04: Model Denial of Service (DoS)
+Denial of Service
+Resource/Rate Limiting: Are limits imposed on request complexity (e.g., context length, number of tokens) and rate? Is resource consumption monitored to prevent cost overruns and service degradation?
+LLM05: Supply Chain Vulnerabilities
+Tampering, Spoofing, Information Disclosure
+Component Vetting: Is a Software Bill of Materials (SBOM) maintained? Are third-party LLMs, APIs, and libraries vetted and continuously monitored for known vulnerabilities?
+LLM06: Sensitive Information Disclosure
+Information Disclosure
+Privacy Controls: Are data masking/redaction techniques applied to inputs/outputs? Is the model prevented from outputting PII/PHI (critical for HealthStream) or proprietary data?
+LLM07: Insecure Plugin Design
+Elevation of Privilege, Spoofing, Information Disclosure
+Access Control/Least Privilege: Do plugins operate with the minimum necessary permissions? Are function calls and arguments strictly validated before execution by the plugin?
+LLM08: Excessive Agency
+Elevation of Privilege, Tampering, Repudiation
+Human-in-the-Loop/Approval: For high-risk actions (e.g., database writes, sending emails), is human review mandatory? Are all automated actions auditable?
+LLM09: Overreliance
+Repudiation, Information Disclosure
+Transparency/Auditability: Are users informed when they are interacting with an LLM? Are confidence scores displayed? Is a clear process defined for handling and correcting incorrect/harmful outputs?
+LLM10: Model Theft
+Information Disclosure, Denial of Service
+Intellectual Property/Access: Are access controls, network segmentation, and rate limits in place to prevent bulk data extraction (e.g., through prompt-based enumeration) that could reconstruct the model?
+📐 Conceptual Model for Reviewing LLM Threats
+For your Security Architecture team, a Data Flow Diagram (DFD) is the best visual tool for identifying STRIDE threats within an LLM application. Threats occur at Trust Boundaries (where data or control flows between entities with different privileges or security requirements).
+Key Components to Map in the DFD:
+The Sec Arch review should start by mapping these entities and their interactions:
+External Interactor (User): The source of the prompt. Threats: Spoofing (LLM01).
+Process (Application Backend): Where input/output handling and logic reside. Threats: Tampering (LLM02), Information Disclosure (LLM06).
+Process (LLM Model/API): The AI component itself. Threats: Denial of Service (LLM04), Model Theft (LLM10).
+Data Store (Training/RAG Data): Source of knowledge. Threats: Tampering (LLM03).
+External Tool/Plugin: Any system the LLM can execute code on. Threats: Elevation of Privilege (LLM07, LLM08).
+Trust Boundary: The red line in the DFD where security controls must be enforced (e.g., between the application backend and the LLM API). This is where most LLM-specific vulnerabilities reside.
+✅ Reusable Security Architecture Review Template
+Your Sec Arch team can use this structured template for every new HealthStream AI/LLM project.
+Project & Scope Definition
+Field
+Description
+Project Name
+LLM Used
+(e.g., OpenAI GPT-4, Llama 3, HealthStream Proprietary)
+Sensitive Data Handled
+(e.g., PHI, PII, Proprietary IP)
+External Agency?
+(Does the LLM call APIs/plugins that take action? Y/N)
+Architecture DFD Reviewed?
+(Attach/Reference Diagram)
+STRIDE Checkpoints (OWASP LLM Focus)
+STRIDE Threat
+OWASP LLM Ref
+Security Checkpoint
+Status (Pass/Fail/NA)
+Mitigations/Notes
+Spoofing (S)
+LLM01, LLM07
+Is a clear separation of instruction and data enforced to prevent prompt injection from tricking the LLM into impersonating the system or another user?
+Tampering (T)
+LLM02, LLM03, LLM05, LLM08
+Are all inputs (prompts) and retrieved data validated and sanitized before reaching the model? Are outputs sanitized before rendering/execution? Is the integrity of the training pipeline secured?
+Repudiation (R)
+LLM03, LLM08, LLM09
+Are all model-initiated actions, human overrides, and data modifications securely logged and auditable? Can the model's output source (e.g., RAG document) be traced for validation?
+Information Disclosure (I)
+LLM01, LLM05, LLM06, LLM10
+Are techniques like data masking or redaction used for sensitive data (PHI/PII)? Is the LLM fine-tuned to avoid generating sensitive information? Are model weights/APIs protected from unauthorized access?
+Denial of Service (D)
+LLM04, LLM10
+Are rate limiting and resource quotas applied to all LLM endpoints to prevent computational exhaustion and model theft attempts?
+Elevation of Privilege (E)
+LLM01, LLM02, LLM07, LLM08
+Are plugins/tools run with the principle of least privilege? Is there a mandatory human review/approval for high-impact actions (e.g., API calls, DB writes)?
+Would you like me to elaborate on the mitigation strategies for the top three most critical threats (Prompt Injection, Insecure Output Handling, and Sensitive Information Disclosure) for a healthcare company like HealthStream?
