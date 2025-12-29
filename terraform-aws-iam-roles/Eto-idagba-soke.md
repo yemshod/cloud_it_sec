@@ -1,3 +1,209 @@
+You are seeing the raw alert payload (SecurityAlert-style JSON). That payload contains the KQL query text and the query start/end time, but it does not include the row set (“Query results”) itself.
+
+To email the AWS-specific rows (the same thing you see under Related events → Query results), you must do this in the playbook:
+	1.	Extract the KQL query from the alert payload (it’s already in your JSON under ExtendedProperties)
+	2.	Run that KQL again using Azure Monitor Logs – Run query and list results (V2)
+	3.	Convert the returned value array to an HTML table
+	4.	Insert that table into the email
+
+Below is the portal-only, step-by-step implementation.
+
+⸻
+
+What in your raw JSON matters
+
+In your screenshot, these are the fields you should leverage:
+	•	ExtendedProperties → contains:
+	•	Query  (this is the KQL used by the rule)
+	•	Query Start Time UTC
+	•	Query End Time UTC
+	•	sometimes DataSources, Query Period, etc.
+
+This Query is the exact logic that produces the AWS rows, such as:
+	•	AWSCloudTrail table
+	•	EventName == "CreateAccessKey"
+	•	projections like UserIdentityPrincipalId, EventSource, etc.
+
+⸻
+
+Centralized Playbook Design (works for ALL rules)
+
+You will not hardcode AWS logic per rule. Instead you will:
+	•	Dynamically run whatever query the alert used
+	•	Then email the result set (table)
+
+This scales across your many analytics rules.
+
+⸻
+
+Step-by-step in Logic Apps Designer (Portal)
+
+Step 1 — Parse the alert payload
+
+You likely already have this, but ensure it exists:
+	1.	Open the playbook → Logic app designer
+	2.	After the Sentinel trigger, add:
+	•	Data Operations → Parse JSON
+	3.	Content: choose the trigger body/alert payload
+	4.	Schema: generate from a sample (your raw JSON)
+
+You need this so you can reference ExtendedProperties.Query.
+
+⸻
+
+Step 2 — Extract the alert query into a variable
+
+We’ll store the alert’s KQL query text into a variable so we can run it.
+	1.	+ New step
+	2.	Search Initialize variable
+	3.	Choose Variables → Initialize variable
+	4.	Configure:
+	•	Name: AlertQuery
+	•	Type: String
+	•	Value: click Expression and use:
+
+coalesce(
+  body('Parse_JSON')?['ExtendedProperties']?['Query'],
+  body('Parse_JSON')?['ExtendedProperties']?['query'],
+  ''
+)
+
+Why coalesce: some payloads differ slightly by casing/shape.
+
+⸻
+
+Step 3 — (Optional but recommended) Clean up the query text
+
+Some Sentinel alert payloads store the query with escaped newlines (\n). The Logs action usually still runs it fine, but if it fails, this fixes it.
+	1.	+ New step
+	2.	Add Variables → Set variable
+	3.	Set:
+	•	Name: AlertQuery
+	•	Value (Expression):
+
+replace(variables('AlertQuery'), '\n', '
+')
+
+If your designer won’t allow a literal newline in the expression editor, skip this step initially. Only come back if you see query parsing errors.
+
+⸻
+
+Step 4 — Run the extracted KQL (this creates “Query results” rows)
+	1.	+ New step
+	2.	Search Run query and list results V2
+	3.	Choose Azure Monitor Logs – Run query and list results V2
+	4.	Workspace: select your Sentinel Log Analytics workspace
+	5.	In Query, click Dynamic content → pick the variable AlertQuery
+	•	or click Expression and enter:
+
+variables('AlertQuery')
+
+This is the key point: you are re-running the exact rule query that produced the alert.
+
+⸻
+
+Step 5 — Build the HTML table from the query results
+
+This is the part you already started correctly.
+
+5A) Select
+	1.	+ New step
+	2.	Data Operations → Select
+	3.	From: choose value from Run query and list results V2
+
+Now define the columns you want to show in email.
+
+Because you want “AWS information,” map AWS CloudTrail columns (examples):
+
+Column (Key)	Value (Expression)
+TimeGenerated	item()?['TimeGenerated']
+EventName	item()?['EventName']
+EventSource	item()?['EventSource']
+AwsEventId	item()?['AwsEventId']
+UserIdentityType	item()?['UserIdentityType']
+UserIdentityPrincipalId	item()?['UserIdentityPrincipalId']
+UserName	item()?['UserName']
+SourceIpAddress	item()?['SourceIpAddress']
+AwsRegion	item()?['AwsRegion']
+
+Important: Only include fields that your rule’s KQL actually projects. If a field isn’t present, it shows blank (that’s okay).
+
+5B) Create HTML table
+	1.	+ New step
+	2.	Data Operations → Create HTML table
+	3.	From: Output of Select
+	4.	Columns: Automatic
+
+⸻
+
+Step 6 — Send the email with the query results table embedded
+
+Open your existing Send an email (V2).
+
+In the Body, stop inserting raw JSON like “Description / Entities”. Instead use this structure:
+
+<h2>Microsoft Sentinel Alert</h2>
+
+<table border="1" cellpadding="6" cellspacing="0" width="100%">
+  <tr><td><b>Alert</b></td><td>@{body('Parse_JSON')?['AlertDisplayName']}</td></tr>
+  <tr><td><b>Severity</b></td><td>@{body('Parse_JSON')?['Severity']}</td></tr>
+  <tr><td><b>Technique</b></td><td>@{body('Parse_JSON')?['Techniques']}</td></tr>
+</table>
+
+<br/>
+
+<h3>Query Results (AWS Related Events)</h3>
+@{body('Create_HTML_table')}
+
+Now the email will look like a clean grid, similar to Sentinel’s “Query results.”
+
+⸻
+
+Two common gotchas (and fixes)
+
+Gotcha 1: Some alerts don’t include ExtendedProperties.Query
+
+If the alert payload doesn’t contain the query, your variable becomes empty, and the Logs action fails.
+
+Fix (safe handling):
+	•	Add a Condition after Initialize variable AlertQuery:
+	•	If length(variables('AlertQuery')) is greater than 0 → run query
+	•	Else → send email with a message: “No query found in alert payload.”
+
+Expression for condition:
+
+greater(length(variables('AlertQuery')), 0)
+
+Gotcha 2: Query returns too many columns / messy objects
+
+Fix:
+	•	Don’t email the raw query output directly.
+	•	Use Select to restrict to the AWS columns you want.
+
+⸻
+
+Why this meets your requirement (one playbook for many rules)
+	•	The playbook does not care whether the rule is AWS, Azure, identity, network, etc.
+	•	It simply:
+	1.	reads the alert’s query,
+	2.	reruns it,
+	3.	emails the result table.
+
+That is the cleanest centralized approach.
+
+⸻
+
+If you want, I can make this exact for your environment in one pass
+
+Reply with one detail (no extra screenshots needed if you can type it):
+	•	In your Parse JSON output, what is the exact path/casing you see for the query?
+	•	Is it ExtendedProperties.Query or something like extendedProperties.Query?
+
+Once I have that, I’ll give you the exact expression you should paste so it works first try.
+
+
+
+#########%%%%%######
 Understood. The correct pattern for a single centralized playbook that works for all Sentinel analytics rules is:
 	1.	Trigger on any Sentinel alert (or incident)
 	2.	Read the alert’s metadata (display name, severity, entities, analytics rule name)
