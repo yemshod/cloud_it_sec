@@ -1,3 +1,131 @@
+That error is clear and expected:
+
+“Self reference is not supported when updating the value of variable ‘AlertQuery’.”
+
+In Logic Apps, you cannot Set variable AlertQuery = replace(AlertQuery, …) because that references itself in the same Set action. You must either:
+	•	write the transformed value into a different variable, or
+	•	avoid variables entirely and use a Compose step, or
+	•	perform the replace directly where you use the query.
+
+Below are the clean portal steps to fix it (choose one; I recommend Option A).
+
+⸻
+
+Option A (Recommended): Use Compose instead of “Set variable”
+
+This is the simplest and most reliable.
+
+A1) Keep your existing “Initialize variable AlertQuery” (optional)
+
+You can keep it, but you won’t “Set variable” again.
+
+A2) Add a Compose to “clean” the query
+	1.	Under your Initialize variable AlertQuery, click + New step
+	2.	Search Compose
+	3.	Select Data Operations → Compose
+	4.	Name it: AlertQuery_Clean
+	5.	In Inputs, click Expression and paste:
+
+replace(variables('AlertQuery'), '\n', ' ')
+
+This converts the literal \n sequences to spaces (good enough for KQL execution).
+
+If you want actual newlines instead of spaces, use spaces first. It avoids designer quirks and still runs fine.
+
+A3) Use the Compose output in “Run query and list results V2”
+	1.	Open your Azure Monitor Logs – Run query and list results V2 action
+	2.	In the Query field, use:
+	•	Dynamic content → Outputs from AlertQuery_Clean
+	•	or Expression:
+
+outputs('AlertQuery_Clean')
+
+✅ This eliminates self-reference completely.
+
+⸻
+
+Option B: Use a second variable (if you prefer variables)
+
+If you want to keep everything as variables:
+
+B1) Initialize two variables
+	1.	Initialize variable
+
+	•	Name: AlertQueryRaw
+	•	Type: String
+	•	Value:
+
+coalesce(body('Parse_JSON')?['ExtendedProperties']?['Query'], '')
+
+	2.	Initialize variable
+
+	•	Name: AlertQueryClean
+	•	Type: String
+	•	Value: leave blank for now (or set to empty string)
+
+B2) Set the second variable from the first
+
+Add Set variable:
+	•	Name: AlertQueryClean
+	•	Value (Expression):
+
+replace(variables('AlertQueryRaw'), '\n', ' ')
+
+Then in Run query and list results V2, set Query to:
+
+variables('AlertQueryClean')
+
+✅ No self reference.
+
+⸻
+
+Option C: No variables at all (fastest)
+
+Skip variables completely and run this directly inside the query field:
+	1.	Open Run query and list results V2
+	2.	In Query, click Expression and paste:
+
+replace(coalesce(body('Parse_JSON')?['ExtendedProperties']?['Query'], ''), '\n', ' ')
+
+This is the most compact, but harder to troubleshoot later. Option A is cleaner operationally.
+
+⸻
+
+After fixing this, your pipeline should be:
+	1.	Sentinel trigger
+	2.	Parse JSON
+	3.	Initialize variable AlertQuery (optional)
+	4.	Compose AlertQuery_Clean ✅
+	5.	Run query and list results V2 (using cleaned query) ✅
+	6.	Select (From = value)
+	7.	Create HTML table
+	8.	Send email (embed HTML table)
+
+⸻
+
+Two quick sanity checks (avoid the next failure)
+
+1) The extracted query must not be empty
+
+Add a Condition before running logs query:
+
+Condition expression:
+
+greater(length(outputs('AlertQuery_Clean')), 0)
+
+If false: send an email saying “No query found in alert payload”.
+
+2) Ensure the query is valid KQL
+
+Some alert payloads include extra quoting or escaped characters. If the logs action still fails, the next fix is to strip double quotes or decode JSON escaping—but don’t do that until you confirm the actual failure message from the run history.
+
+⸻
+
+If you paste the exact expression you currently put in your failing Set variable step, I can tell you which of the above options matches your current layout with the fewest edits.
+
+%%%%%%%%%^^^^^^^
+
+
 You are seeing the raw alert payload (SecurityAlert-style JSON). That payload contains the KQL query text and the query start/end time, but it does not include the row set (“Query results”) itself.
 
 To email the AWS-specific rows (the same thing you see under Related events → Query results), you must do this in the playbook:
