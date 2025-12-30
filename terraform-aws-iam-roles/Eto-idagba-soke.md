@@ -1,3 +1,94 @@
+You already have everything you need—the only reason the Query Results section is not showing as a bordered “grid table” like the top summary is because Create HTML table outputs a plain HTML table with minimal styling, and Outlook renders it with little/no borders by default.
+
+To make the Query Results render like the top table, you have two solid portal-only options:
+
+⸻
+
+Option 1 (Recommended): Wrap the Create HTML table output and inject table styling
+
+This keeps your existing “Create HTML table” action and simply adds borders + padding + border-collapse.
+
+Step-by-step
+
+Step 1 — Add a Compose after “Create HTML table”
+	1.	Under Create HTML table, click + New step
+	2.	Choose Data Operations → Compose
+	3.	Name it: StyledQueryTable
+
+Step 2 — In Compose, paste this Expression
+
+Click inside Inputs → Expression and paste:
+
+replace(
+  replace(
+    body('Create_HTML_table'),
+    '<table>',
+    '<table border="1" cellpadding="6" cellspacing="0" width="100%" style="border-collapse:collapse;font-family:Arial;font-size:12pt;">'
+  ),
+  '<th>',
+  '<th style="background-color:#f2f2f2;text-align:left;">'
+)
+
+What this does:
+	•	Forces borders/cellpadding/cellspacing like your summary table
+	•	Adds a light header background so it looks “report-ready”
+
+Step 3 — Update your Send Email body
+
+Replace the current Query Results insertion:
+
+From:
+
+@{body('Create_HTML_table')}
+
+To:
+
+@{outputs('StyledQueryTable')}
+
+✅ Result: the Query Results block becomes a true bordered table like the top one.
+
+⸻
+
+Option 2: Skip “Create HTML table” and build the table yourself (more control)
+
+Use this only if you want perfect formatting control (column order, custom widths, etc.). Option 1 is usually enough.
+
+⸻
+
+Extra polish (highly recommended in SOC emails)
+
+A) Limit the query table to N rows (avoid huge emails)
+
+In your KQL add at the end:
+
+| take 20
+
+B) Prevent long values from blowing out the layout
+
+Outlook is weak with CSS, but you can at least reduce wrapping by ensuring only the necessary columns are included (which you already did). If you must include long IDs, consider shortening:
+
+Example KQL:
+
+| extend PrincipalShort = substring(UserIdentityPrincipalId, 0, 25)
+| project TimeGenerated, EventName, AWSAccountID, PrincipalShort
+
+
+⸻
+
+Quick validation checklist
+
+After you implement Option 1:
+	•	The Query Results table has borders (grid)
+	•	Headers are shaded
+	•	Summary table and Query table look consistent
+
+⸻
+
+If you want, I can also give you a single standardized email template that works across all alert types (AWS, Azure, identity, etc.) with consistent formatting, severity color banding, and a “View in Sentinel” link.
+
+
+ggggggggggggggg
+
 You are not doing anything “wrong” with the logic—your playbook is now producing the table correctly. The remaining issue is email rendering behavior:
 	•	In your Send email (V2) action, you are composing HTML (<h2>, <table>, etc.)
 	•	But the email you receive shows the HTML tags as literal text (the <h2> and <table> are not being rendered), while the HTML table output (“Query Results”) is being rendered as a table.
