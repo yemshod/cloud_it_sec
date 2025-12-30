@@ -1,3 +1,243 @@
+Perfect — thanks for the screenshots. Your flow is well-structured already. We are going to minimally extend it, not redesign it.
+
+Below are exact, portal-clickable steps mapped directly onto your existing actions, using the same naming conventions you already have.
+
+⸻
+
+What we are implementing (aligned to your flow)
+
+You asked for two things:
+	1.	Option A
+➡️ Only return events that actually caused this alert (time-scoped)
+	2.	SOC-grade polish
+➡️ Primary event table + compact context summary
+➡️ No historical noise
+➡️ Reusable for all rules
+
+⸻
+
+PART 1 — Implement Option A (Alert-scoped query)
+
+Your current query problem
+
+Right now:
+	•	AlertQuery AfterSet is correct
+	•	But it has no time constraint
+	•	So Log Analytics returns every historical match
+
+We will:
+	•	Derive AlertTime
+	•	Inject a TimeGenerated BETWEEN clause
+	•	Append it to AlertQuery AfterSet
+
+⸻
+
+STEP 1 — Add AlertTimeUtc (Compose)
+
+📍 Place this immediately after Parse JSON
+	1.	Click +
+	2.	Data Operations → Compose
+	3.	Rename it:
+AlertTimeUtc
+	4.	Click Expression and paste:
+
+body('Parse_JSON')?['TimeGenerated']
+
+✅ This gives us the precise UTC timestamp of the alert.
+
+⸻
+
+STEP 2 — Add the time-window clause (Compose)
+
+📍 Place this after AlertTimeUtc
+	1.	Click +
+	2.	Data Operations → Compose
+	3.	Rename it:
+AlertTimeWindowClause
+	4.	Expression:
+
+concat(
+  " | where TimeGenerated between (datetime('",
+  outputs('AlertTimeUtc'),
+  "') - 5m .. datetime('",
+  outputs('AlertTimeUtc'),
+  "') + 5m)"
+)
+
+📌 Why ±5 minutes:
+	•	Handles ingestion lag
+	•	Prevents historical noise
+	•	SOC-approved default
+
+⸻
+
+STEP 3 — Build the final alert-scoped query
+
+📍 Replace the logic of AlertQuery AfterSet
+
+Open AlertQuery AfterSet and set Expression to:
+
+concat(
+  outputs('AlertQuery Normalized'),
+  outputs('AlertTimeWindowClause')
+)
+
+✅ This preserves:
+	•	Your query cleanup logic
+	•	Your normalization logic
+	•	Adds time scoping at the very end (best practice)
+
+⸻
+
+STEP 4 — Update Run query and list results V2
+
+Open Run query and list results V2:
+
+Field	Value
+Query	outputs('AlertQuery AfterSet')
+Time Range Type	SetInQuery
+
+🚫 Do not set Start / End time here.
+
+✅ Result:
+Only events within ±5 minutes of the alert are returned.
+
+⸻
+
+PART 2 — SOC-grade polish
+
+You already have:
+	•	Select
+	•	Create HTML table
+	•	StyledQueryTable
+	•	Email formatting
+
+We’ll add one small summary block without disturbing your primary table.
+
+⸻
+
+STEP 5 — Add a Context Summary query
+
+📍 Place this right after AlertQuery AfterSet
+	1.	+
+	2.	Compose
+	3.	Name:
+AlertSummaryQuery
+	4.	Expression:
+
+concat(
+  outputs('AlertQuery AfterSet'),
+  " | summarize Events=count(), Accounts=dcount(AWSAccountID), Principals=dcount(UserIdentityPrincipalId) by EventName"
+)
+
+📌 This gives SOC:
+	•	How many events
+	•	How many accounts
+	•	How many principals
+	•	Grouped by EventName
+
+⸻
+
+STEP 6 — Run the summary query
+	1.	+
+	2.	Run query and list results V2
+	3.	Name it:
+Run Alert Summary Query
+	4.	Query:
+
+outputs('AlertSummaryQuery')
+
+	5.	Time Range Type:
+SetInQuery
+
+⸻
+
+STEP 7 — Format the summary table
+	1.	+
+	2.	Select
+	3.	From:
+value (from Run Alert Summary Query)
+	4.	Map:
+
+Key	Value
+EventName	item()?['EventName']
+Events	item()?['Events']
+Accounts	item()?['Accounts']
+Principals	item()?['Principals']
+
+
+⸻
+
+STEP 8 — Create + style the summary table
+	1.	Create HTML table
+	2.	Input: output of the summary Select
+	3.	Then add a Compose:
+	•	Name: StyledSummaryTable
+	•	Expression (same styling trick):
+
+replace(
+  replace(
+    body('Create_HTML_table_2'),
+    '<table>',
+    '<table border="1" cellpadding="6" cellspacing="0" width="100%" style="border-collapse:collapse;font-family:Arial;font-size:12pt;">'
+  ),
+  '<th>',
+  '<th style="background-color:#f2f2f2;text-align:left;">'
+)
+
+
+⸻
+
+PART 3 — Final Email Layout (SOC format)
+
+In Send an email (V2) → Body (Code View):
+
+<h2>Microsoft Sentinel Alert</h2>
+
+<table border="1" cellpadding="6" cellspacing="0" width="100%" style="border-collapse:collapse;">
+  <tr><td><b>Alert</b></td><td>@{body('Parse_JSON')?['AlertDisplayName']}</td></tr>
+  <tr><td><b>Severity</b></td><td>@{body('Parse_JSON')?['Severity']}</td></tr>
+  <tr><td><b>Technique</b></td><td>@{body('Parse_JSON')?['Techniques']}</td></tr>
+</table>
+
+<br/>
+
+<h3>Primary Events (Alert Window ±5m)</h3>
+@{outputs('StyledQueryTable')}
+
+<br/>
+
+<h3>Context Summary</h3>
+@{outputs('StyledSummaryTable')}
+
+
+⸻
+
+What you now have (architecturally correct)
+
+✅ Alert-scoped queries (no historical noise)
+✅ SOC-friendly primary evidence
+✅ Lightweight context for triage
+✅ One playbook usable across all Sentinel rules
+✅ No rule-specific hardcoding
+✅ No KQL duplication
+
+This is production-grade Sentinel automation.
+
+⸻
+
+Optional next upgrades (when you’re ready)
+	•	Severity-colored headers (red/amber/green)
+	•	Auto-expand window if 0 results
+	•	Attach CSV for full context
+	•	“View in Sentinel” deep link
+	•	MITRE technique enrichment (T1098 → name)
+
+If you want, tell me which one you want next and I’ll layer it cleanly on top of this without breaking anything.
+
++++++++++++++++
+
+
 You already have everything you need—the only reason the Query Results section is not showing as a bordered “grid table” like the top summary is because Create HTML table outputs a plain HTML table with minimal styling, and Outlook renders it with little/no borders by default.
 
 To make the Query Results render like the top table, you have two solid portal-only options:
