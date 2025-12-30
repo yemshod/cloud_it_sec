@@ -1,212 +1,175 @@
-You are very close. What your screenshots show is the real blocker:
-	•	In Advanced hunting the query is multi-line KQL, starting with // comments and a set query_now = datetime(...) line, then AWSCloudTrail | ....
-	•	In the playbook, your AlertQuery_Clean is being turned into one long line and (critically) it’s being concatenated in a way that breaks KQL parsing for the connector.
-	•	The Run query and list results V2 action returns 400 BadRequest — this almost always means the query string is not valid KQL by the time it reaches the connector.
+You are not doing anything “wrong” with the logic—your playbook is now producing the table correctly. The remaining issue is email rendering behavior:
+	•	In your Send email (V2) action, you are composing HTML (<h2>, <table>, etc.)
+	•	But the email you receive shows the HTML tags as literal text (the <h2> and <table> are not being rendered), while the HTML table output (“Query Results”) is being rendered as a table.
 
-This is not about AWS vs other rules; it’s about sanitizing the query text safely so any rule’s query runs.
+That mismatch happens when Outlook/Logic Apps is treating the body as plain text / partially sanitized HTML.
 
-Below is the portal-only way to fix it in a generalized manner.
-
-⸻
-
-Root Cause (what’s wrong with AlertQuery_Clean)
-
-Your cleanup step is doing something like:
-
-replace(rawQuery, '\n', ' ')
-
-That turns this:
-
-set query_now = datetime(...);
-AWSCloudTrail
-| where ...
-| project ...
-
-Into something like this (one line):
-
-set query_now = datetime(...); AWSCloudTrail | where ... | project ...
-
-That can work, but it breaks easily when:
-	•	there are // comments at the start,
-	•	there are invisible escape sequences (\r\n, \\n),
-	•	there are tabs, or
-	•	the payload contains literal \n characters rather than actual newlines (very common in JSON).
-
-Your screenshot suggests you still have mixed formatting, and the connector is rejecting it.
+Below is what is happening and the exact portal steps to fix it permanently.
 
 ⸻
 
-The Fix (Robust, central, works across many rule queries)
+What’s happening (root cause)
 
-Fix Strategy
+In Send an email (V2) you inserted:
+	•	your own HTML (<h2>…</h2><table …>…</table>)
+	•	plus the Create HTML table output (which is already HTML)
 
-Do not attempt to preserve formatting with “pretty” newlines. Instead:
-	1.	Remove comment lines that start with // (optional but recommended)
-	2.	Normalize both \r\n and \n and the escaped versions \\n / \\r\\n
-	3.	Keep statement boundaries safe (preserve ; and pipe |)
+But Outlook is rendering:
+	•	your typed HTML as literal text
+	•	while still rendering the Create HTML table output as a table
 
-The simplest robust pattern for Logic Apps is:
-	•	Convert everything into a single line BUT remove the comment block and normalize escape sequences correctly.
-
-⸻
-
-Step-by-step in the portal
-
-Step 1 — Stop using “replace(…, ‘\n’, …)” as your only cleanup
-
-Keep your AlertQueryRaw (or AlertQuery) variable exactly as extracted.
-
-Add a new Compose step (recommended) called:
-
-AlertQuery_Normalized
-
-Inputs → Expression:
-
-trim(
-  replace(
-    replace(
-      replace(
-        replace(variables('AlertQuery'), '\r\n', ' '),
-      '\n', ' '),
-    '\\r\\n', ' '),
-  '\\n', ' ')
-)
-
-What this does:
-	•	Handles real newlines (\r\n, \n)
-	•	Handles escaped newlines in JSON (\\r\\n, \\n)
-	•	Produces a safe single-line query the connector can parse
-
-✅ This is the #1 reason you get 400s: your payload likely contains escaped newlines, not real ones.
+This is typical when the email action is in a mode that escapes/sanitizes pasted HTML inside the rich editor, especially if:
+	•	you pasted HTML while the designer is in “rich text mode”
+	•	or the connector is sending the message as plain text except for the injected HTML-table output token
 
 ⸻
 
-Step 2 — Remove the leading comment line if present (recommended)
+Fix (Portal): Force the email body to be pure HTML
 
-Many Sentinel templates begin with:
+Step 1 — Switch Send email body editor into “Code view”
 
-// The query_now parameter represents the time...
+In the Send an email (V2) action:
+	1.	Click inside the Body field
+	2.	On the right side of that editor toolbar, click the </> icon (HTML/Code view)
 
-Some connectors choke if the query begins with comment text after sanitization.
+If you don’t see </>:
+	•	Expand the editor (top-right “maximize” icon) or
+	•	scroll the toolbar to the far right
 
-Add another Compose step called:
-
-AlertQuery_NoComment
-
-Inputs → Expression:
-
-if(
-  startsWith(outputs('AlertQuery_Normalized'), '//'),
-  substring(outputs('AlertQuery_Normalized'), add(indexOf(outputs('AlertQuery_Normalized'), 'AWS'), 0)),
-  outputs('AlertQuery_Normalized')
-)
-
-This is a pragmatic approach:
-	•	If the string begins with //, we cut everything before the first AWS token.
-	•	This works for your AWS rules.
-	•	But you said queries differ across rules — so we need a more generic approach.
-
-More generic variant (safer across all rules)
-
-Instead of looking for AWS, look for the first occurrence of a table-like token. A simple generic heuristic is: cut everything before the first semicolon ; (end of the set query_now...; statement):
-
-Add Compose called AlertQuery_AfterSet
-
-Inputs → Expression:
-
-if(
-  contains(outputs('AlertQuery_Normalized'), ';'),
-  trim(substring(outputs('AlertQuery_Normalized'), add(indexOf(outputs('AlertQuery_Normalized'), ';'), 1))),
-  outputs('AlertQuery_Normalized')
-)
-
-This will:
-	•	Remove the initial set query_now=...; and comments if they exist before the semicolon
-	•	Leave the main query starting at the table (AWSCloudTrail | ...)
-
-Use this one. It is rule-agnostic enough because many scheduled rules include set query_now...;.
+✅ When in code view, you should see raw HTML without the UI trying to format it.
 
 ⸻
 
-Step 3 — Feed the cleaned query into Run query and list results V2
+Step 2 — Remove any HTML that was entered in rich-text mode
 
-In Run query and list results V2 → Query field, set it to:
-	•	Dynamic content: Outputs of AlertQuery_AfterSet
-	•	or Expression:
+Still inside code view:
+	1.	Select everything currently in the Body
+	2.	Delete it entirely
 
-outputs('AlertQuery_AfterSet')
-
-Keep:
-	•	Time Range Type: SetInQuery (as you already did)
+This matters because when HTML is inserted in rich text mode, Logic Apps can store it as escaped text.
 
 ⸻
 
-Step 4 — If it still fails, verify the exact error text from the run
+Step 3 — Paste a clean HTML template in code view
 
-In the failed run:
-	1.	Open the failed Run query and list results V2
-	2.	Click Show raw outputs
-	3.	Expand body → find message
+Paste this exact template:
 
-Common messages and fixes:
+<html>
+  <body style="font-family: Arial, sans-serif; font-size: 12pt;">
+    <h2>Microsoft Sentinel Alert</h2>
 
-Error: “Syntax error near …”
+    <table border="1" cellpadding="6" cellspacing="0" width="100%" style="border-collapse: collapse;">
+      <tr>
+        <td><b>Alert</b></td>
+        <td>@{triggerBody()?['AlertDisplayName']}</td>
+      </tr>
+      <tr>
+        <td><b>Severity</b></td>
+        <td>@{triggerBody()?['Severity']}</td>
+      </tr>
+      <tr>
+        <td><b>Technique</b></td>
+        <td>@{triggerBody()?['Techniques']}</td>
+      </tr>
+    </table>
 
-Your query still contains broken escaping.
-	•	Add one more normalization:
+    <br />
 
-replace(outputs('AlertQuery_AfterSet'), '\t', ' ')
+    <h3>Query Results (AWS Related Events)</h3>
 
-Error: “The name ‘query_now’ does not refer to any known function…”
+    @{body('Create_HTML_table')}
 
-That means the query references query_now variable but you removed the set query_now = ...;.
+  </body>
+</html>
 
-Fix: Do not remove the set query_now line in those cases.
-So instead of AlertQuery_AfterSet, use AlertQuery_Normalized.
-
-Practical solution: add a Condition:
-	•	If the query contains query_now then keep the set query_now...;
-	•	Else remove it.
-
-Condition expression:
-
-contains(outputs('AlertQuery_Normalized'), 'query_now')
-
-If true → use AlertQuery_Normalized
-If false → use AlertQuery_AfterSet
-
-⸻
-
-Why this will work across “many different rules”
-
-Because you are not hardcoding AWS fields anymore — you are:
-	•	Normalizing newline escaping for any KQL
-	•	Optionally preserving/removing the set query_now statement depending on whether the main query references it
-
-This makes it robust across:
-	•	AWS CloudTrail rules
-	•	Azure Activity rules
-	•	SigninLogs rules
-	•	MDE / Defender tables
-	•	Any scheduled analytics rule whose query is included in the alert payload
+Important notes
+	•	The dynamic tokens you used (Body AlertDisplayName, etc.) are fine; I used expressions to make it explicit.
+	•	The key change is: paste the HTML only in code view.
 
 ⸻
 
-The simplest working implementation (minimum changes)
+Fix (if your dynamic fields are not from triggerBody)
 
-If you want the fewest edits, do this:
-	1.	Replace your current AlertQuery_Clean Compose with AlertQuery_Normalized expression above
-	2.	Use outputs('AlertQuery_Normalized') directly in the Run Query action
-	3.	Keep TimeRangeType = SetInQuery
+In your screenshot, the tokens show as:
+	•	Body AlertDisplayName
+	•	Body Severity
+	•	Body Techniques
+That suggests you are pulling from Parse JSON output, not directly triggerBody.
 
-That alone resolves most 400s because the main culprit is usually \\n vs \n.
+If that’s your case, use:
+
+<td>@{body('Parse_JSON')?['AlertDisplayName']}</td>
+
+and same for Severity/Techniques.
 
 ⸻
 
-Next step from you (so I can lock this in)
+Fix #2: Ensure you are using the correct email action
 
-Open the failed Run query and list results V2 run → Show raw outputs and paste just the message value (one line).
-With that exact message, I’ll tell you whether to:
-	•	keep or remove set query_now...;
-	•	strip comments
-	•	or adjust escaping one more time.
+Make sure you are using:
+
+✅ Office 365 Outlook – Send an email (V2)
+
+Not:
+	•	“Send an email notification”
+	•	SMTP action
+	•	Gmail action
+	•	Outlook.com “Send an email”
+
+Those can escape HTML.
+
+⸻
+
+Fix #3 (Common): “HTML” is being escaped because you inserted dynamic tokens incorrectly
+
+In Logic Apps, the safest way is:
+	•	Use your static HTML (typed/pasted in code view)
+	•	Insert dynamic content tokens outside of angle brackets
+	•	Do not wrap tokens inside quotes unless needed
+
+Example good:
+
+<td>@{body('Parse_JSON')?['Severity']}</td>
+
+Example risky:
+
+<td>"@{...}"</td>
+
+
+⸻
+
+Why your Query Results table rendered but your header didn’t
+
+Because the Create HTML table action generates a full HTML <table> block in a way the connector trusts.
+But your manually typed/pasted HTML was stored as escaped characters, so it printed verbatim.
+
+Once you paste in code view, both will render consistently.
+
+⸻
+
+Verification checklist (fast)
+
+After you apply the fix:
+	1.	Save
+	2.	Trigger a test alert
+	3.	Confirm in the email:
+	•	No <h2> tags visible
+	•	Header looks like a title, not raw text
+	•	The small “Alert summary” table renders as a table
+	•	Query Results renders as a table
+
+⸻
+
+Optional improvement (recommended)
+
+Your query results table is wide, so Outlook will wrap/clip. You can make it more readable by constraining and adding scroll style (Outlook support varies), or you can:
+	•	reduce columns in your Select step
+	•	or attach a CSV
+
+If you want the cleanest SOC output, I recommend:
+	•	Keep only 6–10 columns in email
+	•	Attach full CSV for everything else
+
+⸻
+
+If you tell me which connector action you are using exactly (the header of the action card), I can confirm whether it supports raw HTML fully and give you the exact “code view” placement for your current dynamic tokens.
