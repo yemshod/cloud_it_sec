@@ -1,3 +1,807 @@
+Below is a facilitator-grade script you can literally read during your 2-hour session.
+It is structured with:
+	•	exact timestamps
+	•	what you say verbatim
+	•	pause guidance
+	•	what you’re testing (for you, not to read)
+
+This is aligned to your Breach of Sensitive Information playbook.
+
+⸻
+
+🕒 FULL TABLETOP FACILITATION SCRIPT (READ-OUT FORMAT)
+
+⸻
+
+⏱️ 0:00 – 0:05
+
+🎤 OPENING (READ THIS)
+
+“Alright team, thanks for joining. This is our internal tabletop exercise ahead of the external session.
+
+Today’s objective is to validate how we detect, respond to, and manage a confirmed breach of sensitive information using our existing playbooks.
+
+This is not a test of individuals. This is a test of our processes, our coordination, and our real-world readiness.
+
+I want answers based on what we can actually do today—not what we wish we had.
+
+I’ll present the scenario in stages. After each update, I’ll pause and ask what actions we would take.
+
+Let’s treat this as a live incident happening right now.”
+
+👉 Pause 5 seconds
+
+⸻
+
+⏱️ 0:05 – 0:10
+
+🎤 ROLE ALIGNMENT
+
+“Before we start:
+	•	Who is acting as Incident Lead today?
+	•	Who is representing TVM?
+	•	AppSec?
+	•	Cloud Security?
+
+During the exercise, respond from those perspectives.”
+
+👉 Let them answer
+
+⸻
+
+⏱️ 0:10 – 0:15
+
+🎤 BASELINE QUESTION
+
+“What incident severity framework are we using today, and who has authority to declare an incident?”
+
+👉 Quick discussion (don’t let it drag)
+
+⸻
+
+⸻
+
+🚨 INJECT 1
+
+⏱️ 0:15 – 0:25
+
+🎤 READ THIS
+
+“We have an alert from monitoring indicating unusual outbound traffic from a production EC2 instance hosting one of our public-facing applications.
+
+At the same time, a critical remote code execution vulnerability affecting this application framework has just been publicly disclosed.
+
+At this point, there is no confirmation of exploitation—only suspicious traffic and known exposure.”
+
+⸻
+
+🎤 ASK
+	•	“How do we classify this right now?”
+	•	“Who owns initial triage?”
+	•	“What data do you need immediately?”
+
+⸻
+
+🎯 (YOU OBSERVE)
+	•	Are they correlating vulnerability + behavior?
+	•	Do they name tools/logs?
+
+👉 Let discussion run ~8 minutes
+
+⸻
+
+⸻
+
+🚨 INJECT 2
+
+⏱️ 0:25 – 0:40
+
+🎤 READ THIS
+
+“Additional information:
+	•	TVM confirms the vulnerable version is running in production
+	•	AppSec reviews logs and identifies requests consistent with known exploit patterns
+	•	The application has not yet been patched
+
+At this point, exploitation is likely.”
+
+⸻
+
+🎤 ASK
+	•	“Do we now declare an incident?”
+	•	“What severity is this?”
+	•	“Who becomes Incident Lead?”
+	•	“What are our immediate containment options?”
+
+⸻
+
+🎯 PUSH THEM
+
+If vague:
+
+“Be specific—what exact action do we take in the next 15 minutes?”
+
+⸻
+
+👉 Let discussion run ~10–12 minutes
+
+⸻
+
+⸻
+
+🚨 INJECT 3
+
+⏱️ 0:40 – 0:55
+
+🎤 READ THIS
+
+“New update:
+
+Cloud logs show AssumeRole activity tied to the application role from an external IP address that does not match expected application traffic.
+
+This activity occurred shortly after the exploit attempts.”
+
+⸻
+
+🎤 ASK
+	•	“Do we now consider this a confirmed compromise?”
+	•	“What is the blast radius at this point?”
+	•	“What actions do we take immediately?”
+
+⸻
+
+🎯 FORCE DETAIL
+	•	“Do we revoke sessions?”
+	•	“Rotate credentials?”
+	•	“Who owns that action?”
+
+⸻
+
+👉 Let discussion run ~10–12 minutes
+
+⸻
+
+⸻
+
+🚨 INJECT 4 — 🔥 CRITICAL MOMENT
+
+⏱️ 0:55 – 1:10
+
+🎤 READ THIS SLOWLY
+
+“Next update:
+	•	Database logs show large-volume queries on customer data tables
+	•	S3 logs show access to sensitive data files from the same assumed role
+
+There is now strong indication that sensitive data has been accessed outside normal patterns.”
+
+⸻
+
+🛑 THEN SAY THIS EXACTLY
+
+“I want to pause here.
+
+At this point:
+
+👉 Which playbook are we activating?”
+
+⸻
+
+👉 Wait. Do NOT help them.
+
+⸻
+
+🎯 EXPECTED ANSWER
+
+👉 Breach of Sensitive Information Playbook
+
+⸻
+
+🎤 FOLLOW-UP (READ THIS)
+
+“Alright—open the breach playbook.
+
+Walk me through exactly what we do next—step by step.”
+
+⸻
+
+🎯 YOUR ROLE HERE
+
+Push HARD:
+	•	“Who owns that step?”
+	•	“Can we actually execute it today?”
+	•	“What tool do we use?”
+
+⸻
+
+👉 Let this run ~15 minutes (most valuable part)
+
+⸻
+
+⸻
+
+🚨 INJECT 5
+
+⏱️ 1:10 – 1:20
+
+🎤 READ THIS
+
+“Update:
+
+We now see evidence of a large data transfer event consistent with potential data exfiltration.
+
+At the same time, product leadership is asking if customer data has been exposed.”
+
+⸻
+
+🎤 ASK
+	•	“Do we consider this a confirmed breach?”
+	•	“Who do we notify now?”
+	•	“Do we involve legal or compliance at this stage?”
+
+⸻
+
+🎯 PUSH
+
+“What is the threshold for customer notification?”
+
+⸻
+
+👉 Let run ~8–10 minutes
+
+⸻
+
+⸻
+
+🚨 INJECT 6
+
+⏱️ 1:20 – 1:30
+
+🎤 READ THIS
+
+“Executives are requesting a briefing within the next 30 minutes.
+
+They want to know:
+	•	What happened
+	•	What is impacted
+	•	What actions we are taking”
+
+⸻
+
+🎤 ASK
+
+“Give me a 2–3 sentence executive update right now.”
+
+⸻
+
+👉 Let 1–2 people answer
+
+⸻
+
+🎯 PUSH
+
+“What do we NOT say yet?”
+
+⸻
+
+⸻
+
+🚨 INJECT 7
+
+⏱️ 1:30 – 1:40
+
+🎤 READ THIS
+
+“Final update:
+
+There are indicators the attacker may have:
+	•	created additional IAM roles OR
+	•	modified deployment artifacts
+
+This suggests possible persistence.”
+
+⸻
+
+🎤 ASK
+	•	“How do we confirm the environment is clean?”
+	•	“Do we rebuild or patch?”
+	•	“Who owns recovery?”
+
+⸻
+
+👉 Let run ~8–10 minutes
+
+⸻
+
+⸻
+
+⏱️ 1:40 – 2:00
+
+🧠 DEBRIEF (READ THIS)
+
+“Let’s step out of the scenario.
+
+I want honest feedback.”
+
+⸻
+
+🎤 ASK (ONE BY ONE)
+	1.	“What worked well?”
+	2.	“Where did we struggle?”
+	3.	“What slowed us down the most?”
+	4.	“Where was ownership unclear?”
+	5.	“What in the playbook didn’t match reality?”
+
+⸻
+
+🎤 FINAL CLOSE
+
+“From what we’ve seen:
+
+This exercise wasn’t about getting everything right—it was about identifying where we need to improve before a real incident or the external tabletop.
+
+We’ll document gaps, assign actions, and strengthen our playbook and response process.”
+
+⸻
+
+🔥 FINAL FACILITATION TIPS (IMPORTANT)
+
+DO:
+	•	Stay neutral
+	•	Force specificity
+	•	Let silence happen (it reveals gaps)
+
+DO NOT:
+	•	Answer for them
+	•	Skip the playbook step
+	•	Rush Inject 4 (most important moment)
+
+⸻
+
+🧠 WHAT SUCCESS LOOKS LIKE
+	•	Team explicitly activates the breach playbook
+	•	Clear ownership emerges
+	•	Real gaps are exposed
+	•	Decisions reflect real-world constraints
+
+⸻
+
+If you want, next I can give you:
+
+👉 a one-page cheat sheet you hold during the session (facilitator quick reference)
+👉 or a scoring sheet you can use live while they talk
+
+Both will make you run this like a senior incident commander.
+
+
+
+
+
+yyyyyyuuyyyyyyyyyyyyyyyyyy
+
+Got it—this is the right refinement. We will fully rebuild the entire tabletop package so that:
+	•	It is anchored on your actual playbook
+	•	It tests real execution of “Breach of Sensitive or Confidential Information”
+	•	It still exercises TVM + AppSec + Cloud Security deeply
+	•	It aligns with what your auditors / external tabletop will expect
+
+⸻
+
+🔐 REBUILT TABLETOP EXERCISE PACKAGE
+
+Scenario: Confirmed Breach of Sensitive / Confidential Information
+
+⸻
+
+1. 🎯 SCENARIO DEFINITION (UPDATED)
+
+Scenario Title
+
+Confirmed Breach of Sensitive or Confidential Information via Application Exploitation
+
+⸻
+
+Executive Narrative (Use in Slide 1–2)
+
+A critical vulnerability in a public-facing application is exploited prior to remediation.
+The attacker gains unauthorized access to backend systems and uses compromised credentials to access and extract sensitive data stored in cloud resources.
+
+This triggers the Breach of Sensitive or Confidential Information Playbook, requiring coordinated response across:
+	•	Threat & Vulnerability Management
+	•	Application Security
+	•	Cloud Security
+	•	Legal / Compliance / Leadership
+
+⸻
+
+Primary Playbook Activated
+
+👉 Breach of Sensitive or Confidential Information
+
+⸻
+
+Secondary Playbooks (Conditional)
+	•	Entra ID Account Compromised
+	•	Vendor-Client Breach
+	•	Ransomware (if attacker behavior escalates)
+
+⸻
+
+2. ⏱️ UPDATED 2-HOUR AGENDA
+
+Time	Activity
+0:00–0:10	Introduction + Objectives
+0:10–0:20	Roles + Playbook awareness
+0:20–1:30	Scenario injects (playbook-driven)
+1:30–1:45	Playbook validation checkpoint
+1:45–2:00	Debrief + Action planning
+
+
+⸻
+
+3. 🚨 REBUILT SCENARIO INJECTS (PLAYBOOK-FIRST)
+
+⸻
+
+🚨 INJECT 1 — Detection Phase
+
+(Pre-playbook activation)
+
+Situation:
+	•	Alert: unusual outbound traffic
+	•	Critical vulnerability disclosed
+
+⸻
+
+🎯 Expected Behavior
+	•	TVM identifies exposure
+	•	AppSec begins exploit validation
+	•	Cloud Sec checks telemetry
+
+⸻
+
+❓ Ask
+	•	Is this an incident yet?
+	•	Who owns triage?
+
+⸻
+
+⸻
+
+🚨 INJECT 2 — Exploitation Confirmed
+
+Situation:
+	•	Exploit patterns detected in logs
+	•	Vulnerable app confirmed in production
+
+⸻
+
+🎯 Expected Behavior
+	•	Incident declared
+	•	Severity assigned
+
+⸻
+
+❓ Ask
+	•	At what point do we escalate severity?
+	•	Who becomes Incident Lead?
+
+⸻
+
+⸻
+
+🚨 INJECT 3 — Unauthorized Access
+
+Situation:
+	•	IAM / Entra suspicious activity
+	•	Possible credential misuse
+
+⸻
+
+🎯 Expected Behavior
+	•	Identity compromise suspected
+	•	Cloud Security leads investigation
+
+⸻
+
+❓ Ask
+	•	Is this now a confirmed breach?
+	•	What evidence do we need?
+
+⸻
+
+⸻
+
+🚨 INJECT 4 — 🔥 PLAYBOOK ACTIVATION
+
+Situation:
+	•	RDS queries show abnormal access
+	•	S3 logs show sensitive file access
+
+⸻
+
+🛑 FACILITATOR MUST SAY:
+
+“At this point, which playbook are we activating?”
+
+⸻
+
+✅ Expected Answer
+
+👉 Breach of Sensitive or Confidential Information Playbook
+
+⸻
+
+🎯 What You Now Do
+
+Pause the scenario and say:
+
+“Open the playbook and walk me through the next steps.”
+
+⸻
+
+⸻
+
+🚨 INJECT 5 — Confirmed Data Exfiltration
+
+Situation:
+	•	Large dataset download confirmed
+
+⸻
+
+🎯 Expected Behavior
+	•	Legal/compliance engagement
+	•	Executive escalation
+	•	Impact assessment begins
+
+⸻
+
+❓ Ask
+	•	Do we have a confirmed breach?
+	•	What triggers customer notification?
+
+⸻
+
+⸻
+
+🚨 INJECT 6 — Business + Regulatory Pressure
+
+Situation:
+	•	Executives request immediate briefing
+	•	Potential regulatory exposure
+
+⸻
+
+🎯 Expected Behavior
+	•	Controlled communication
+	•	Accurate but limited disclosure
+
+⸻
+
+❓ Ask
+	•	Give me the exec update (2–3 sentences)
+	•	What do we NOT say yet?
+
+⸻
+
+⸻
+
+🚨 INJECT 7 — Persistence + Recovery
+
+Situation:
+	•	Evidence of attacker persistence
+
+⸻
+
+🎯 Expected Behavior
+	•	Environment trust reset
+	•	Recovery strategy
+
+⸻
+
+❓ Ask
+	•	Do we rebuild or patch?
+	•	How do we ensure attacker is gone?
+
+⸻
+
+⸻
+
+4. 📊 UPDATED POWERPOINT STRUCTURE
+
+⸻
+
+Slide Changes (Key Differences)
+
+🔹 Slide Title
+
+Breach of Sensitive Information – Tabletop Exercise
+
+⸻
+
+🔹 Add Slide: Playbook Activation
+
+Playbook Trigger Conditions
+	•	Unauthorized data access
+	•	Evidence of sensitive data exposure
+	•	Confirmed attacker activity in data layer
+
+⸻
+
+🔹 Add Slide: Playbook Execution
+
+Key Steps from Playbook
+	•	Incident declaration
+	•	Containment
+	•	Data impact analysis
+	•	Legal/compliance escalation
+	•	Communication strategy
+
+⸻
+
+🔹 Add Slide: Validation Focus
+
+We Are Testing:
+	•	Can the playbook be executed in real time?
+	•	Are roles clear?
+	•	Are steps actionable?
+
+⸻
+
+5. 📄 UPDATED CONFLUENCE RUNBOOK
+
+⸻
+
+Page Title
+
+Tabletop Exercise – Breach of Sensitive Information
+
+⸻
+
+Key Update Sections
+
+⸻
+
+🔹 Playbook Activation Criteria
+
+The Breach Playbook must be activated when:
+	•	Sensitive data is accessed outside normal patterns
+	•	Unauthorized identity activity is confirmed
+	•	Data exfiltration is suspected or confirmed
+
+⸻
+
+🔹 Execution Expectation
+
+Participants must:
+	•	Follow the playbook step-by-step
+	•	Identify ownership per action
+	•	Validate feasibility of each step
+
+⸻
+
+🔹 Validation Focus
+
+This exercise evaluates:
+	•	Playbook usability under pressure
+	•	Cross-team coordination
+	•	Real-world execution capability
+
+⸻
+
+6. 📊 UPDATED VALIDATION CHECKLIST (REFOCUSED)
+
+⸻
+
+🔥 CRITICAL ADDITION
+
+PLAYBOOK ACTIVATION CONTROL
+
+Control	Validation Question
+Playbook trigger clarity	Do teams know exactly when to activate breach playbook?
+Activation ownership	Who decides activation?
+Timing	Was activation delayed or immediate?
+
+
+⸻
+
+🔥 EXECUTION VALIDATION (NEW FOCUS)
+
+Control	Validation Question
+Step-by-step execution	Did team actually follow playbook steps?
+Missing steps	Were gaps discovered?
+Real-world execution	Could steps be performed today?
+
+
+⸻
+
+7. 🔥 WHAT CHANGES STRATEGICALLY (IMPORTANT)
+
+Before:
+	•	You were testing incident response capability
+
+Now:
+	•	You are testing playbook effectiveness + execution maturity
+
+⸻
+
+8. 🚩 WHAT YOU SHOULD WATCH VERY CLOSELY
+
+Biggest Failure Mode
+
+👉 Team says:
+“We would follow the playbook”
+
+BUT:
+	•	doesn’t open it
+	•	doesn’t follow it
+	•	doesn’t know ownership
+
+⸻
+
+What “Elite” Looks Like
+	•	Someone says:
+“Step 3 in the playbook says isolate affected systems — Cloud Sec owns that”
+
+That’s maturity.
+
+⸻
+
+9. 📈 FINAL DELIVERABLE (UPDATED LANGUAGE)
+
+When you report this upward:
+
+⸻
+
+Executive Summary
+
+We conducted an internal tabletop exercise aligned to our Breach of Sensitive Information playbook.
+
+The exercise validated:
+	•	incident detection and escalation
+	•	playbook activation timing
+	•	cross-functional coordination
+
+Key Findings
+	•	Playbook activation criteria need refinement
+	•	Data exposure analysis capability is limited
+	•	Executive communication process needs formalization
+
+Next Steps
+	•	Update breach playbook based on findings
+	•	Improve cloud data visibility
+	•	Conduct follow-up validation exercise
+
+⸻
+
+🚀 FINAL RECOMMENDATION
+
+You are now doing this at a very high maturity level.
+
+The next evolution (this is what top-tier orgs do):
+
+👉 Tie this directly into:
+	•	SOC Playbooks
+	•	Detection rules
+	•	Automation
+
+⸻
+
+If you want, next I’ll build:
+
+👉 SOC Playbook + Splunk/Sentinel detection queries mapped EXACTLY to this breach scenario
+
+That turns your tabletop into:
+✔ engineering
+✔ measurable detection
+✔ real-world readiness
+
+Just say the word.
+
+
+##################%%#%########
+
+
 Understood. Below is a complete, production-ready tabletop exercise package tailored specifically to your scope (Threat & Vulnerability Management, AppSec, Cloud Security). This is structured so you can run the session with minimal preparation beyond reviewing it once.
 
 ⸻
