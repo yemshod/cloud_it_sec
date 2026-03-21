@@ -1,3 +1,486 @@
+Perfect—this is exactly how you should run it. Below is your **FULL TABLETOP FACILITATION SCRIPT (READ-OUT FORMAT)** fully **aligned to the external scenario modules**, but rewritten cleanly in your preferred format and adapted to **AWS (S3, RDS, EBS)**.
+
+You can use this **verbatim in your session**.
+
+---
+
+# 🧠 FULL TABLETOP FACILITATION SCRIPT (READ-OUT FORMAT)
+
+---
+
+## ⏱️ 0:00 – 0:05
+
+## 🎤 OPENING (READ THIS)
+
+“Alright team, thanks for joining. This is our internal tabletop exercise ahead of the external session.
+
+Today’s objective is to validate how we detect, respond to, and manage a **confirmed breach of sensitive or confidential information** using our existing playbooks.
+
+This scenario will involve a customer-facing application—mCE—and its interaction with AWS services including **S3, RDS, and EBS-backed workloads**.
+
+This is not a test of individuals. This is a test of our processes, our coordination, and our real-world readiness.
+
+I want answers based on what we can actually do today—not what we wish we had.
+
+I’ll present the scenario in stages. After each update, I’ll pause and ask what actions we would take.
+
+Let’s treat this as a live incident happening right now.”
+
+👉 Pause 5 seconds
+
+---
+
+## ⏱️ 0:05 – 0:10
+
+## 🎤 ROLE ALIGNMENT
+
+“Before we start:
+
+Who is acting as Incident Lead today?
+
+Who is representing TVM?
+
+AppSec?
+
+Cloud Security?
+
+During the exercise, respond from those perspectives.”
+
+👉 Let them answer
+
+---
+
+## ⏱️ 0:10 – 0:15
+
+## 🎤 BASELINE QUESTION
+
+“What incident severity framework are we using today, and who has authority to declare an incident?”
+
+👉 Quick discussion (don’t let it drag)
+
+---
+
+# 🚨 INJECT 1 — INITIAL DETECTION (MODULE 1)
+
+## ⏱️ 0:15 – 0:25
+
+## 🎤 READ THIS
+
+“We’ve identified suspicious activity associated with the mCE application.
+
+This includes:
+
+* Abnormal outbound traffic from EC2 instances
+* Unusual service behavior within the application
+* Possible unauthorized use of access tokens
+
+Additionally, a business function has recently expanded the use of a **third-party or AI-enabled workflow** interacting with this system.
+
+At this point, information is incomplete and unconfirmed.”
+
+---
+
+## 🎤 ASK
+
+“How do we classify this right now?”
+
+“Do we escalate immediately or continue investigation?”
+
+“Who owns initial triage?”
+
+“What logs or data do you need first?”
+
+---
+
+## 🎯 (YOU OBSERVE)
+
+* Do they escalate early or hesitate?
+* Do they identify logs (CloudTrail, VPC, app logs)?
+* Is ownership clear?
+
+👉 Let discussion run ~8–10 minutes
+
+---
+
+# 🚨 INJECT 2 — DATA SCOPE CONFUSION (MODULE 2)
+
+## ⏱️ 0:25 – 0:40
+
+## 🎤 READ THIS
+
+“As the investigation continues:
+
+We are trying to determine what data is involved.
+
+However:
+
+* It is unclear what data resides in mCE
+* There are inconsistencies in how teams describe data stored in **RDS**
+* There is uncertainty around what is exported to **S3 buckets**
+
+There is no clear agreement on whether regulated or sensitive customer data is involved.”
+
+---
+
+## 🎤 ASK
+
+“How do we determine what data is actually impacted?”
+
+“Who owns data classification here?”
+
+“Can we quickly identify sensitive vs non-sensitive data?”
+
+---
+
+## 🎯 PUSH
+
+“What would slow us down right now in determining data exposure?”
+
+---
+
+👉 Let discussion run ~10–12 minutes
+
+---
+
+# 🚨 INJECT 3 — BLAST RADIUS EXPANDS (MODULE 3)
+
+## ⏱️ 0:40 – 0:55
+
+## 🎤 READ THIS
+
+“New update:
+
+The issue appears to extend beyond the mCE application.
+
+We are now seeing:
+
+* Interactions with other internal services
+* Access patterns involving shared infrastructure
+* Activity tied to **S3 buckets and RDS databases**
+
+There is no up-to-date architecture diagram showing all dependencies.”
+
+---
+
+## 🎤 ASK
+
+“What is our blast radius right now?”
+
+“What systems could be impacted?”
+
+“How do we map dependencies quickly?”
+
+---
+
+## 🎯 FORCE DETAIL
+
+“What tools or visibility do we actually have today to answer this?”
+
+---
+
+👉 Let discussion run ~10–12 minutes
+
+---
+
+# 🚨 INJECT 4 — 🔥 PLAYBOOK ACTIVATION (MODULE 4)
+
+## ⏱️ 0:55 – 1:10
+
+## 🎤 READ THIS SLOWLY
+
+“Next update:
+
+* Amazon RDS logs show abnormal queries against customer-related tables
+* Amazon S3 logs show access to sensitive data objects
+* The activity is tied to the same compromised identity
+
+Leadership is now asking:
+
+* Is customer data impacted?
+* Is this a breach?
+* Are we under control?”
+
+---
+
+## 🛑 THEN SAY EXACTLY
+
+“I want to pause here.
+
+At this point:
+
+👉 Which playbook are we activating?”
+
+---
+
+👉 Wait. Do NOT help them.
+
+---
+
+## 🎯 EXPECTED ANSWER
+
+👉 Breach of Sensitive Information Playbook
+
+---
+
+## 🎤 FOLLOW-UP (READ THIS)
+
+“Alright—open the breach playbook.
+
+Walk me through exactly what we do next—step by step.”
+
+---
+
+## 🎯 YOUR ROLE HERE (CRITICAL)
+
+Push HARD:
+
+“Who owns that step?”
+
+“Can we actually execute that today?”
+
+“What tool do we use?”
+
+“What is the first action in the next 15 minutes?”
+
+---
+
+👉 Let this run ~15 minutes (MOST IMPORTANT PART)
+
+---
+
+# 🚨 INJECT 5 — DATA EXFILTRATION + BUSINESS IMPACT (MODULE 5)
+
+## ⏱️ 1:10 – 1:20
+
+## 🎤 READ THIS
+
+“Update:
+
+We now see evidence of a **large data transfer event** consistent with potential data exfiltration from S3 and RDS-related data.
+
+At the same time, business stakeholders are asking:
+
+* Has customer data been exposed?
+* What is the impact?”
+
+---
+
+## 🎤 ASK
+
+“Do we now consider this a confirmed breach?”
+
+“Who do we notify at this stage?”
+
+“Do we involve legal or compliance now?”
+
+---
+
+## 🎯 PUSH
+
+“What is the threshold for customer notification?”
+
+---
+
+👉 Let run ~8–10 minutes
+
+---
+
+# 🚨 INJECT 6 — EXECUTIVE PRESSURE (MODULE 6)
+
+## ⏱️ 1:20 – 1:30
+
+## 🎤 READ THIS
+
+“Executives are requesting a briefing within the next 30 minutes.
+
+They want to know:
+
+* What happened
+* What data is impacted
+* Whether the situation is contained
+* What actions we are taking
+
+At this point, full scope is still unclear.”
+
+---
+
+## 🎤 ASK
+
+“Give me a 2–3 sentence executive update right now.”
+
+---
+
+👉 Let 1–2 people answer
+
+---
+
+## 🎯 PUSH
+
+“What do we NOT say yet?”
+
+---
+
+# 🚨 INJECT 7 — RECOVERY & TRUST VALIDATION (MODULE 6 CONT.)
+
+## ⏱️ 1:30 – 1:40
+
+## 🎤 READ THIS
+
+“As recovery planning begins:
+
+* It is unclear whether RDS backups and EBS snapshots are clean
+* IAM roles or credentials may still be compromised
+* There is risk of restoring compromised systems
+
+Additionally, there are signs of possible attacker persistence.”
+
+---
+
+## 🎤 ASK
+
+“How do we confirm the environment is clean?”
+
+“Do we rebuild systems or restore them?”
+
+“What must be rotated or reset?”
+
+“Who owns recovery decisions?”
+
+---
+
+👉 Let run ~8–10 minutes
+
+---
+
+# 🚨 INJECT 8 — VENDOR / AI RISK (MODULE 7)
+
+## ⏱️ 1:40 – 1:45
+
+## 🎤 READ THIS
+
+“Further investigation suggests:
+
+A third-party or AI-enabled workflow:
+
+* May have accessed sensitive data
+* May have contributed to the exposure
+* Has limited security visibility
+
+Ownership of this integration is unclear.”
+
+---
+
+## 🎤 ASK
+
+“Do we treat this as a vendor-related breach?”
+
+“Who owns vendor risk here?”
+
+“Do we isolate or shut down this integration?”
+
+---
+
+---
+
+# 🚨 INJECT 9 — LEGAL / CONTRACTUAL OBLIGATIONS (MODULE 8)
+
+## ⏱️ 1:45 – 1:50
+
+## 🎤 READ THIS
+
+“We now need to determine:
+
+* Whether there are contractual obligations to notify customers
+* Whether regulatory reporting is required
+* What timelines apply
+
+Information needed to make these decisions is spread across teams.”
+
+---
+
+## 🎤 ASK
+
+“Who determines notification requirements?”
+
+“What triggers regulatory reporting?”
+
+“How do we coordinate across legal, security, and leadership?”
+
+---
+
+---
+
+# ⏱️ 1:50 – 2:00
+
+# 🧠 DEBRIEF (READ THIS)
+
+“Let’s step out of the scenario.
+
+I want honest feedback.”
+
+---
+
+## 🎤 ASK (ONE BY ONE)
+
+“What worked well?”
+
+“Where did we struggle?”
+
+“What slowed us down the most?”
+
+“Where was ownership unclear?”
+
+“What in the playbook didn’t match reality?”
+
+---
+
+## 🎤 FINAL CLOSE
+
+“From what we’ve seen:
+
+This exercise wasn’t about getting everything right—it was about identifying where we need to improve before a real incident or the external tabletop.
+
+We’ll document gaps, assign actions, and strengthen our playbook and response process.”
+
+---
+
+# 🔥 FINAL FACILITATION TIPS (IMPORTANT)
+
+### DO:
+
+* Stay neutral
+* Force specificity
+* Let silence happen
+
+### DO NOT:
+
+* Answer for them
+* Skip playbook activation
+* Rush Inject 4
+
+---
+
+# 🧠 WHAT SUCCESS LOOKS LIKE
+
+* Team explicitly activates breach playbook
+* Clear ownership emerges quickly
+* IAM / containment actions are decisive
+* Data exposure is addressed realistically
+* Real gaps are exposed
+
+---
+
+If you want, I can next give you:
+
+👉 **a printed “facilitator command board” version (one page)**
+👉 **or a timed slide deck version where each inject is pre-built**
+
+Both will make this run like a **CISO-level tabletop session**.
+
+
+
+=========================================================================================================================
+
 This is a solid update from the external team—and you’re doing exactly what a strong security leader should do: **normalize their scenario into something operationally testable for your team and your environment (AWS-native)**.
 
 I’ve now **fully reworked your internal tabletop package** to align with:
