@@ -1,1 +1,1658 @@
-eku ise
+This is a solid update from the external team—and you’re doing exactly what a strong security leader should do: **normalize their scenario into something operationally testable for your team and your environment (AWS-native)**.
+
+I’ve now **fully reworked your internal tabletop package** to align with:
+
+* External structure (Modules 1–8)
+* Your playbooks (Breach of Sensitive Info)
+* Your environment (**S3, RDS, EBS instead of Snowflake**)
+* Your team scope (TVM, AppSec, Cloud Security)
+
+---
+
+# 🔐 FINAL INTERNAL TABLETOP (ALIGNED TO EXTERNAL TEAM)
+
+## **Scenario Title**
+
+**mCE Application Breach → AWS Data Exposure (S3, RDS, EBS)**
+
+---
+
+## **Core Narrative (UPDATED)**
+
+Suspicious activity is detected in **MyClinicalExchange (mCE)**, a customer-facing application.
+
+The activity suggests:
+
+* abnormal service behavior
+* possible unauthorized access tokens
+* interaction with downstream AWS data stores
+
+The environment:
+
+* stores/export data in **S3 buckets**
+* uses **RDS** for structured data
+* relies on **EBS-backed EC2 workloads**
+
+There is also a **third-party / AI-enabled workflow** recently introduced, increasing uncertainty.
+
+👉 This evolves into a **confirmed breach of sensitive information scenario**
+
+---
+
+# 🧠 STRUCTURE (MATCHES EXTERNAL MODULES)
+
+You will still run it as **injects**, but aligned to their modules.
+
+---
+
+# 🕒 FACILITATOR SCRIPT (REBUILT WITH THEIR MODULES)
+
+---
+
+# 🚨 MODULE 1 — INITIAL DETECTION & ESCALATION
+
+## ⏱️ 0:15 – 0:25
+
+## 🎤 READ THIS
+
+“We’ve identified suspicious activity associated with the mCE application.
+
+This includes:
+
+* abnormal outbound traffic from EC2 instances
+* possible unauthorized use of access tokens
+* interaction with downstream AWS services, including S3 and RDS
+
+At the same time, we’ve learned that a business function recently expanded use of a third-party or AI-enabled workflow touching this system.
+
+At this point, facts are incomplete.”
+
+---
+
+## 🎤 ASK
+
+* “Do we escalate immediately or continue investigation?”
+* “Who owns this right now?”
+* “What do we check first?”
+
+---
+
+## 🎯 YOU ARE TESTING
+
+* escalation hesitation
+* early ownership
+* TVM vs AppSec vs Cloud alignment
+
+---
+
+---
+
+# 🚨 MODULE 2 — DATA SCOPE & MAPPING
+
+## ⏱️ 0:25 – 0:40
+
+## 🎤 READ THIS
+
+“As the investigation progresses:
+
+We are trying to determine:
+
+* what data resides in mCE
+* what data is stored in **RDS**
+* what data is exported to **S3 buckets**
+
+However:
+
+* answers are inconsistent
+* different teams describe the data differently
+* it is unclear whether regulated or sensitive customer data is involved”
+
+---
+
+## 🎤 ASK
+
+* “How do we determine what data is actually impacted?”
+* “Who owns data classification here?”
+* “Can we quickly identify sensitive vs non-sensitive data?”
+
+---
+
+## 🎯 TESTING
+
+* data ownership clarity
+* classification maturity
+* GRC dependency
+
+---
+
+---
+
+# 🚨 MODULE 3 — CONNECTIVITY & BLAST RADIUS
+
+## ⏱️ 0:40 – 0:55
+
+## 🎤 READ THIS
+
+“New findings suggest this issue may not be isolated to mCE.
+
+We are seeing:
+
+* communication with other internal services
+* access patterns involving shared infrastructure
+* activity tied to S3 buckets and RDS databases
+
+There is no clear, up-to-date architecture diagram showing all dependencies.”
+
+---
+
+## 🎤 ASK
+
+* “What is our blast radius right now?”
+* “What systems could be affected?”
+* “How do we map dependencies quickly?”
+
+---
+
+## 🎯 TESTING
+
+* architecture awareness
+* cloud visibility
+* lateral movement thinking
+
+---
+
+---
+
+# 🚨 MODULE 4 — 🔥 PLAYBOOK ACTIVATION + LEADERSHIP PRESSURE
+
+## ⏱️ 0:55 – 1:10
+
+## 🎤 READ THIS
+
+“The issue has now been escalated.
+
+We have:
+
+* abnormal data access patterns in **RDS**
+* unusual object access in **S3 buckets**
+
+Leadership is asking:
+
+* Is customer data impacted?
+* Is this a breach?
+* Are we under control?”
+
+---
+
+## 🛑 THEN SAY
+
+“Pause.
+
+👉 **Which playbook are we activating?”**
+
+---
+
+## EXPECTED:
+
+👉 Breach of Sensitive Information
+
+---
+
+## 🎤 FOLLOW-UP
+
+“Open the playbook.
+
+Walk me through exactly what we do next.”
+
+---
+
+## 🎯 PUSH HARD HERE
+
+* “Who owns containment?”
+* “What is step 1?”
+* “Can we execute it now?”
+
+---
+
+---
+
+# 🚨 MODULE 5 — EVIDENCE vs RESTORATION PRESSURE
+
+## ⏱️ 1:10 – 1:20
+
+## 🎤 READ THIS
+
+“Operational pressure is increasing.
+
+Business teams are asking to:
+
+* restore services
+* roll back systems
+
+At the same time:
+
+* we have not confirmed full scope
+* evidence collection is incomplete”
+
+---
+
+## 🎤 ASK
+
+* “Do we restore now or continue investigation?”
+* “How do we preserve evidence?”
+* “Who makes this decision?”
+
+---
+
+## 🎯 TESTING
+
+* discipline vs pressure
+* forensic maturity
+* leadership authority
+
+---
+
+---
+
+# 🚨 MODULE 6 — BACKUP, IDENTITY & RECOVERY REALISM
+
+## ⏱️ 1:20 – 1:30
+
+## 🎤 READ THIS
+
+“As recovery planning begins:
+
+Questions arise:
+
+* Are backups of RDS and EBS clean?
+* Could IAM roles or credentials still be compromised?
+* Are we restoring compromised systems?”
+
+---
+
+## 🎤 ASK
+
+* “How do we validate backups?”
+* “Do we trust IAM right now?”
+* “What must be rotated?”
+
+---
+
+## 🎯 TESTING
+
+* recovery realism
+* IAM security maturity
+* cloud rebuild strategy
+
+---
+
+---
+
+# 🚨 MODULE 7 — VENDOR / AI RISK
+
+## ⏱️ 1:30 – 1:40
+
+## 🎤 READ THIS
+
+“Further investigation suggests:
+
+A third-party or AI-enabled workflow:
+
+* may have introduced risk
+* may have accessed or processed sensitive data
+
+Security visibility into this component is limited.”
+
+---
+
+## 🎤 ASK
+
+* “Do we treat this as a vendor breach?”
+* “Who owns vendor risk here?”
+* “Do we shut it down?”
+
+---
+
+## 🎯 TESTING
+
+* vendor governance
+* shadow AI risk
+* procurement/security gap
+
+---
+
+---
+
+# 🚨 MODULE 8 — CONTRACT & EXTERNAL OBLIGATIONS
+
+## ⏱️ 1:40 – 1:50
+
+## 🎤 READ THIS
+
+“We now need to determine:
+
+* Do we have contractual obligations to notify customers?
+* Are there regulatory requirements?
+* What communication pathways do we follow?”
+
+---
+
+## 🎤 ASK
+
+* “Who determines notification requirements?”
+* “What triggers customer notification?”
+* “Do we have timelines defined?”
+
+---
+
+## 🎯 TESTING
+
+* legal readiness
+* compliance alignment
+* business communication
+
+---
+
+---
+
+# 🧠 FINAL DEBRIEF (UNCHANGED BUT STRONGER)
+
+## ⏱️ 1:50 – 2:00
+
+### 🎤 ASK
+
+* “Where did we struggle the most?”
+* “Where was ownership unclear?”
+* “What in the playbook didn’t work?”
+* “What would fail in a real incident?”
+
+---
+
+# 🔥 KEY DIFFERENCE FROM YOUR PREVIOUS VERSION
+
+Now your tabletop:
+
+### BEFORE
+
+* Technical breach simulation
+
+### NOW
+
+* **Enterprise-wide breach + governance + legal + vendor + recovery realism**
+
+This is **exactly what external tabletop will test**
+
+---
+
+# ⚠️ WHAT YOU MUST PAY ATTENTION TO
+
+## 🚩 Biggest Risk Areas
+
+* No clear data ownership
+* No fast blast radius mapping
+* Weak IAM containment
+* No vendor accountability
+* Poor exec communication
+
+---
+
+# 🚀 STRATEGIC POSITIONING
+
+After running this, you can confidently say:
+
+> “We validated our breach response not only from a technical standpoint, but across data governance, vendor risk, and business decision-making aligned to real-world enterprise scenarios.”
+
+---
+
+
+=======================
+
+Below is a **leadership-ready executive readout** you can present after your internal tabletop. It is structured as a **clean, board/CISO-level deck** with clear messaging, risk framing, and actionable outcomes.
+
+You can copy this directly into PowerPoint.
+
+---
+
+# 📊 EXECUTIVE READOUT
+
+## Internal Tabletop Exercise – Breach of Sensitive Information (AWS)
+
+---
+
+# 🟦 SLIDE 1 — TITLE
+
+**Title:**
+Internal Security Tabletop Exercise – Executive Readout
+
+**Subtitle:**
+Breach of Sensitive Information (mCE → AWS Data Stores)
+
+**Footer:**
+Threat Vulnerability Management | AppSec | Cloud Security
+
+---
+
+# 🟦 SLIDE 2 — EXECUTIVE SUMMARY
+
+**Overview**
+We conducted an internal tabletop exercise simulating a **breach of sensitive information** originating from a customer-facing application (mCE), with downstream impact to AWS services (S3, RDS, EBS).
+
+**Objective**
+
+* Validate real-world execution of breach response playbooks
+* Assess cross-functional coordination and escalation
+* Identify gaps before external tabletop exercise
+
+**Overall Readiness Assessment:**
+👉 **Moderate (Yellow)**
+
+---
+
+# 🟦 SLIDE 3 — SCENARIO SNAPSHOT
+
+**Incident Flow**
+
+* Suspicious activity detected in mCE
+* Vulnerability exploitation confirmed
+* Unauthorized access to AWS resources
+* Sensitive data accessed in RDS and S3
+* Potential data exfiltration
+* Vendor/AI component introduced additional uncertainty
+
+**Key Risk Themes**
+
+* Data exposure
+* Identity compromise
+* Incomplete data mapping
+* Vendor risk visibility gaps
+
+---
+
+# 🟦 SLIDE 4 — WHAT WAS TESTED
+
+* Breach playbook activation and execution
+* Data classification and ownership clarity
+* AWS cloud visibility (S3, RDS, EBS, IAM)
+* Containment decision-making under pressure
+* Executive and legal escalation readiness
+* Vendor/third-party risk handling
+* Recovery and backup integrity assumptions
+
+---
+
+# 🟦 SLIDE 5 — OVERALL MATURITY HEATMAP
+
+| Domain                  | Rating | Summary                                   |
+| ----------------------- | ------ | ----------------------------------------- |
+| Incident Detection      | 🟢     | Strong initial identification             |
+| Incident Declaration    | 🟡     | Some hesitation in escalation             |
+| Playbook Activation     | 🟡     | Trigger criteria unclear                  |
+| Cloud Visibility (AWS)  | 🟡     | Partial visibility across S3/RDS          |
+| Data Classification     | 🔴     | No consistent ownership or clarity        |
+| Containment Execution   | 🔴     | Lacked immediate decisive actions         |
+| IAM / Identity Control  | 🔴     | No rapid credential revocation strategy   |
+| Executive Communication | 🟡     | Messaging inconsistent                    |
+| Vendor Risk Management  | 🔴     | Limited visibility into third-party usage |
+| Recovery Readiness      | 🟡     | Backup trust assumptions unvalidated      |
+
+---
+
+# 🟦 SLIDE 6 — KEY STRENGTHS
+
+**1. Strong Initial Detection**
+
+* Teams quickly identified abnormal behavior
+* Good awareness of vulnerability exposure
+
+**2. Cross-Team Engagement**
+
+* TVM, AppSec, and Cloud Security actively collaborated
+* Good discussion of risk tradeoffs
+
+**3. Awareness of Cloud Risk**
+
+* Teams recognized IAM misuse and data access concerns
+* Correct focus on S3 and RDS exposure
+
+---
+
+# 🟦 SLIDE 7 — CRITICAL GAPS (HIGH RISK)
+
+## 🔴 1. Data Ownership & Classification
+
+* No clear understanding of:
+
+  * what data resides in RDS vs S3
+  * what is regulated vs internal
+
+👉 **Impact:** Inability to determine breach scope quickly
+
+---
+
+## 🔴 2. Identity & Access Containment
+
+* No immediate ability to:
+
+  * revoke IAM sessions
+  * rotate credentials at scale
+
+👉 **Impact:** Prolonged attacker access
+
+---
+
+## 🔴 3. Playbook Execution Gaps
+
+* Teams referenced playbook but:
+
+  * did not follow it step-by-step
+  * ownership unclear
+
+👉 **Impact:** Delayed and inconsistent response
+
+---
+
+## 🔴 4. Vendor / AI Risk Visibility
+
+* Limited awareness of:
+
+  * third-party integrations
+  * AI-enabled workflows
+
+👉 **Impact:** Hidden attack surface
+
+---
+
+# 🟦 SLIDE 8 — MODERATE GAPS
+
+## 🟡 Cloud Visibility
+
+* Logs exist but:
+
+  * not fully correlated
+  * difficult to assess blast radius quickly
+
+---
+
+## 🟡 Executive Communication
+
+* Updates lacked:
+
+  * consistency
+  * clarity under uncertainty
+
+---
+
+## 🟡 Recovery Confidence
+
+* Backup assumptions not validated
+* No clear “clean environment” criteria
+
+---
+
+# 🟦 SLIDE 9 — ROOT CAUSE THEMES
+
+Across all gaps, three systemic issues emerged:
+
+### 1. **Lack of Unified Data Visibility**
+
+* No single source of truth for:
+
+  * data location
+  * data sensitivity
+
+---
+
+### 2. **Identity is the Weakest Control Plane**
+
+* IAM / token misuse not rapidly controllable
+* Limited detection of abnormal access
+
+---
+
+### 3. **Playbooks Not Operationalized**
+
+* Documented but not executable under pressure
+
+---
+
+# 🟦 SLIDE 10 — PRIORITY ACTION PLAN
+
+## 🔴 IMMEDIATE (0–30 Days)
+
+* Implement **IAM session revocation + credential rotation playbook**
+* Define **breach playbook activation criteria clearly**
+* Establish **executive communication template**
+
+---
+
+## 🟡 SHORT TERM (30–60 Days)
+
+* Improve **S3 and RDS access monitoring and alerting**
+* Build **data classification and ownership mapping**
+* Validate **backup integrity and recovery procedures**
+
+---
+
+## 🟢 MEDIUM TERM (60–90 Days)
+
+* Enhance **vendor / AI governance controls**
+* Implement **blast radius mapping capability**
+* Conduct follow-up tabletop
+
+---
+
+# 🟦 SLIDE 11 — RISK IF NOT ADDRESSED
+
+If gaps remain unresolved:
+
+* Delayed breach detection and containment
+* Increased likelihood of data exfiltration
+* Regulatory and contractual exposure
+* Loss of customer trust
+* Extended incident recovery timelines
+
+---
+
+# 🟦 SLIDE 12 — READINESS FOR EXTERNAL TABLETOP
+
+**Current State:**
+👉 Moderate readiness with critical gaps
+
+**Confidence Areas**
+
+* Detection and awareness
+* Technical discussion depth
+
+**Risk Areas**
+
+* Data ownership clarity
+* Identity containment
+* Playbook execution discipline
+
+---
+
+# 🟦 SLIDE 13 — STRATEGIC RECOMMENDATION
+
+To improve security posture:
+
+* Treat **identity (IAM)** as primary control plane
+* Prioritize **data visibility over infrastructure visibility**
+* Convert playbooks into:
+
+  * executable steps
+  * automated workflows
+
+---
+
+# 🟦 SLIDE 14 — FINAL MESSAGE
+
+“This exercise validated that while detection and awareness are strong, execution maturity—particularly around identity control, data visibility, and playbook operationalization—requires focused improvement to effectively respond to a real-world breach scenario.”
+
+---
+================
+
+Below is a **fully rewritten, Word document–ready version** of your internal tabletop exercise.
+It is structured professionally with **clear sections, headings, and narrative flow** so you can copy directly into Word.
+
+---
+
+# **Internal Tabletop Exercise Plan**
+
+## **Breach of Sensitive or Confidential Information (AWS-Aligned Scenario)**
+
+---
+
+# **1. Introduction**
+
+This document outlines the internal tabletop exercise designed to prepare the Threat Vulnerability Management (TVM), Application Security (AppSec), and Cloud Security teams for an upcoming external tabletop engagement.
+
+The exercise simulates a realistic **breach of sensitive or confidential information** originating from a customer-facing application (MyClinicalExchange – mCE), with potential impact extending into AWS-hosted data services including Amazon S3, Amazon RDS, and Amazon EBS-backed workloads.
+
+This internal session is intended to validate the organization’s ability to respond effectively to a multi-stage security incident involving application compromise, identity misuse, data access, and potential data exfiltration, while also addressing broader organizational challenges such as escalation, communication, data ownership, vendor risk, and recovery decision-making.
+
+---
+
+# **2. Purpose of the Exercise**
+
+The primary purpose of this tabletop exercise is to evaluate **real-world execution readiness** across multiple security and business functions.
+
+Specifically, the exercise is designed to:
+
+* Validate the activation and execution of the **Breach of Sensitive or Confidential Information playbook**
+* Assess coordination between TVM, AppSec, and Cloud Security teams
+* Evaluate the organization’s ability to identify and scope data exposure
+* Test decision-making under operational and executive pressure
+* Identify gaps in tooling, visibility, ownership, and process
+* Prepare the team for the external tabletop exercise by exposing weaknesses early
+
+---
+
+# **3. What This Exercise Is**
+
+This exercise is a **facilitated, discussion-based simulation** of a live security incident.
+
+It is intended to:
+
+* Replicate how a real breach unfolds over time with incomplete and evolving information
+* Force participants to make decisions based on current-state capabilities
+* Validate whether existing playbooks, processes, and controls can be executed under pressure
+* Surface gaps in detection, response, communication, and recovery
+
+Participants are expected to respond as if the incident is occurring in real time, using the tools, processes, and authority that currently exist within the organization.
+
+---
+
+# **4. What This Exercise Is Not**
+
+To ensure clarity and effectiveness, it is important to understand what this exercise is not:
+
+* It is **not a technical deep-dive or forensic investigation session**
+* It is **not a test of individual performance**
+* It is **not a theoretical or ideal-state discussion**
+* It is **not a live incident or system-impacting activity**
+* It is **not intended to assign blame or evaluate individuals**
+
+Instead, the focus is on evaluating **process maturity, coordination, and decision-making** at a team and organizational level.
+
+---
+
+# **5. Expectations for Participants**
+
+Participants are expected to:
+
+* Respond based on **current operational reality**, not future or ideal capabilities
+* Clearly articulate:
+
+  * what actions they would take
+  * what tools or data they would use
+  * who is responsible for each action
+* Identify dependencies on other teams, systems, or processes
+* Engage actively in discussion and decision-making
+* Raise uncertainties or gaps when they arise
+
+Participants should avoid vague responses such as “we would investigate” and instead provide **specific, actionable steps**.
+
+---
+
+# **6. Scenario Overview**
+
+The scenario involves suspicious activity detected within the **MyClinicalExchange (mCE)** application, a customer-facing system with integrations into downstream AWS services.
+
+The environment includes:
+
+* **Amazon S3** for data storage and exports
+* **Amazon RDS** for structured application data
+* **Amazon EBS-backed EC2 instances** supporting application workloads
+
+Initial indicators suggest:
+
+* abnormal service behavior
+* possible unauthorized access to tokens or credentials
+* unusual interaction with downstream data stores
+
+Complicating the scenario is the presence of a **third-party or AI-enabled workflow** recently introduced into the environment, increasing uncertainty regarding data flow, ownership, and exposure.
+
+As the scenario progresses, the situation evolves into a **confirmed breach of sensitive or confidential information**, requiring activation of the appropriate incident response playbook and coordinated action across multiple teams.
+
+---
+
+# **7. Exercise Structure**
+
+The exercise is structured into sequential modules, each representing a phase of incident progression.
+
+Each module introduces new information and requires participants to reassess the situation and determine appropriate actions.
+
+---
+
+## **Module 1 – Initial Detection and Escalation**
+
+Suspicious activity is identified in the mCE environment, including abnormal behavior and potential unauthorized access patterns.
+
+At this stage, information is incomplete, and the team must determine:
+
+* whether to escalate the issue
+* how to classify the event
+* who owns initial triage
+
+---
+
+## **Module 2 – Data Scope and Data Mapping**
+
+As the investigation progresses, questions arise regarding:
+
+* what data resides in mCE
+* what data is stored in Amazon RDS
+* what data is exported to Amazon S3
+
+Conflicting information emerges, highlighting challenges in data classification and ownership.
+
+---
+
+## **Module 3 – Connectivity and Blast Radius**
+
+The issue appears to extend beyond the initial system, with:
+
+* interactions across multiple services
+* shared infrastructure dependencies
+* unclear system boundaries
+
+Participants must assess the potential blast radius and identify impacted systems.
+
+---
+
+## **Module 4 – Leadership Communication and Playbook Activation**
+
+Evidence of abnormal data access in RDS and S3 raises concerns about a potential breach.
+
+Participants are expected to:
+
+* determine whether to activate the **Breach of Sensitive Information playbook**
+* provide updates to leadership
+* translate technical uncertainty into clear business communication
+
+---
+
+## **Module 5 – Evidence Preservation and Pressure to Restore**
+
+Operational pressure increases as business stakeholders request service restoration.
+
+At the same time, key questions remain unresolved.
+
+Participants must balance:
+
+* evidence preservation
+* investigative integrity
+* business continuity
+
+---
+
+## **Module 6 – Backup, Identity, and Recovery Realism**
+
+Recovery planning begins, raising concerns about:
+
+* the integrity of backups
+* potential compromise of IAM roles or credentials
+* risks of restoring compromised systems
+
+Participants must determine how to safely recover the environment.
+
+---
+
+## **Module 7 – Vendor and AI Governance**
+
+Further investigation suggests involvement of a third-party or AI-enabled component.
+
+Participants must address:
+
+* vendor risk ownership
+* security visibility gaps
+* governance of externally integrated technologies
+
+---
+
+## **Module 8 – Contractual and External Obligations**
+
+The scenario concludes with considerations around:
+
+* customer notification requirements
+* regulatory obligations
+* contractual commitments
+
+Participants must determine how to support legal and leadership decision-making with incomplete information.
+
+---
+
+# **8. Success Criteria**
+
+The exercise will be considered successful if it:
+
+* Clearly identifies gaps in current processes and controls
+* Validates whether the breach playbook can be executed effectively
+* Improves understanding of roles and responsibilities
+* Enhances coordination across teams
+* Provides actionable insights to strengthen incident response readiness
+
+---
+
+# **9. Expected Outcomes**
+
+Following the exercise, the organization will produce:
+
+* A summary of key findings and gaps
+* A prioritized action plan with ownership and timelines
+* Updates to existing playbooks and processes as needed
+* Improved readiness for the external tabletop exercise
+
+---
+
+# **10. Closing Statement**
+
+This internal tabletop exercise is a critical step in strengthening the organization’s ability to respond to real-world security incidents.
+
+By simulating a realistic breach scenario and challenging existing assumptions, the organization can proactively identify and address weaknesses before they are exposed in an actual incident or external evaluation.
+
+---
+
+If you want, I can next convert this into:
+
+* a **fully formatted .docx file (downloadable)**
+* or add **tables, checklists, and appendices (roles, scoring, action tracker)** to make it audit-ready
+
+Just tell me.
+
+
+==========================
+
+
+Below are **clean, copy-ready injection cards** you can paste directly into **meeting chat or slides**.
+
+Each one includes:
+
+* **Title + Timestamp**
+* **Situation (what you read / what they see)**
+* **Key Signals (bullet clarity for participants)**
+* **Prompt (what they must respond to)**
+
+These align to the **external modules** and your **AWS environment (S3, RDS, EBS)**.
+
+---
+
+# 🚨 INJECTION 1 — INITIAL DETECTION
+
+## ⏱️ Time: 0:15
+
+### **Situation**
+
+Suspicious activity has been identified in the **MyClinicalExchange (mCE)** application environment.
+
+Initial indicators include:
+
+* Unusual outbound traffic from EC2 instances
+* Abnormal service behavior within the application
+* Possible unauthorized use of access tokens
+
+At the same time, it has been noted that a business function recently expanded use of a **third-party or AI-enabled workflow** interacting with this system.
+
+At this stage, the facts are incomplete and unconfirmed.
+
+---
+
+### **Key Signals**
+
+* Potential security event
+* Possible identity/token misuse
+* Third-party involvement
+* No confirmed compromise
+
+---
+
+### **Prompt to Team**
+
+* How do you classify this event?
+* Do we escalate now or continue investigation?
+* Who owns initial triage?
+* What data or logs do you need immediately?
+
+---
+
+---
+
+# 🚨 INJECTION 2 — EXPOSURE & EXPLOITATION SIGNALS
+
+## ⏱️ Time: 0:25
+
+### **Situation**
+
+Further investigation confirms:
+
+* The application is running a **vulnerable component**
+* Logs show **requests consistent with known exploit patterns**
+* The vulnerability has not yet been remediated
+
+There is increasing confidence that exploitation may have occurred.
+
+---
+
+### **Key Signals**
+
+* Confirmed exposure
+* Likely exploitation activity
+* Production system impacted
+
+---
+
+### **Prompt to Team**
+
+* Do we declare an incident at this point?
+* What severity level applies?
+* Who becomes Incident Lead?
+* What immediate containment actions are available?
+
+---
+
+---
+
+# 🚨 INJECTION 3 — UNAUTHORIZED ACCESS (IDENTITY / CLOUD SIGNAL)
+
+## ⏱️ Time: 0:40
+
+### **Situation**
+
+Cloud telemetry shows:
+
+* Suspicious activity involving application IAM roles
+* Access patterns from **unexpected external IP addresses**
+* Activity occurring shortly after exploit attempts
+
+This suggests possible credential or token compromise.
+
+---
+
+### **Key Signals**
+
+* IAM role misuse
+* External access patterns
+* Potential attacker foothold
+
+---
+
+### **Prompt to Team**
+
+* Do we now consider this a confirmed compromise?
+* What is the current blast radius?
+* What immediate actions do we take (e.g., revoke sessions, rotate credentials)?
+* What additional data do we need to validate impact?
+
+---
+
+---
+
+# 🚨 INJECTION 4 — DATA ACCESS DETECTED (PLAYBOOK TRIGGER)
+
+## ⏱️ Time: 0:55
+
+### **Situation**
+
+New findings indicate:
+
+* **Amazon RDS logs** show abnormal queries against customer-related tables
+* **Amazon S3 logs** show access to sensitive data objects
+* Activity is tied to the same compromised identity
+
+This suggests unauthorized access to sensitive or regulated data.
+
+---
+
+### **Key Signals**
+
+* Data layer access confirmed
+* Multiple AWS services involved (RDS, S3)
+* Potential data exposure
+
+---
+
+### ⚠️ **CRITICAL PROMPT**
+
+👉 **Which playbook are we activating?**
+
+---
+
+### **Follow-Up Prompt**
+
+* Walk through the first steps of the playbook
+* Who owns each action?
+* What containment steps are executed immediately?
+* Can we perform those actions right now?
+
+---
+
+---
+
+# 🚨 INJECTION 5 — CONFIRMED DATA EXFILTRATION
+
+## ⏱️ Time: 1:10
+
+### **Situation**
+
+Additional analysis confirms:
+
+* A **large volume of data has been transferred externally**
+* Data includes customer-related records stored in S3 and queried from RDS
+* Business stakeholders are now asking whether customer data has been exposed
+
+---
+
+### **Key Signals**
+
+* Confirmed data exfiltration
+* Customer data potentially impacted
+* Business awareness increasing
+
+---
+
+### **Prompt to Team**
+
+* Do we now classify this as a confirmed breach?
+* Who must be notified at this stage?
+* Do we engage legal and compliance now?
+* What determines customer notification requirements?
+
+---
+
+---
+
+# 🚨 INJECTION 6 — EXECUTIVE PRESSURE
+
+## ⏱️ Time: 1:20
+
+### **Situation**
+
+Executive leadership has requested an update within the next 30 minutes.
+
+They are asking:
+
+* What happened?
+* What data is impacted?
+* Whether the situation is contained
+* What actions are being taken
+
+At this point, the full scope is still unclear.
+
+---
+
+### **Key Signals**
+
+* Leadership engagement
+* Incomplete information
+* High-pressure communication
+
+---
+
+### **Prompt to Team**
+
+* Provide a **2–3 sentence executive update**
+* What information do you include?
+* What information do you avoid sharing at this stage?
+
+---
+
+---
+
+# 🚨 INJECTION 7 — EVIDENCE VS RESTORATION PRESSURE
+
+## ⏱️ Time: 1:25
+
+### **Situation**
+
+Business teams are requesting:
+
+* Immediate restoration of affected services
+* Rollback to previous system states
+
+However:
+
+* Investigation is still ongoing
+* Evidence collection is incomplete
+
+---
+
+### **Key Signals**
+
+* Business urgency
+* Risk of destroying evidence
+* Incomplete understanding of scope
+
+---
+
+### **Prompt to Team**
+
+* Do we proceed with restoration now?
+* How do we preserve evidence?
+* Who has authority to make this decision?
+* What are the risks of acting too quickly?
+
+---
+
+---
+
+# 🚨 INJECTION 8 — RECOVERY & TRUST VALIDATION
+
+## ⏱️ Time: 1:30
+
+### **Situation**
+
+Recovery planning raises additional concerns:
+
+* Are **RDS backups and EBS snapshots** clean?
+* Could IAM roles or credentials still be compromised?
+* Is there risk of reintroducing the attacker during recovery?
+
+---
+
+### **Key Signals**
+
+* Uncertain backup integrity
+* Identity still at risk
+* Recovery complexity
+
+---
+
+### **Prompt to Team**
+
+* How do we validate backup integrity?
+* What must be rotated or reset before recovery?
+* Do we rebuild systems or restore them?
+* Who owns recovery decisions?
+
+---
+
+---
+
+# 🚨 INJECTION 9 — VENDOR / AI COMPONENT RISK
+
+## ⏱️ Time: 1:35
+
+### **Situation**
+
+Investigation suggests:
+
+* A **third-party or AI-enabled workflow** integrated with mCE
+* This component may have:
+
+  * accessed sensitive data
+  * contributed to the exposure
+* Security visibility into this component is limited
+
+---
+
+### **Key Signals**
+
+* Third-party involvement
+* Limited monitoring/control
+* Expanded attack surface
+
+---
+
+### **Prompt to Team**
+
+* Do we treat this as a vendor-related breach?
+* Who owns vendor risk and response?
+* Do we disable or isolate this integration?
+* How do we assess its impact?
+
+---
+
+---
+
+# 🚨 INJECTION 10 — CONTRACTUAL & REGULATORY OBLIGATIONS
+
+## ⏱️ Time: 1:40
+
+### **Situation**
+
+Attention turns to external obligations:
+
+* Potential contractual requirements for customer notification
+* Possible regulatory reporting requirements
+* Limited clarity on timelines and obligations
+
+Information required to make decisions is distributed across teams.
+
+---
+
+### **Key Signals**
+
+* Legal/compliance risk
+* Contractual exposure
+* Fragmented information
+
+---
+
+### **Prompt to Team**
+
+* Who determines notification obligations?
+* What triggers regulatory reporting?
+* What is the timeline for notification?
+* How do we coordinate communication across teams?
+
+---
+
+---
+
+# 🔥 FINAL TIP (IMPORTANT)
+
+When you drop these into chat or slides:
+
+* Paste **only the Situation first**
+* Let them react
+* Then reveal **Key Signals (optional)**
+* Then push with **Prompt**
+
+This creates **real pressure and realism**.
+
+---
+
+=============================================
+=============================================
+
+Perfect—these two artifacts are what separate a **good tabletop** from a **highly controlled, leadership-level exercise**.
+
+Below are both, designed for **real-time use during your session**.
+
+---
+
+# 🧠 1. FACILITATOR CHEAT SHEET (1-PAGE QUICK REFERENCE)
+
+👉 Keep this open on your screen or printed.
+👉 This is your **control panel** while running the exercise.
+
+---
+
+## **Tabletop Overview**
+
+**Scenario:** mCE Application → AWS (S3, RDS, EBS) → Data Breach
+**Primary Playbook:** Breach of Sensitive Information
+**Duration:** 2 Hours
+
+---
+
+## **Your Role (DO THIS ALWAYS)**
+
+* Drive the scenario forward
+* Ask questions—not give answers
+* Force specificity:
+
+  * “Who owns this?”
+  * “What tool do you use?”
+  * “Can we do that today?”
+
+---
+
+## **Golden Rules**
+
+✔ Let silence happen (it exposes gaps)
+✔ Keep answers grounded in reality
+✔ Push vague responses into specifics
+✔ Do NOT rescue the team too early
+
+---
+
+## **Critical Moment to Watch**
+
+### 🔥 Injection 4 (DATA ACCESS)
+
+👉 You MUST ask:
+
+**“Which playbook are we activating?”**
+
+If they hesitate → that’s a gap
+If they don’t open it → that’s a major gap
+
+---
+
+## **What Good Looks Like**
+
+* Clear Incident Lead emerges quickly
+* Teams speak in **actions, not theory**
+* Playbook is referenced and followed
+* IAM / containment actions are decisive
+
+---
+
+## **Red Flags (Watch Closely)**
+
+🚩 “We would investigate…” (no detail)
+🚩 No one owns the incident
+🚩 No immediate credential revocation
+🚩 Confusion about data ownership
+🚩 No clear escalation to leadership
+
+---
+
+## **Key Prompts You Will Reuse**
+
+### 🔹 Triage
+
+* “What do we know vs don’t know?”
+* “Is this an incident yet?”
+
+### 🔹 Ownership
+
+* “Who is responsible for this step?”
+
+### 🔹 Containment
+
+* “What action happens in the next 15 minutes?”
+
+### 🔹 Data
+
+* “What data is actually impacted?”
+
+### 🔹 Leadership
+
+* “What do we tell executives right now?”
+
+---
+
+## **Time Control (KEEP THIS TIGHT)**
+
+| Phase               | Time                 |
+| ------------------- | -------------------- |
+| Inject 1–3          | 30–35 min            |
+| Inject 4 (Playbook) | 15 min (DO NOT RUSH) |
+| Inject 5–10         | 30–35 min            |
+| Debrief             | 15–20 min            |
+
+---
+
+## **If Team Gets Stuck**
+
+Use these:
+
+* “What would you do first if this was real?”
+* “Who has authority to make that decision?”
+* “What would slow you down right now?”
+
+---
+
+## **End Goal**
+
+You are NOT looking for perfect answers.
+
+You are looking for:
+
+* gaps
+* confusion
+* delays
+* assumptions
+
+👉 That’s success.
+
+---
+
+---
+
+# 📊 2. LIVE SCORING SHEET (REAL-TIME EVALUATION)
+
+👉 Use this DURING the session
+👉 Your scribe or you can fill it live
+
+---
+
+## **Scoring Key**
+
+| Score     | Meaning                |
+| --------- | ---------------------- |
+| 🟢 Green  | Strong / effective     |
+| 🟡 Yellow | Partial / inconsistent |
+| 🔴 Red    | Weak / missing         |
+
+---
+
+# **SECTION 1 — INCIDENT IDENTIFICATION**
+
+| Control                    | Score | Notes |
+| -------------------------- | ----- | ----- |
+| Event correctly identified |       |       |
+| Incident declared timely   |       |       |
+| Severity assigned clearly  |       |       |
+
+---
+
+# **SECTION 2 — OWNERSHIP & COORDINATION**
+
+| Control                           | Score | Notes |
+| --------------------------------- | ----- | ----- |
+| Incident Lead identified quickly  |       |       |
+| Roles clearly defined             |       |       |
+| TVM / AppSec / Cloud coordination |       |       |
+
+---
+
+# **SECTION 3 — INVESTIGATION**
+
+| Control                                  | Score | Notes |
+| ---------------------------------------- | ----- | ----- |
+| Logs identified correctly (S3, RDS, IAM) |       |       |
+| Data sources understood                  |       |       |
+| Blast radius thinking present            |       |       |
+
+---
+
+# **SECTION 4 — PLAYBOOK EXECUTION**
+
+| Control                    | Score | Notes |
+| -------------------------- | ----- | ----- |
+| Correct playbook activated |       |       |
+| Playbook actually followed |       |       |
+| Steps clearly owned        |       |       |
+
+---
+
+# **SECTION 5 — CONTAINMENT**
+
+| Control                         | Score | Notes |
+| ------------------------------- | ----- | ----- |
+| IAM containment (revoke/rotate) |       |       |
+| System isolation decisions      |       |       |
+| Speed of response               |       |       |
+
+---
+
+# **SECTION 6 — DATA BREACH HANDLING**
+
+| Control                        | Score | Notes |
+| ------------------------------ | ----- | ----- |
+| Data exposure identified       |       |       |
+| Data classification understood |       |       |
+| Exfiltration recognized        |       |       |
+
+---
+
+# **SECTION 7 — COMMUNICATION**
+
+| Control                  | Score | Notes |
+| ------------------------ | ----- | ----- |
+| Executive update clarity |       |       |
+| Escalation timing        |       |       |
+| Messaging accuracy       |       |       |
+
+---
+
+# **SECTION 8 — DECISION-MAKING UNDER PRESSURE**
+
+| Control                         | Score | Notes |
+| ------------------------------- | ----- | ----- |
+| Evidence vs restoration balance |       |       |
+| Leadership decision clarity     |       |       |
+| Risk-based decisions            |       |       |
+
+---
+
+# **SECTION 9 — RECOVERY READINESS**
+
+| Control                     | Score | Notes |
+| --------------------------- | ----- | ----- |
+| Backup validation awareness |       |       |
+| IAM reset consideration     |       |       |
+| Rebuild vs restore thinking |       |       |
+
+---
+
+# **SECTION 10 — VENDOR / AI RISK**
+
+| Control                       | Score | Notes |
+| ----------------------------- | ----- | ----- |
+| Vendor involvement recognized |       |       |
+| Ownership defined             |       |       |
+| Risk response appropriate     |       |       |
+
+---
+
+# **SECTION 11 — LEGAL / COMPLIANCE**
+
+| Control                        | Score | Notes |
+| ------------------------------ | ----- | ----- |
+| Notification awareness         |       |       |
+| Contractual thinking           |       |       |
+| Regulatory triggers understood |       |       |
+
+---
+
+# 📊 FINAL SCORE SUMMARY
+
+| Category           | Score |
+| ------------------ | ----- |
+| Identification     |       |
+| Coordination       |       |
+| Investigation      |       |
+| Playbook Execution |       |
+| Containment        |       |
+| Data Handling      |       |
+| Communication      |       |
+| Decision-Making    |       |
+| Recovery           |       |
+| Vendor Risk        |       |
+| Compliance         |       |
+
+---
+
+# 🔥 FINAL OUTPUT YOU USE AFTER
+
+After session, summarize:
+
+* Top 3 🔴 Reds (critical gaps)
+* Top 3 🟡 Yellows (improvement areas)
+* Key strengths
+
+---
+
+# 🚀 PRO TIP (THIS IS WHAT LEADERS NOTICE)
+
+During the session, write down:
+
+👉 **“Time to decision” moments**
+
+Example:
+
+* Took 10 mins to declare incident
+* Took 8 mins to identify playbook
+* No clear IAM action
+
+This is **gold for your executive readout**
+
+---
+
+If you want next level (highly recommended):
+
+👉 I can turn this into a **fillable Excel scoring dashboard + auto heatmap**
+
+or
+
+👉 a **real-time command center dashboard view (like SOC board)**
+
+Just tell me.
+
+
+
+
