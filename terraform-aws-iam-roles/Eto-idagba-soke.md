@@ -1515,3 +1515,237 @@ This section defines:
 * but how Bose gets there
 
 ---
+
+
+BOSE PRODUCT SECURITY
+Cryptographic Operations: Automation, Monitoring & Alerting Framework
+Classification: Confidential — Internal Use Only      |   Owner: Product Security Engineering
+Audience: Security Architecture, HSM Operations, Engineering Leadership
+Strategic Context & Architectural Rationale
+This document defines the operational architecture for automation, monitoring, and alerting as they pertain to Bose's cryptographic key management program. It is authored from the perspective of principal security engineering and is intended to serve both as a current-state assessment and a target-state design specification.
+Cryptographic operations within Bose Product Security are presently executed through a combination of manual procedures, fragmented tooling, and partially realized automation. While foundational elements exist — most notably Tines-based alerting and ad-hoc scripting via jump box — these mechanisms are insufficient to meet the reliability, auditability, and scalability requirements of a mature cryptographic program.
+
+STRATEGIC INTENT	This framework represents the transition from event-reactive, person-dependent operations to a policy-driven, inventory-aware cryptographic control plane — capable of operating consistently at scale without reliance on tribal knowledge or manual coordination.
+
+The architecture described herein is organized across four functional domains: existing automation workflows, monitoring and logging infrastructure, alerting design, and forward-looking automation opportunities. Each domain is assessed against current maturity and mapped to a target operating model.
+
+1. Automation Architecture — Current State & Design Intent
+1.1  Purpose and Scope
+This section documents the current automation posture supporting cryptographic lifecycle operations within Bose Product Security. The primary objective is to assess the degree to which manual execution has been eliminated, workflow standardization has been achieved, and operational actions are bound to auditable, repeatable processes.
+1.2  Current-State Automation Assessment
+Automation capabilities exist but are deployed inconsistently across operational use cases. The primary automation surface consists of:
+•	Tines orchestration workflows (primary automation engine)
+•	Ad-hoc scripting executed via privileged jump box sessions
+•	Alert-triggered manual processes without automated follow-on actions
+
+The fundamental architectural gap is not the absence of automation tooling, but rather the absence of integration between automation workflows and the key inventory, ownership model, and product taxonomy. As a result, automation today operates as a signal layer — it detects conditions but cannot contextualize or act upon them without human intervention.
+
+Automation Mechanism	Current Capability	Identified Gap
+Tines Workflows	Threshold-based alerting (e.g., 95-key partition limit)	No key-level context, product mapping, or ownership resolution
+Jump Box Scripting	Manual key generation and operational tasks	No standardization, audit trail dependency on individual discipline
+Alert Triggers	Signals anomalous conditions to the operations team	Alert payloads carry no actionable context; response is entirely manual
+Jira Integration	Ad-hoc ticket creation post-event	Automation is not Jira-aware; no automated work item creation
+
+1.3  Tines: Observed Workflow Patterns
+1.3.1  Partition Capacity Threshold Monitoring
+Tines is currently configured to monitor HSM partition utilization and emit alerts when key counts approach defined limits. The observed threshold is 95 keys per partition, at which point an alert is dispatched to the security operations team.
+While this represents a functional first-order detection capability, the workflow terminates at notification. The receiving engineer must independently identify which keys are approaching the limit, which products and business units are affected, who owns the affected keys, and what the appropriate remediation path is. This creates unnecessary investigation latency and relies on operator familiarity rather than system knowledge.
+1.3.2  Partial Task Orchestration
+Additional Tines workflows exist in partial states of deployment for key generation triggers, approval coordination, and internal notification routing. These workflows are not consistently documented, are not integrated with a canonical key inventory, and do not produce traceable audit artifacts aligned with Jira or the operational change management process.
+1.4  Architectural Deficiency: Event-Driven Without Context
+The core architectural deficiency of the current automation posture is that workflows are event-driven but not context-driven. This distinction is critical:
+
+Current Model (Event-Driven)	Target Model (Context-Driven)
+Event is detected → alert is emitted	Event is detected → context is enriched
+Operator investigates manually	Ownership, product, and use case are resolved automatically
+Response time depends on operator availability and knowledge	Recommended action is surfaced alongside the alert
+Audit trail is ad-hoc and inconsistent	All actions are logged to inventory and Jira automatically
+
+The transition from this event-driven model to a fully context-aware automation platform requires the key inventory to become the authoritative source of truth that all automation workflows query at runtime. Without this integration, automation will continue to produce signal without actionability.
+
+# CURRENT AUTOMATION FLOW
+Event Detected
+  → Alert Emitted (raw signal only)
+    → Manual Investigation Initiated
+      → Resolution (undocumented, person-dependent)
+
+# TARGET AUTOMATION FLOW
+Event Detected
+  → Key Inventory Queried (context enrichment)
+    → Ownership + Product + Use Case Resolved
+      → Contextual Alert Dispatched
+        → Recommended Action Surfaced
+          → Response Logged to Jira + Audit Trail
+
+
+2. Monitoring & Logging Architecture
+2.1  Purpose and Scope
+Comprehensive monitoring of cryptographic operations is a foundational control requirement for any mature key management program. The monitoring architecture must provide full lifecycle visibility across key creation, access, usage, rotation, and revocation — as well as the operational activities that interact with those keys.
+Monitoring serves two primary functions: operational awareness (detecting anomalies and degraded states before they become incidents) and forensic auditability (providing a complete, tamper-evident record of all cryptographic operations for compliance and incident response purposes).
+2.2  Current-State Monitoring Assessment
+Current monitoring capabilities are limited in both scope and depth. Observable monitoring today includes basic HSM health and utilization metrics, threshold-based signals from Tines, and partial logging of manually executed operations. The resulting visibility is insufficient for either proactive operations or post-incident forensic reconstruction.
+Key gaps in the current monitoring posture include:
+•	No centralized log aggregation for HSM activity across partitions
+•	No correlation between key usage events, the product they serve, and the operator who performed the action
+•	No structured audit trail linking cryptographic operations to their originating change requests or authorization records
+•	Incomplete visibility into privileged access patterns via CyberArk and jump box sessions
+•	No anomaly detection capability over signing volumes, access frequency, or key usage patterns
+2.3  Required Monitoring Capabilities
+2.3.1  Key Lifecycle Monitoring
+Every state transition in a key's lifecycle must produce a structured, timestamped event. This includes key generation events, rotation completions, revocation actions, expiration notices, and any modifications to key metadata or access controls. Lifecycle events must be correlated against the key inventory to ensure completeness — orphaned keys or undocumented transitions are themselves indicators of control failure.
+2.3.2  Privileged Access Monitoring
+All access to HSM partitions must be monitored with sufficient fidelity to answer: who accessed what, from where, using which credential, and for how long. This requires integration between CyberArk session logs, jump box access records, and HSM audit logs. Access events outside of change windows or approved maintenance periods should be flagged for review.
+2.3.3  Operational Activity Monitoring
+Cryptographic operations — particularly signing activities — must be monitored for volume, pattern, and authorization. Anomalous signing volume (significantly above or below baseline), signing requests from unexpected sources, or signing activity against keys that are scheduled for rotation or revocation are all indicators that warrant investigation.
+2.3.4  Integration Health Monitoring
+External-facing integrations dependent on cryptographic operations — including OTA firmware signing pipelines, partner authentication flows, and certificate validation services — must be monitored for success rates, failure patterns, and latency anomalies. Integration failures in these workflows frequently surface as cryptographic issues and require immediate triage.
+2.4  Logging Schema Requirements
+All log records produced by or associated with cryptographic operations must conform to a standardized schema to enable correlation, search, and automated analysis. The required fields for every log event are as follows:
+
+Field	Data Type	Description
+timestamp	ISO 8601 UTC	Precise time of the event; must be sourced from a synchronized time authority
+actor_id	String / UPN	Identity of the operator, service account, or automation principal performing the action
+action	Enumerated	Classification of the operation (e.g., KEY_CREATE, KEY_ROTATE, KEY_SIGN, PARTITION_ACCESS)
+key_id	String / UUID	Canonical identifier of the affected key, resolvable against the key inventory
+partition_id	String	HSM partition in which the operation was performed
+product_id	String	Product or product family mapped to the affected key via the key inventory
+use_case	Enumerated	Cryptographic use case classification (e.g., OTA_SIGNING, SECURE_BOOT, PARTNER_AUTH)
+authorization_ref	String / Jira ID	Reference to the change request, approval record, or automation policy authorizing the action
+outcome	Enumerated	Result of the operation: SUCCESS, FAILURE, DENIED, TIMEOUT
+source_ip	IPv4 / IPv6	Origin IP address of the request or session
+
+2.5  Target Logging Architecture
+The target logging architecture establishes a structured pipeline from HSM-level event generation through to SIEM correlation and alerting. The integration layer is a critical component of this pipeline, responsible for enriching raw HSM events with inventory context before they are forwarded to the logging system.
+
+HSM Audit Log (raw event)
+  │
+  ▼
+Integration / Enrichment Layer
+  ├─ Query Key Inventory → resolve key_id, product_id, owner, use_case
+  ├─ Correlate with CyberArk session data → resolve actor_id
+  └─ Tag with authorization_ref (Jira) if applicable
+  │
+  ▼
+Structured Log Record (schema-compliant)
+  │
+  ▼
+SIEM Ingestion (e.g., Splunk / Chronicle)
+  ├─ Correlation Rules → detect anomalies
+  ├─ Dashboards → operational visibility
+  └─ Retention → compliance and forensic readiness
+
+
+3. Alerting Framework
+3.1  Purpose and Design Philosophy
+The alerting framework defines the conditions under which automated notifications are generated, the contextual content those alerts must carry, and the expected response workflows they initiate. Alerts are not diagnostic endpoints — they are initiators of structured response processes.
+The prevailing deficiency in the current alerting model is that alerts communicate the presence of a condition without communicating its significance, ownership, or required action. An alert that tells an operator that a threshold has been exceeded, without identifying what keys are affected, who owns them, and what the recommended response is, shifts the diagnostic burden entirely to the operator and introduces unnecessary response latency.
+
+DESIGN PRINCIPLE	Every alert must be actionable. An alert is not complete unless it contains sufficient context for the receiving engineer to initiate — or in many cases, complete — the required response without secondary investigation.
+
+3.2  Alert Category Framework
+3.2.1  Capacity and Utilization Alerts
+Capacity alerts monitor HSM partition utilization against defined thresholds and provide early warning before operational limits are reached. These alerts must include the identity of keys approaching the limit, their associated products and business units, the current utilization rate and trajectory, and the recommended response (rotation initiation, partition expansion request, or key deprecation review).
+•	Warning threshold: Partition utilization ≥ 80% of defined limit
+•	Critical threshold: Partition utilization ≥ 95% of defined limit
+•	Anomaly trigger: Key count growth rate deviating significantly from 90-day baseline
+3.2.2  Security and Access Alerts
+Security alerts detect access anomalies and unauthorized or unexpected operational activity. These alerts carry the highest response priority and must trigger immediate investigation workflows. Alert conditions include:
+•	Access to HSM partitions outside of approved maintenance windows or change records
+•	Failed authentication attempts exceeding defined thresholds within a rolling window
+•	Signing operations against keys that are flagged as pending rotation or revocation
+•	Access from source addresses not included in the approved operational network zones
+•	Credential usage anomalies detected by CyberArk (e.g., concurrent sessions, session duration outliers)
+3.2.3  Key Lifecycle Alerts
+Lifecycle alerts ensure that time-sensitive key management obligations are tracked and acted upon proactively, rather than discovered reactively during audit or incident response. Alert conditions include:
+•	Key approaching expiration with no rotation in progress (warning: 90 days; critical: 30 days)
+•	Rotation deadline exceeded — key is past its scheduled rotation date without a completed rotation record
+•	Key in active use with no associated ownership or product mapping in the inventory
+•	Key revocation without a corresponding Jira closure record
+3.2.4  Integration and Pipeline Alerts
+Integration alerts monitor the health of downstream services and pipelines that depend on cryptographic operations. Failures in these systems are often the first observable symptom of an upstream key management issue. Alert conditions include:
+•	OTA firmware signing pipeline failure rate exceeding baseline threshold
+•	Partner authentication validation failures indicating potential certificate or key validity issues
+•	Signing latency exceeding defined SLA thresholds, which may indicate HSM performance degradation
+3.3  Required Alert Payload Schema
+To achieve the target actionability standard, every alert dispatched by the monitoring system must include the following contextual attributes in addition to the triggering condition:
+
+Attribute	Description
+Alert Severity	CRITICAL / HIGH / MEDIUM — determines escalation path and SLA
+Affected Key(s)	Canonical key identifier(s) from the key inventory
+Associated Product	Product or product family impacted by the condition
+Business Unit	Organizational owner of the affected product
+Key Owner	Individual or team responsible for remediation
+Use Case Classification	Cryptographic function served by the affected key
+Recommended Action	Structured remediation guidance appropriate to the alert category
+Runbook Reference	Link to the operational runbook governing the required response
+Jira Auto-Create	Indicates whether a Jira work item was automatically created for this alert
+
+3.4  Illustrative Target-State Alert
+The following represents the alert format that the target monitoring architecture must produce for a partition capacity critical event:
+
+ALERT SEVERITY: CRITICAL
+ALERT TYPE: HSM Partition Capacity — Threshold Exceeded
+
+Partition:         HSM-Partition-A
+Current Utilization: 95 of 100 key slots (95%)
+Trend:             +8 keys added in the past 30 days
+
+Affected Keys (nearing limit):
+  - OTASignKey-ConsumerAudio-2024   |  Product: SoundLink Max  |  Owner: Firmware Team
+  - OTASignKey-ConsumerAudio-2023   |  Product: QuietComfort 45  |  Owner: Firmware Team
+
+Recommended Action:
+  1. Initiate key rotation review for keys scheduled within 90 days
+  2. Evaluate deprecated product keys eligible for revocation
+  3. Submit partition expansion request if current keys are all active
+
+Runbook: https://confluence.bose.com/runbooks/hsm-partition-capacity-response
+Jira Ticket: AUTO-CREATED → SEC-4821
+Response SLA: 4 hours (CRITICAL)
+
+
+4. Strategic Automation Roadmap — Future Workflow Opportunities
+4.1  Strategic Direction
+The maturation of Bose's cryptographic automation capability requires a deliberate architectural transition across three dimensions: from manual execution to policy-driven automation, from reactive detection to proactive lifecycle management, and from person-dependent processes to platform-enforced controls.
+The following opportunities represent the highest-priority investments required to realize a cryptographic control plane that can operate at scale with appropriate governance and without dependence on individual operator knowledge.
+4.2  Opportunity Inventory
+4.2.1  Inventory-Driven Key Lifecycle Automation
+The key inventory must become the authoritative trigger source for all lifecycle automation workflows. When the inventory records a key as approaching its rotation deadline, an automation workflow should initiate the rotation process — creating the Jira work item, notifying the key owner, generating pre-rotation validation tasks, and tracking completion — without operator initiation.
+This pattern eliminates the risk of missed rotation deadlines due to oversight and provides a consistent, auditable lifecycle record for every key in the program.
+4.2.2  Self-Service Key Request and Approval Portal
+The current mechanism for requesting new cryptographic keys relies on informal channels, most commonly Slack messages or direct coordination with the HSM operations team. This approach is unscalable, produces no formal approval record, and creates inconsistent documentation of key provisioning rationale.
+A self-service portal — integrated with the key inventory and connected to an automated approval workflow — would standardize key requests, enforce classification and ownership requirements at the point of request, generate auditable approval records, and provision keys only upon completion of the required approval chain.
+4.2.3  Runbook-to-Executable Workflow Conversion
+Operational runbooks currently exist as static documentation artifacts. While they represent an improvement over undocumented processes, they rely entirely on operator compliance for execution fidelity. The target state is for runbooks to serve as the specification layer for executable Tines workflows, where the documented procedure becomes the automation implementation.
+This eliminates step-omission risk, enforces approval gates programmatically, produces a complete execution audit trail, and enables consistent response regardless of which operator handles the event.
+4.2.4  HSM Abstraction and API Layer
+Direct CLI-based interaction with HSM partitions introduces operational risk: commands executed in live sessions leave minimal audit trace, are not subject to pre-execution validation, and depend on operator familiarity with HSM syntax. The introduction of an API abstraction layer between automation workflows and the HSM would enforce input validation, standardize operation semantics, produce structured audit records for every HSM interaction, and decouple automation logic from HSM vendor specifics.
+4.2.5  Context-Aware, Policy-Driven Alerting Engine
+The future alerting architecture should not be statically configured against fixed thresholds. Instead, alert thresholds and escalation paths should be dynamically informed by key risk profiles, product criticality ratings, and business context maintained in the key inventory. A key serving a safety-critical product with active field deployment has a materially different risk profile than a key serving a deprecated SKU, and the alerting posture should reflect that distinction.
+4.2.6  Automated Compliance Evidence Generation
+Audit and compliance activities currently require manual collection of evidence from multiple disparate sources. The target automation architecture should generate compliance evidence artifacts continuously — producing audit-ready reports of key lifecycle events, rotation completion rates, access control reviews, and anomaly response timelines — reducing audit preparation effort and eliminating the risk of evidence gaps.
+4.3  Transformation Roadmap
+
+Phase	Current State	Intermediate Target	Target State
+Execution	Manual, CLI-based, jump box	Tines-orchestrated with HSM API	Fully automated, policy-driven
+Detection	Threshold alerts, signal-only	Enriched alerts with inventory context	Predictive, anomaly-based detection
+Response	Manual investigation and action	Runbook-guided with auto-created Jira	Executable runbooks with auto-remediation
+Auditability	Ad-hoc, operator-dependent	Structured logs with schema compliance	Continuous compliance evidence generation
+Access	Direct, ad-hoc requests via Slack	Formalized intake with approval workflow	Self-service portal with automated provisioning
+
+
+5. Summary & Foundational Significance
+The current automation, monitoring, and alerting posture at Bose Product Security represents a functional but immature foundation. Tines-based alerting, partial workflow orchestration, and ad-hoc scripting provide a starting point — but the absence of key inventory integration, contextual alert enrichment, and structured audit logging creates material gaps in operational resilience and compliance readiness.
+The framework described in this document defines both the immediate improvements required to address critical operational gaps and the longer-term architecture needed to support a cryptographic program operating at enterprise scale. The investments outlined are not optional enhancements — they are the prerequisite infrastructure for governance enforcement, incident response automation, and the Key Management Portal initiative.
+
+ARCHITECTURAL OUTCOME	When fully realized, this framework transforms cryptographic operations from a manually orchestrated, knowledge-dependent discipline into a platform-enforced control plane — where policy governs execution, inventory drives automation, and every action is observable, traceable, and auditable.
+
+This section provides the operational backbone for the following program-level capabilities:
+•	Key Management Portal — requires inventory-driven automation and self-service workflows
+•	Incident Response Automation — requires enriched alerting and executable runbooks
+•	Governance and Compliance Enforcement — requires structured logging and continuous evidence generation
+•	Scalable HSM Operations — requires API abstraction and policy-driven execution
+
+
+Document maintained by: Bose Product Security Engineering  |  Cryptographic Operations Program
+<img width="486" height="650" alt="image" src="https://github.com/user-attachments/assets/9d99180c-176c-4077-9c0a-eebb311424b8" />
