@@ -1,1 +1,34 @@
-draft
+
+
+## 
+
+**Strategic Recommendation:**
+
+Root cause of this finding is that encryption was not enforced as a baseline requirement at provisioning time; it was left to individual service owners, resulting in inconsistent coverage across our logging infrastructure.
+
+Remediation:
+- Enable KMS encryption on the affected CloudWatch log group.
+- Configure the S3 log archive bucket for default SSE-KMS encryption.
+- Use a customer-managed key rather than an AWS-managed key so we retain control over the key policy, rotation schedule, and access logging.
+- Restrict key usage to the logging service principals and designated security/SOC roles only.
+
+To prevent recurrence, encryption needs to be built into the account baseline rather than applied reactively. I recommend:
+- Provisioning CloudWatch log groups and S3 buckets with KMS encryption enforced by default through our Control Tower / Landing Zone Accelerator customization or StackSet.
+- Adding AWS Config rules (`cloudwatch-log-group-encrypted`, `s3-bucket-server-side-encryption-enabled`) with auto-remediation via SSM Automation so drift is corrected automatically.
+- Surfacing these controls in Security Hub and tracking unencrypted-resource count as an ongoing compliance metric rather than a one-time fix.
+
+## 
+
+**Strategic Recommendation:**
+
+Root cause of this finding is that no mandatory, finalized guardrail baseline currently exists. Guardrail deployment has been handled ad hoc per account/OU instead of centrally enforced, which is why coverage is inconsistent across in-scope accounts.
+
+Remediation:
+- Finalize and formally approve the SAP 22 guardrail baseline, with named owners and sign-off.
+- Deploy the guardrail set consistently across all in-scope OUs/accounts using Control Tower and/or CloudFormation StackSets.
+- Assign implementation owners and deadlines per OU to drive completion.
+
+To prevent recurrence, this needs to move from reactive remediation to baseline-driven enforcement. I recommend:
+- Making the guardrail set part of the Control Tower account-vending blueprint so it's applied automatically to every new account, not retrofitted later.
+- Enabling Control Tower drift detection and a scheduled Config compliance report to catch gaps before they surface in an audit.
+- Establishing guardrail coverage as a recurring governance metric owned by TVM/AppSec, reviewed on a fixed cadence rather than only at assessment time.
