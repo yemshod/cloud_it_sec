@@ -1,1 +1,234 @@
-draft
+### Sprint 1 — Threat Modeling
+
+**JIRA Story: Configure IriusRisk for Threat Modeling**
+
+**Description:**  
+Set up IriusRisk as the threat-modeling platform for Release 1. Establish the project/model structure and prepare it to consume the approved logical architecture.
+
+**Scope / Activities:**
+- Create/configure the Release 1 project in IriusRisk.
+- Define applicable technology/component profiles.
+- Configure relevant security standards/control mappings where applicable.
+- Validate access for required security and engineering stakeholders.
+- Confirm the project is ready for architecture ingestion/modeling.
+
+**Acceptance Criteria:**
+- Release 1 project successfully configured in IriusRisk.
+- Required team members have appropriate access.
+- Threat-modeling workspace is ready for architecture input.
+- Configuration validated by Security Architecture.
+
+**Dependency:** Logical architecture is not required for initial setup but is required to begin actual threat modeling.
+
+---
+
+**JIRA Story: Develop Threat Model from Logical Architecture**
+
+**Description:**  
+Use the approved Release 1 logical architecture to model application components, trust boundaries, interfaces, data flows, and dependencies within IriusRisk and generate the initial threat model.
+
+**Scope / Activities:**
+- Import or recreate the logical architecture in IriusRisk.
+- Model web/application components, microservices, APIs, databases and storage.
+- Identify external integrations and trust boundaries.
+- Map relevant data flows between components.
+- Generate applicable threats, weaknesses, and recommended controls.
+- Review automatically generated threats for relevance and remove false positives where justified.
+
+**Acceptance Criteria:**
+- All security-relevant architecture components are represented.
+- Trust boundaries and major data flows are captured.
+- Initial threat assessment is generated.
+- Applicable threats and controls are documented.
+- Identified high-risk items are captured for remediation/tracking.
+
+**Dependency:** Approved logical architecture and data-flow information.
+
+---
+
+**JIRA Story: Conduct Team Review of IriusRisk Threat Model**
+
+**Description:**  
+Conduct a cross-functional review of the generated threat model with Architecture, Engineering, Product, and Security to validate identified threats, assumptions, and required controls.
+
+**Scope / Activities:**
+- Review identified threats and attack paths.
+- Validate architecture assumptions and trust boundaries.
+- Review risk severity and applicability.
+- Identify missing threats or controls.
+- Assign remediation actions/owners where required.
+- Document accepted risks and assumptions.
+
+**Acceptance Criteria:**
+- Threat model reviewed with relevant stakeholders.
+- False positives/non-applicable threats dispositioned.
+- Material threats have mitigation/control recommendations.
+- Action items have identified owners.
+- Threat model updated based on review feedback.
+- Review outcome documented.
+
+---
+
+# Sprint 1 — Logical Architecture for Release 1
+
+**JIRA Story: Develop Release 1 Logical Architecture**
+
+**Description:**  
+Create the Release 1 logical architecture representing the major application and infrastructure components and their interactions. The architecture will serve as an input to threat modeling and detailed security design.
+
+**Scope / Activities:**
+- Document web/front-end components.
+- Document application services and microservices.
+- Document APIs and integration points.
+- Document databases and storage services.
+- Identify external/internal dependencies.
+- Show major communication paths and trust boundaries.
+- Identify authentication/authorization integration points where known.
+
+**Acceptance Criteria:**
+- All Release 1 components are represented.
+- Major interfaces and dependencies are documented.
+- Component-to-component communication is identifiable.
+- External integrations are captured.
+- Architecture is reviewed with Engineering and Security.
+- Diagram is available for threat-modeling activities.
+
+---
+
+**JIRA Story: Document Non-Functional Requirements for Document Management Service**
+
+**Description:**  
+Define the non-functional requirements necessary to establish the resilience, availability, recoverability, and performance expectations for the Document Management Service.
+
+**Scope / Activities:**
+- Define service availability/SLA requirements.
+- Define Recovery Time Objective (RTO).
+- Define Recovery Point Objective (RPO).
+- Define Mean Time to Detect (MTTD) expectations.
+- Define performance and scalability expectations.
+- Identify backup/recovery requirements.
+- Capture monitoring and operational expectations.
+
+**Acceptance Criteria:**
+- Availability target documented.
+- RTO and RPO documented and agreed.
+- MTTD/monitoring expectations documented.
+- Performance/scalability requirements documented.
+- Requirements reviewed with Architecture, Engineering, Product, and Security as applicable.
+
+---
+
+**JIRA Story: Define Data Classification and Data Flow for Release 1**
+
+**Description:**  
+Identify the data processed by the Document Management Service, assign appropriate classifications, and document how data moves through the Release 1 architecture.
+
+**Scope / Activities:**
+- Identify major data types processed/stored.
+- Assign applicable data classifications.
+- Identify sensitive/confidential data.
+- Document data sources and destinations.
+- Map data flows between application components.
+- Identify data crossing trust/network boundaries.
+- Identify data-at-rest and data-in-transit locations.
+- Capture external/third-party data exchanges.
+
+**Acceptance Criteria:**
+- Major data types are inventoried and classified.
+- Sensitive data is clearly identified.
+- Data Flow Diagram (DFD) completed.
+- Data stores and processing locations are represented.
+- Trust-boundary crossings are documented.
+- External data exchanges are identified.
+- DFD is usable as an input to threat modeling.
+
+---
+
+# Sprint 2 — Detailed Security Design
+
+**JIRA Story: Map Security Controls to Network and Application Architecture**
+
+**Description:**  
+Translate threat-model findings and non-functional requirements into concrete preventive, detective, and responsive security controls within the target architecture.
+
+**Scope / Activities:**
+- Review threats identified during threat modeling.
+- Review data classification and NFR requirements.
+- Map authentication and authorization controls.
+- Define network segmentation and traffic-control requirements.
+- Identify encryption requirements for data in transit/at rest.
+- Define secrets/key-management controls.
+- Map logging, monitoring, and detection controls.
+- Identify WAF/API protection requirements where applicable.
+- Map resilience/security availability controls.
+
+**Acceptance Criteria:**
+- Material threat-model findings have corresponding security controls or documented disposition.
+- Security controls are mapped to relevant architecture components.
+- Network/security boundaries are represented.
+- IAM, encryption, logging, monitoring and secrets-management controls are documented.
+- Security-control gaps are captured as follow-up work items.
+
+**Dependencies:** Threat model, logical architecture, DFD/data classification, and NFRs.
+
+---
+
+**JIRA Story: Develop Detailed Security Architecture Design**
+
+**Description:**  
+Develop the detailed architecture diagram for Release 1, incorporating infrastructure, application communication paths, security controls, trust boundaries, and operational security requirements.
+
+**Scope / Activities:**
+- Expand logical architecture into detailed design.
+- Document component communication paths and protocols.
+- Document ingress/egress paths.
+- Show network/security boundaries.
+- Map identity and access-control mechanisms.
+- Show encryption and key/secrets-management components.
+- Show logging, monitoring and security telemetry flows.
+- Incorporate controls identified through threat modeling.
+- Document relevant security assumptions and dependencies.
+
+**Acceptance Criteria:**
+- Detailed architecture diagram completed.
+- Network and application communication paths documented.
+- Security controls mapped to architecture components.
+- Trust boundaries clearly represented.
+- IAM and authentication flows represented.
+- Security logging/monitoring flows represented.
+- Design addresses applicable threat-model findings.
+- Open security gaps are documented.
+
+---
+
+**JIRA Story: Conduct Release 1 Architecture & Security Design Review**
+
+**Description:**  
+Conduct a formal cross-functional review of the detailed Release 1 architecture to validate technical design, security controls, threat mitigations, operational requirements, and readiness for implementation.
+
+**Scope / Activities:**
+- Walk through detailed architecture.
+- Review security-control placement.
+- Validate threat-model mitigations.
+- Validate data-flow and trust-boundary assumptions.
+- Review NFR alignment.
+- Identify architectural/security gaps.
+- Capture decisions, exceptions, and action items.
+- Obtain stakeholder agreement on the final design.
+
+**Acceptance Criteria:**
+- Architecture review conducted with required stakeholders.
+- Threat-model findings traced to controls, remediation items, or accepted risks.
+- Material security concerns resolved or formally tracked.
+- Architecture assumptions and exceptions documented.
+- Review comments incorporated.
+- Outstanding actions assigned to owners.
+- Architecture approved/baselined for Release 1 implementation.
+
+### Recommended Jira relationship
+
+I would make the workflow explicitly dependency-driven:
+
+**Logical Architecture + Data Classification/DFD + NFRs** → **Threat Model** → **Threat Model Review** → **Security Control Mapping** → **Detailed Design** → **Architecture/Security Review**
+
+That sequencing is important because you don't want the detailed design to be created first and then have threat modeling become a compliance exercise. The threat model should actually **drive security requirements into the detailed design**.
